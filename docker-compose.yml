@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: orderly-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: orderly_user
+      POSTGRES_PASSWORD: orderly_password
+      POSTGRES_DB: orderly_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - orderly_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  orderly_postgres_data:
