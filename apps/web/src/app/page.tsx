@@ -1,20 +1,44 @@
-import Image from "next/image";
+import { SiteHeader } from "@/components/site-header";
+import { getMenu } from "@/features/menu/api/get-menu";
+import { MenuBrowser } from "@/features/menu/components/menu-browser";
+import { MenuHero } from "@/features/menu/components/menu-hero";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <p className="text-sm font-bold uppercase tracking-[0.24em] text-orange-600">
-        Orderly
-      </p>
+export default async function HomePage() {
+  try {
+    const menu = await getMenu();
 
-      <h1 className="mt-4 max-w-3xl text-5xl font-bold tracking-tight text-slate-950">
-        Production-grade restaurant ordering platform.
-      </h1>
+    return (
+      <main className="min-h-screen bg-slate-50">
+        <SiteHeader />
 
-      <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-        A full-stack online ordering system built with Next.js, NestJS,
-        PostgreSQL, Prisma, and Docker.
-      </p>
-    </div>
-  );
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+          <MenuHero />
+          <MenuBrowser categories={menu.categories} />
+        </div>
+      </main>
+    );
+  } catch (error) {
+    return (
+      <main className="min-h-screen bg-slate-50">
+        <SiteHeader />
+
+        <div className="mx-auto flex max-w-6xl items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
+          <div className="w-full max-w-lg rounded-3xl border border-red-200 bg-white p-6 shadow-sm">
+            <h1 className="text-lg font-semibold text-slate-950">
+              Menu is unavailable
+            </h1>
+
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              The frontend could not load menu data from the API. Please make
+              sure the NestJS backend is running on port 4000.
+            </p>
+
+            <pre className="mt-4 overflow-auto rounded-2xl bg-slate-100 p-4 text-xs text-slate-700">
+              {error instanceof Error ? error.message : "Unknown error"}
+            </pre>
+          </div>
+        </div>
+      </main>
+    );
+  }
 }
