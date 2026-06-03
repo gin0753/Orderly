@@ -13,6 +13,21 @@ This project is designed as a full-stack portfolio project to demonstrate fronte
 
 ## Core Features
 
+### Customer Menu
+
+- Responsive customer-facing menu page
+- Restaurant-style hero section
+- Category tabs for menu filtering
+- Product cards with name, description and price
+- API-driven menu rendering from the NestJS backend
+- Basic empty and error states
+
+### Backend API
+
+- Health check endpoint
+- Menu endpoint backed by PostgreSQL and Prisma
+- Seeded menu data for local development
+
 ### Customer
 
 - Browse menu by category
@@ -115,9 +130,3 @@ GET /api/menu
 - Docker Compose is used to make the local database setup reproducible.
 
 ## Next Steps
-
-- Build the Next.js customer menu page
-- Add product configuration modal
-- Implement cart drawer
-- Implement checkout and order creation
-- Build admin order management
