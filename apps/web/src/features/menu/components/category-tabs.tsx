@@ -17,7 +17,10 @@ export function CategoryTabs({
   );
 
   return (
-    <div className="sticky top-16 z-30 -mx-4 border-b border-slate-200 bg-slate-50/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+    <div
+      className="sticky top-16 z-30 -mx-4 border-b border-slate-200 bg-slate-50/95 px-4 py-4 
+      backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+    >
       <div className="flex gap-2 overflow-x-auto">
         <CategoryTab
           label="All"
