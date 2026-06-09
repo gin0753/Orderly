@@ -1,10 +1,9 @@
 export type MenuProduct = {
   id: string;
   name: string;
-  description: string | null;
+  description?: string | null;
+  imageUrl?: string | null;
   priceCents: number;
-  imageUrl: string | null;
-  isAvailable: boolean;
 };
 
 export type MenuCategory = {

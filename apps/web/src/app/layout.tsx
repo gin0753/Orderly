@@ -1,3 +1,6 @@
+import { SiteHeader } from "@/components/layout/site-header";
+import { CartDrawer } from "@/features/cart/components/cart-drawer";
+import { Providers } from "./providers";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -8,12 +11,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Providers>
+          <SiteHeader />
+          {children}
+          <CartDrawer />
+        </Providers>
+      </body>
     </html>
   );
 }

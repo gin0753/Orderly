@@ -1,15 +1,17 @@
+"use client";
+
 import type { MenuCategory } from "../types";
 
 type CategoryTabsProps = {
   categories: MenuCategory[];
-  selectedCategoryId: string;
-  onSelectCategory: (categoryId: string) => void;
+  activeCategoryId: string;
+  onCategoryChange: (categoryId: string) => void;
 };
 
 export function CategoryTabs({
   categories,
-  selectedCategoryId,
-  onSelectCategory,
+  activeCategoryId,
+  onCategoryChange,
 }: CategoryTabsProps) {
   const totalProductCount = categories.reduce(
     (total, category) => total + category.products.length,
@@ -17,53 +19,45 @@ export function CategoryTabs({
   );
 
   return (
-    <div
-      className="sticky top-16 z-30 -mx-4 border-b border-slate-200 bg-slate-50/95 px-4 py-4 
-      backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
-    >
-      <div className="flex gap-2 overflow-x-auto">
-        <CategoryTab
-          label="All"
-          count={totalProductCount}
-          isActive={selectedCategoryId === "all"}
-          onClick={() => onSelectCategory("all")}
-        />
+    <div className="mt-8 overflow-x-auto pb-2">
+      <div className="flex min-w-max gap-3">
+        <button
+          type="button"
+          onClick={() => onCategoryChange("all")}
+          className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
+            activeCategoryId === "all"
+              ? "bg-[#ff4d00] text-white shadow-sm"
+              : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
+          }`}
+        >
+          All
+          <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs">
+            {totalProductCount}
+          </span>
+        </button>
 
-        {categories.map((category) => (
-          <CategoryTab
-            key={category.id}
-            label={category.name}
-            count={category.products.length}
-            isActive={selectedCategoryId === category.id}
-            onClick={() => onSelectCategory(category.id)}
-          />
-        ))}
+        {categories.map((category) => {
+          const isActive = activeCategoryId === category.id;
+
+          return (
+            <button
+              key={category.id}
+              type="button"
+              onClick={() => onCategoryChange(category.id)}
+              className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
+                isActive
+                  ? "bg-[#ff4d00] text-white shadow-sm"
+                  : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
+              }`}
+            >
+              {category.name}
+              <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs">
+                {category.products.length}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
-  );
-}
-
-type CategoryTabProps = {
-  label: string;
-  count: number;
-  isActive: boolean;
-  onClick: () => void;
-};
-
-function CategoryTab({ label, count, isActive, onClick }: CategoryTabProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition",
-        isActive
-          ? "bg-slate-950 text-white"
-          : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100",
-      ].join(" ")}
-    >
-      {label}
-      <span className="ml-2 text-xs opacity-70">{count}</span>
-    </button>
   );
 }

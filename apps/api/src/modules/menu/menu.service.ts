@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { moneyToCents } from '../../utils/moneyToCents';
 
 @Injectable()
 export class MenuService {
@@ -72,7 +73,7 @@ export class MenuService {
           id: product.id,
           name: product.name,
           description: product.description,
-          basePrice: product.basePrice.toString(),
+          priceCents: moneyToCents(product.basePrice),
           imageUrl: product.imageUrl,
           isAvailable: product.isAvailable,
           optionGroups: product.optionGroups.map((group) => ({

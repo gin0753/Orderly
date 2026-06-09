@@ -1,8 +1,10 @@
-const audFormatter = new Intl.NumberFormat("en-AU", {
-  style: "currency",
-  currency: "AUD",
-});
+export function formatMoneyFromCents(amountCents: number) {
+  if (!Number.isFinite(amountCents)) {
+    return "$0.00";
+  }
 
-export function formatMoneyFromCents(priceCents: number) {
-  return audFormatter.format(priceCents / 100);
+  return new Intl.NumberFormat("en-AU", {
+    style: "currency",
+    currency: "AUD",
+  }).format(amountCents / 100);
 }

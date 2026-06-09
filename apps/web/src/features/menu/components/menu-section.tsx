@@ -1,35 +1,55 @@
+import { MenuProduct } from "../types";
+
 import { ProductCard } from "./product-card";
-import type { MenuCategory } from "../types";
 
 type MenuSectionProps = {
-  category: MenuCategory;
+  title: string;
+  emoji?: string;
+  itemCount?: number;
+  products: MenuProduct[];
+  onProductSelect: (product: MenuProduct) => void;
+  onQuickAdd: (product: MenuProduct) => void;
 };
 
-export function MenuSection({ category }: MenuSectionProps) {
+export function MenuSection({
+  title,
+  emoji,
+  itemCount,
+  products,
+  onProductSelect,
+  onQuickAdd,
+}: MenuSectionProps) {
   return (
-    <section>
-      <div className="mb-5 flex items-end justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-950">
-            {category.name}
+    <section className="mt-10">
+      <div className="mb-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl font-bold tracking-tight text-neutral-950">
+            {title} {emoji ? <span>{emoji}</span> : null}
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            {category.products.length} items available
-          </p>
+
+          {typeof itemCount === "number" ? (
+            <span className="text-sm text-neutral-500">{itemCount} items</span>
+          ) : null}
         </div>
+
+        <button
+          type="button"
+          className="text-sm font-semibold text-[#ff4d00] transition hover:text-orange-700"
+        >
+          See all
+        </button>
       </div>
 
-      {category.products.length > 0 ? (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {category.products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
-          No products available in this category.
-        </div>
-      )}
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            onProductSelect={onProductSelect}
+            onQuickAdd={onQuickAdd}
+          />
+        ))}
+      </div>
     </section>
   );
 }
