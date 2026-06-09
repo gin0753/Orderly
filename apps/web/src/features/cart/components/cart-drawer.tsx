@@ -15,6 +15,7 @@ import {
 } from "@/features/cart/cart-slice";
 import { formatMoneyFromCents } from "@/lib/format-money";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useScrollLock } from "@/hooks/use-scroll-lock";
 
 export function CartDrawer() {
   const dispatch = useAppDispatch();
@@ -23,23 +24,7 @@ export function CartDrawer() {
   const items = useAppSelector(selectCartItems);
   const isEmpty = useAppSelector(selectIsCartEmpty);
   const subtotalCents = useAppSelector(selectCartSubtotalCents);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const originalBodyOverflow = document.body.style.overflow;
-    const originalHtmlOverflow = document.documentElement.style.overflow;
-
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = originalBodyOverflow;
-      document.documentElement.style.overflow = originalHtmlOverflow;
-    };
-  }, [isOpen]);
+  useScrollLock(isOpen);
 
   useEffect(() => {
     if (!isOpen) {
