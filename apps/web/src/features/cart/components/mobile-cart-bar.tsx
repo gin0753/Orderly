@@ -21,14 +21,14 @@ export function MobileCartBar() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-orange-600 bg-[#ff4d00] px-4 py-3 text-white shadow-2xl md:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-brand-text)] bg-[var(--color-brand)] px-4 py-3 text-[var(--color-text-inverse)] shadow-2xl md:hidden">
       <button
         type="button"
         onClick={() => dispatch(openCart())}
         className="flex w-full items-center justify-between gap-4"
       >
         <span className="flex items-center gap-3 text-sm font-semibold">
-          <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-white/20 px-2">
+          <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-[var(--color-surface)]/20 px-2">
             {itemCount}
           </span>
           View Cart

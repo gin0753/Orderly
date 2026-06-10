@@ -88,7 +88,7 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 py-6 backdrop-blur-sm md:items-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--color-overlay)] px-4 py-6 backdrop-blur-sm md:items-center">
       <button
         type="button"
         aria-label="Close product modal"
@@ -96,8 +96,8 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl md:grid md:grid-cols-[1fr_1.05fr]">
-        <div className="relative h-56 overflow-hidden bg-neutral-100 md:h-full">
+      <div className="relative z-10 flex h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-[var(--color-surface)] shadow-2xl md:grid md:grid-cols-[1fr_1.05fr]">
+        <div className="relative h-56 overflow-hidden bg-[var(--color-surface-muted)] md:h-full">
           {imageUrl ? (
             <Image
               src={imageUrl}
@@ -107,7 +107,7 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
               className="object-cover"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-sm text-neutral-400">
+            <div className="flex h-full w-full items-center justify-center text-sm text-[var(--color-text-subtle)]">
               No image
             </div>
           )}
@@ -117,16 +117,16 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
           <div className="min-h-0 flex-1 overflow-y-auto p-6 md:p-8">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-bold tracking-tight text-neutral-950">
+                <h2 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
                   {product.name}
                 </h2>
 
-                <p className="mt-2 text-lg font-semibold text-neutral-950">
+                <p className="mt-2 text-lg font-semibold text-[var(--color-text-primary)]">
                   {formatMoneyFromCents(product.priceCents)}
                 </p>
 
                 {product.description ? (
-                  <p className="mt-3 text-sm leading-6 text-neutral-600">
+                  <p className="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">
                     {product.description}
                   </p>
                 ) : null}
@@ -135,15 +135,17 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full p-2 text-2xl leading-none text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-950"
+                className="rounded-full p-2 text-2xl leading-none text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text-primary)]"
                 aria-label="Close"
               >
                 ×
               </button>
             </div>
 
-            <div className="border-t border-neutral-100 pt-5">
-              <h3 className="text-sm font-semibold text-neutral-950">Size</h3>
+            <div className="border-t border-[var(--color-border-soft)] pt-5">
+              <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+                Size
+              </h3>
 
               <div className="mt-3 grid grid-cols-3 gap-3">
                 {PRODUCT_SIZE_OPTIONS.map((option) => {
@@ -156,14 +158,14 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
                       onClick={() => setSelectedSize(option.id)}
                       className={`rounded-2xl border px-3 py-3 text-center transition ${
                         isSelected
-                          ? "border-[#ff4d00] bg-orange-50 text-neutral-950"
-                          : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
+                          ? "border-[#ff4d00] bg-[var(--color-brand-soft)] text-[var(--color-text-primary)]"
+                          : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-strong)] hover:border-[var(--color-border-hover)]"
                       }`}
                     >
                       <span className="block text-sm font-semibold">
                         {option.label}
                       </span>
-                      <span className="mt-1 block text-xs text-neutral-500">
+                      <span className="mt-1 block text-xs text-[var(--color-text-muted)]">
                         {option.caption}
                       </span>
                     </button>
@@ -172,8 +174,8 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
               </div>
             </div>
 
-            <div className="mt-6 border-t border-neutral-100 pt-5">
-              <h3 className="text-sm font-semibold text-neutral-950">
+            <div className="mt-6 border-t border-[var(--color-border-soft)] pt-5">
+              <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
                 Quantity
               </h3>
 
@@ -182,10 +184,12 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
               </div>
             </div>
 
-            <div className="mt-6 border-t border-neutral-100 pt-5">
-              <h3 className="text-sm font-semibold text-neutral-950">
+            <div className="mt-6 border-t border-[var(--color-border-soft)] pt-5">
+              <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
                 Add-ons{" "}
-                <span className="font-normal text-neutral-400">(Optional)</span>
+                <span className="font-normal text-[var(--color-text-subtle)]">
+                  (Optional)
+                </span>
               </h3>
 
               <div className="mt-3 space-y-3">
@@ -195,7 +199,7 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
                   return (
                     <label
                       key={addOn.id}
-                      className="flex cursor-pointer items-center justify-between gap-4 rounded-xl py-1 text-sm text-neutral-700 transition hover:text-neutral-950"
+                      className="flex cursor-pointer items-center justify-between gap-4 rounded-xl py-1 text-sm text-[var(--color-text-strong)] transition hover:text-[var(--color-text-primary)]"
                     >
                       <span className="flex items-center gap-3">
                         <input
@@ -207,7 +211,7 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
                         {addOn.name}
                       </span>
 
-                      <span className="text-neutral-500">
+                      <span className="text-[var(--color-text-muted)]">
                         +{formatMoneyFromCents(addOn.priceDeltaCents)}
                       </span>
                     </label>
@@ -217,11 +221,11 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
             </div>
           </div>
 
-          <div className="shrink-0 border-t border-neutral-100 bg-white p-6 md:p-8">
+          <div className="shrink-0 border-t border-[var(--color-border-soft)] bg-[var(--color-surface)] p-6 md:p-8">
             <button
               type="button"
               onClick={handleAddToCart}
-              className="flex w-full items-center justify-center rounded-2xl bg-[#ff4d00] px-5 py-4 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600"
+              className="flex w-full items-center justify-center rounded-2xl bg-[var(--color-brand)] px-5 py-4 text-sm font-semibold text-[var(--color-text-inverse)] shadow-sm transition hover:bg-[var(--color-brand-hover)]"
             >
               Add to cart
               <span className="mx-2">·</span>

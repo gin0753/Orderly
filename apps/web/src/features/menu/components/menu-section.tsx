@@ -23,18 +23,20 @@ export function MenuSection({
     <section className="mt-10">
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h2 className="text-2xl font-bold tracking-tight text-neutral-950">
+          <h2 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
             {title} {emoji ? <span>{emoji}</span> : null}
           </h2>
 
           {typeof itemCount === "number" ? (
-            <span className="text-sm text-neutral-500">{itemCount} items</span>
+            <span className="text-sm text-[var(--color-text-muted)]">
+              {itemCount} items
+            </span>
           ) : null}
         </div>
 
         <button
           type="button"
-          className="text-sm font-semibold text-[#ff4d00] transition hover:text-orange-700"
+          className="text-sm font-semibold text-[var(--color-brand-text)] transition hover:text-[var(--color-brand-text-hover)]"
         >
           See all
         </button>

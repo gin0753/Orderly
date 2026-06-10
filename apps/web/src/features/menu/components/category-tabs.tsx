@@ -26,12 +26,12 @@ export function CategoryTabs({
           onClick={() => onCategoryChange("all")}
           className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
             activeCategoryId === "all"
-              ? "bg-[#ff4d00] text-white shadow-sm"
-              : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
+              ? "bg-[var(--color-brand)] text-[var(--color-text-inverse)] shadow-sm"
+              : "bg-[var(--color-surface-muted)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-disabled)]"
           }`}
         >
           All
-          <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs">
+          <span className="ml-2 rounded-full bg-[var(--color-surface)]/20 px-2 py-0.5 text-xs">
             {totalProductCount}
           </span>
         </button>
@@ -46,12 +46,12 @@ export function CategoryTabs({
               onClick={() => onCategoryChange(category.id)}
               className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
                 isActive
-                  ? "bg-[#ff4d00] text-white shadow-sm"
-                  : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
+                  ? "bg-[var(--color-brand)] text-[var(--color-text-inverse)] shadow-sm"
+                  : "bg-[var(--color-surface-muted)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-disabled)]"
               }`}
             >
               {category.name}
-              <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs">
+              <span className="ml-2 rounded-full bg-[var(--color-surface)]/20 px-2 py-0.5 text-xs">
                 {category.products.length}
               </span>
             </button>

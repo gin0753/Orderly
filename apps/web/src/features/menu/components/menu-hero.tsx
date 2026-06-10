@@ -1,17 +1,17 @@
 export function MenuHero() {
   return (
-    <section className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
+    <section className="overflow-hidden rounded-3xl bg-[var(--color-surface)] shadow-sm ring-1 ring-[var(--color-ring)]">
       <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
         <div className="flex flex-col justify-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-orange-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-brand-text)]">
             Good food, made simple
           </p>
 
-          <h1 className="mt-4 max-w-2xl text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
+          <h1 className="mt-4 max-w-2xl text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-5xl">
             Order from Orderly Kitchen
           </h1>
 
-          <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
+          <p className="mt-4 max-w-xl text-base leading-7 text-[var(--color-text-secondary)]">
             Fresh ingredients, bold flavours, and a smooth ordering experience
             built for modern restaurants.
           </p>
@@ -24,9 +24,9 @@ export function MenuHero() {
           </div>
         </div>
 
-        <div className="relative min-h-64 overflow-hidden rounded-3xl bg-gradient-to-br from-orange-100 to-stone-100">
+        <div className="relative min-h-64 overflow-hidden rounded-3xl orderly-warm-gradient">
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex h-48 w-48 items-center justify-center rounded-full bg-white text-7xl shadow-sm sm:h-56 sm:w-56">
+            <div className="flex h-48 w-48 items-center justify-center rounded-full bg-[var(--color-surface)] text-7xl shadow-sm sm:h-56 sm:w-56">
               🍕
             </div>
           </div>
@@ -43,11 +43,13 @@ type InfoChipProps = {
 
 function InfoChip({ label, value }: InfoChipProps) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+    <div className="rounded-2xl border border-slate-200 bg-[var(--color-background)] px-4 py-3">
       <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
         {label}
       </p>
-      <p className="mt-1 text-sm font-semibold text-slate-950">{value}</p>
+      <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">
+        {value}
+      </p>
     </div>
   );
 }

@@ -17,29 +17,41 @@ export function SiteHeader() {
   const cartSubtotalCents = useAppSelector(selectCartSubtotalCents);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-surface-glass)] backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight text-neutral-950">
+          <span className="text-xl font-bold tracking-tight text-[var(--color-text-primary)]">
             Orderly
           </span>
-          <span className="h-1.5 w-1.5 rounded-full bg-[#ff4d00]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-brand)]" />
         </Link>
 
-        <nav className="hidden items-center gap-8 text-sm font-medium text-neutral-600 md:flex">
-          <Link href="/" className="text-neutral-950">
+        <nav className="hidden items-center gap-8 text-sm font-medium text-[var(--color-text-secondary)] md:flex">
+          <Link href="/" className="text-[var(--color-text-primary)]">
             Menu
           </Link>
-          <Link href="/" className="transition hover:text-neutral-950">
+          <Link
+            href="/"
+            className="transition hover:text-[var(--color-text-primary)]"
+          >
             Deals
           </Link>
-          <Link href="/" className="transition hover:text-neutral-950">
+          <Link
+            href="/"
+            className="transition hover:text-[var(--color-text-primary)]"
+          >
             Orders
           </Link>
-          <Link href="/" className="transition hover:text-neutral-950">
+          <Link
+            href="/"
+            className="transition hover:text-[var(--color-text-primary)]"
+          >
             Catering
           </Link>
-          <Link href="/" className="transition hover:text-neutral-950">
+          <Link
+            href="/"
+            className="transition hover:text-[var(--color-text-primary)]"
+          >
             About
           </Link>
         </nav>
@@ -47,7 +59,7 @@ export function SiteHeader() {
         <button
           type="button"
           onClick={() => dispatch(openCart())}
-          className="relative flex items-center gap-3 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-950 shadow-sm transition hover:border-neutral-300 hover:bg-neutral-50"
+          className="relative flex items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)] shadow-sm transition hover:border-neutral-300 hover:bg-[var(--color-surface-hover)]"
           aria-label="Open cart"
         >
           <span className="relative flex h-5 w-5 items-center justify-center">
@@ -74,7 +86,7 @@ export function SiteHeader() {
             </svg>
 
             {cartItemCount > 0 ? (
-              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ff4d00] px-1 text-[10px] font-bold text-white">
+              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-brand)] px-1 text-[10px] font-bold text-[var(--color-text-inverse)]">
                 {cartItemCount}
               </span>
             ) : null}

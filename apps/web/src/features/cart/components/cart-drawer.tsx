@@ -47,7 +47,7 @@ export function CartDrawer() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 overflow-hidden bg-[var(--color-overlay)] backdrop-blur-sm">
       <button
         type="button"
         aria-label="Close cart drawer"
@@ -55,10 +55,10 @@ export function CartDrawer() {
         onClick={() => dispatch(closeCart())}
       />
 
-      <aside className="absolute right-0 top-0 flex h-dvh w-full max-w-md flex-col bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-4">
+      <aside className="absolute right-0 top-0 flex h-dvh w-full max-w-md flex-col bg-[var(--color-surface)] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-[var(--color-border-soft)] px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-neutral-950">
+            <h2 className="text-lg font-bold text-[var(--color-text-primary)]">
               Your Cart ({items.length})
             </h2>
 
@@ -66,7 +66,7 @@ export function CartDrawer() {
               <button
                 type="button"
                 onClick={() => dispatch(clearCart())}
-                className="mt-1 text-xs font-medium text-neutral-400 transition hover:text-neutral-700"
+                className="mt-1 text-xs font-medium text-[var(--color-text-subtle)] transition hover:text-[var(--color-text-strong)]"
               >
                 Clear cart
               </button>
@@ -76,7 +76,7 @@ export function CartDrawer() {
           <button
             type="button"
             onClick={() => dispatch(closeCart())}
-            className="rounded-full p-2 text-2xl leading-none text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-950"
+            className="rounded-full p-2 text-2xl leading-none text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text-primary)]"
             aria-label="Close"
           >
             ×
@@ -85,22 +85,22 @@ export function CartDrawer() {
 
         {isEmpty ? (
           <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 text-2xl">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-surface-muted)] text-2xl">
               🛒
             </div>
 
-            <h3 className="mt-5 text-lg font-bold text-neutral-950">
+            <h3 className="mt-5 text-lg font-bold text-[var(--color-text-primary)]">
               Your cart is empty
             </h3>
 
-            <p className="mt-2 max-w-xs text-sm leading-6 text-neutral-500">
+            <p className="mt-2 max-w-xs text-sm leading-6 text-[var(--color-text-muted)]">
               Looks like you have not added anything yet.
             </p>
 
             <button
               type="button"
               onClick={() => dispatch(closeCart())}
-              className="mt-6 rounded-2xl bg-[#ff4d00] px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
+              className="mt-6 rounded-2xl bg-[var(--color-brand)] px-5 py-3 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
             >
               Browse Menu
             </button>
@@ -112,9 +112,9 @@ export function CartDrawer() {
                 {items.map((item) => (
                   <div
                     key={item.key}
-                    className="grid grid-cols-[72px_1fr] gap-4 rounded-2xl border border-neutral-100 p-3"
+                    className="grid grid-cols-[72px_1fr] gap-4 rounded-2xl border border-[var(--color-border-soft)] p-3"
                   >
-                    <div className="relative h-[72px] w-[72px] overflow-hidden rounded-xl bg-neutral-100">
+                    <div className="relative h-[72px] w-[72px] overflow-hidden rounded-xl bg-[var(--color-surface-muted)]">
                       {item.product.imageUrl ? (
                         <Image
                           src={item.product.imageUrl}
@@ -127,11 +127,11 @@ export function CartDrawer() {
                     <div>
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <h3 className="text-sm font-bold text-neutral-950">
+                          <h3 className="text-sm font-bold text-[var(--color-text-primary)]">
                             {item.product.name}
                           </h3>
 
-                          <p className="mt-1 text-xs capitalize text-neutral-500">
+                          <p className="mt-1 text-xs capitalize text-[var(--color-text-muted)]">
                             {item.selectedSize}
                             {item.selectedAddOns.length > 0
                               ? ` · ${item.selectedAddOns
@@ -146,7 +146,7 @@ export function CartDrawer() {
                           onClick={() =>
                             dispatch(removeItem({ key: item.key }))
                           }
-                          className="text-xs text-neutral-400 transition hover:text-red-500"
+                          className="text-xs text-[var(--color-text-subtle)] transition hover:text-[var(--color-danger)]"
                         >
                           Remove
                         </button>
@@ -165,7 +165,7 @@ export function CartDrawer() {
                           }
                         />
 
-                        <p className="text-sm font-bold text-neutral-950">
+                        <p className="text-sm font-bold text-[var(--color-text-primary)]">
                           {formatMoneyFromCents(
                             item.unitPriceCents * item.quantity,
                           )}
@@ -177,21 +177,21 @@ export function CartDrawer() {
               </div>
             </div>
 
-            <div className="border-t border-neutral-100 px-5 py-5">
-              <div className="flex items-center justify-between text-sm text-neutral-600">
+            <div className="border-t border-[var(--color-border-soft)] px-5 py-5">
+              <div className="flex items-center justify-between text-sm text-[var(--color-text-secondary)]">
                 <span>Subtotal</span>
-                <span className="font-semibold text-neutral-950">
+                <span className="font-semibold text-[var(--color-text-primary)]">
                   {formatMoneyFromCents(subtotalCents)}
                 </span>
               </div>
 
-              <p className="mt-2 text-xs text-neutral-400">
+              <p className="mt-2 text-xs text-[var(--color-text-subtle)]">
                 Delivery fee and final total will be calculated at checkout.
               </p>
 
               <button
                 type="button"
-                className="mt-5 w-full rounded-2xl bg-[#ff4d00] px-5 py-4 text-sm font-semibold text-white transition hover:bg-orange-600"
+                className="mt-5 w-full rounded-2xl bg-[var(--color-brand)] px-5 py-4 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
               >
                 View Cart & Checkout
               </button>

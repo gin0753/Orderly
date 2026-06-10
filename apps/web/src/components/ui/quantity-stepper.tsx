@@ -17,19 +17,19 @@ export function QuantityStepper({
 }: QuantityStepperProps) {
   return (
     <div
-      className={`inline-flex items-center overflow-hidden rounded-xl border border-neutral-200 bg-white ${className}`}
+      className={`inline-flex items-center overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] ${className}`}
     >
       <button
         type="button"
         onClick={() => onChange(Math.max(min, value - 1))}
         disabled={value <= min}
-        className="flex h-9 w-10 items-center justify-center text-lg text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:text-neutral-300"
+        className="flex h-9 w-10 items-center justify-center text-lg text-[var(--color-text-strong)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]"
         aria-label="Decrease quantity"
       >
         −
       </button>
 
-      <div className="flex h-9 min-w-10 items-center justify-center px-3 text-sm font-semibold text-neutral-950">
+      <div className="flex h-9 min-w-10 items-center justify-center px-3 text-sm font-semibold text-[var(--color-text-primary)]">
         {value}
       </div>
 
@@ -37,7 +37,7 @@ export function QuantityStepper({
         type="button"
         onClick={() => onChange(Math.min(max, value + 1))}
         disabled={value >= max}
-        className="flex h-9 w-10 items-center justify-center text-lg text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:text-neutral-300"
+        className="flex h-9 w-10 items-center justify-center text-lg text-[var(--color-text-strong)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]"
         aria-label="Increase quantity"
       >
         +
