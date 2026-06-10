@@ -88,7 +88,7 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--color-overlay)] px-4 py-6 backdrop-blur-sm md:items-center">
+    <div className="animate-orderly-fade-in fixed inset-0 z-50 flex items-end justify-center bg-[var(--color-overlay)] px-4 py-6 backdrop-blur-sm md:items-center">
       <button
         type="button"
         aria-label="Close product modal"
@@ -96,7 +96,7 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-[var(--color-surface)] shadow-2xl md:grid md:grid-cols-[1fr_1.05fr]">
+      <div className="animate-orderly-slide-up relative z-10 flex h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-[var(--color-surface)] shadow-2xl md:grid md:grid-cols-[1fr_1.05fr]">
         <div className="relative h-56 overflow-hidden bg-[var(--color-surface-muted)] md:h-full">
           {imageUrl ? (
             <Image

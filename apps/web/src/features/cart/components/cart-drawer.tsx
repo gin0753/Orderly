@@ -47,7 +47,7 @@ export function CartDrawer() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-[var(--color-overlay)] backdrop-blur-sm">
+    <div className="animate-orderly-fade-in fixed inset-0 z-50 overflow-hidden bg-[var(--color-overlay)] backdrop-blur-sm">
       <button
         type="button"
         aria-label="Close cart drawer"
@@ -55,7 +55,7 @@ export function CartDrawer() {
         onClick={() => dispatch(closeCart())}
       />
 
-      <aside className="absolute right-0 top-0 flex h-dvh w-full max-w-md flex-col bg-[var(--color-surface)] shadow-2xl">
+      <aside className="animate-orderly-slide-left absolute right-0 top-0 flex h-dvh w-full max-w-md flex-col bg-[var(--color-surface)] shadow-2xl">
         <div className="flex items-center justify-between border-b border-[var(--color-border-soft)] px-5 py-4">
           <div>
             <h2 className="text-lg font-bold text-[var(--color-text-primary)]">
