@@ -33,6 +33,8 @@
 
   --color-danger: #ef4444;
   --color-danger-strong: #b91c1c;
+  --color-danger-surface: #fef2f2; /* Tailwind red-50 */
+  --color-danger-border: #fee2e2; /* Tailwind red-100 */
 }
 
 .orderly-warm-gradient {

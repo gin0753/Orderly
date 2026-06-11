@@ -9,7 +9,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { CategoryTabs } from "./category-tabs";
 import { EmptyMenuState } from "./empty-menu-state";
 import { MenuSection } from "./menu-section";
-import { ProductModal } from "./product-modal";
+import { ProductModal } from "./product-modal/product-modal";
 import { MenuCategory, MenuProduct } from "../types";
 
 type MenuBrowserProps = {
@@ -74,7 +74,7 @@ export function MenuBrowser({ categories }: MenuBrowserProps) {
         onCategoryChange={setActiveCategoryId}
       />
 
-      <div className="pb-24 md:pb-0">
+      <div className="pb-28 md:pb-0">
         {visibleCategories.map((category) => (
           <MenuSection
             key={category.id}

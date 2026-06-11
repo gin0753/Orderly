@@ -36,7 +36,7 @@ export function MenuSection({
 
         <button
           type="button"
-          className="text-sm font-semibold text-[var(--color-brand-text)] transition hover:text-[var(--color-brand-text-hover)]"
+          className="cursor-pointer text-sm font-semibold text-[var(--color-brand-text)] transition hover:text-[var(--color-brand-text-hover)]"
         >
           See all
         </button>

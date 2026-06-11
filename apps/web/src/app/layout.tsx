@@ -1,5 +1,5 @@
 import { SiteHeader } from "@/components/layout/site-header";
-import { CartDrawer } from "@/features/cart/components/cart-drawer";
+import { CartDrawer } from "@/features/cart/components/cart-drawer/cart-drawer";
 import { Providers } from "./providers";
 import type { Metadata } from "next";
 import "./globals.css";

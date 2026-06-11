@@ -1,11 +1,14 @@
 "use client";
 
+import { ShoppingCart } from "lucide-react";
+
 import {
   openCart,
   selectCartItemCount,
   selectCartSubtotalCents,
   selectIsCartEmpty,
 } from "@/features/cart/cart-slice";
+import { Button } from "@/components/ui/button";
 import { formatMoneyFromCents } from "@/lib/format-money";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
@@ -21,23 +24,28 @@ export function MobileCartBar() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-brand-text)] bg-[var(--color-brand)] px-4 py-3 text-[var(--color-text-inverse)] shadow-2xl md:hidden">
-      <button
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)] px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-12px_30px_rgba(0,0,0,0.08)] md:hidden">
+      <Button
         type="button"
+        variant="brand"
+        size="lg"
         onClick={() => dispatch(openCart())}
-        className="flex w-full items-center justify-between gap-4"
+        className="w-full justify-between rounded-2xl px-5"
       >
-        <span className="flex items-center gap-3 text-sm font-semibold">
-          <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-[var(--color-surface)]/20 px-2">
-            {itemCount}
+        <span className="flex items-center gap-3">
+          <span className="relative">
+            <ShoppingCart className="h-5 w-5" />
+
+            <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-text-primary)] px-1 text-xs font-bold text-[var(--color-text-inverse)]">
+              {itemCount}
+            </span>
           </span>
-          View Cart
+
+          <span>View cart</span>
         </span>
 
-        <span className="text-sm font-bold">
-          {formatMoneyFromCents(subtotalCents)}
-        </span>
-      </button>
+        <span>{formatMoneyFromCents(subtotalCents)}</span>
+      </Button>
     </div>
   );
 }

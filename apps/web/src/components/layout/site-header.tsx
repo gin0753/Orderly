@@ -59,7 +59,7 @@ export function SiteHeader() {
         <button
           type="button"
           onClick={() => dispatch(openCart())}
-          className="relative flex items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)] shadow-sm transition hover:border-neutral-300 hover:bg-[var(--color-surface-hover)]"
+          className="cursor-pointer relative flex items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)] shadow-sm transition hover:border-neutral-300 hover:bg-[var(--color-surface-hover)]"
           aria-label="Open cart"
         >
           <span className="relative flex h-5 w-5 items-center justify-center">

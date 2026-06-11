@@ -24,7 +24,7 @@ export function CategoryTabs({
         <button
           type="button"
           onClick={() => onCategoryChange("all")}
-          className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
+          className={`cursor-pointer rounded-full px-5 py-3 text-sm font-semibold transition ${
             activeCategoryId === "all"
               ? "bg-[var(--color-brand)] text-[var(--color-text-inverse)] shadow-sm"
               : "bg-[var(--color-surface-muted)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-disabled)]"
@@ -44,7 +44,7 @@ export function CategoryTabs({
               key={category.id}
               type="button"
               onClick={() => onCategoryChange(category.id)}
-              className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
+              className={`cursor-pointer rounded-full px-5 py-3 text-sm font-semibold transition ${
                 isActive
                   ? "bg-[var(--color-brand)] text-[var(--color-text-inverse)] shadow-sm"
                   : "bg-[var(--color-surface-muted)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-disabled)]"
