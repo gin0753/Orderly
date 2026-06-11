@@ -19,7 +19,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
           <MenuHero />
 
-          <section className="mt-8 rounded-3xl border border-red-100 bg-red-50 px-6 py-8 text-center">
+          <section className="mt-8 rounded-3xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] px-6 py-8 text-center">
             <p className="text-sm font-semibold text-[var(--color-danger-strong)]">
               We could not load the menu right now.
             </p>

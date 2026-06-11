@@ -1,8 +1,13 @@
 "use client";
 
-import { MenuProduct } from "../types";
-import { formatMoneyFromCents } from "@/lib/format-money";
 import Image from "next/image";
+import { Plus } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { formatMoneyFromCents } from "@/lib/format-money";
+
+import type { MenuProduct } from "../types";
 
 type ProductCardProps = {
   product: MenuProduct;
@@ -15,53 +20,77 @@ export function ProductCard({
   onProductSelect,
   onQuickAdd,
 }: ProductCardProps) {
+  const price = formatMoneyFromCents(product.priceCents);
+
   return (
-    <article
-      onClick={() => onProductSelect(product)}
-      className="group cursor-pointer overflow-hidden rounded-3xl border border-[var(--color-border-soft)] bg-[var(--color-surface)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-    >
-      <div className="relative aspect-[4/3] overflow-hidden bg-[var(--color-surface-muted)]">
-        {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-[var(--color-text-subtle)]">
-            No image
+    <Card className="group overflow-hidden transition hover:-translate-y-0.5 hover:border-[var(--color-border-hover)] hover:shadow-md">
+      <article>
+        <button
+          type="button"
+          onClick={() => onProductSelect(product)}
+          className="block w-full cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-inset"
+          aria-label={`View ${product.name}`}
+        >
+          <div className="relative aspect-[4/3] overflow-hidden bg-[var(--color-surface-muted)]">
+            {product.imageUrl ? (
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                fill
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                className="object-cover transition duration-300 group-hover:scale-105"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-sm text-[var(--color-text-muted)]">
+                No image
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <div className="p-4">
-        <h3 className="text-sm font-bold text-[var(--color-text-primary)]">
-          {product.name}
-        </h3>
+          <div className="space-y-2 p-4 pb-3">
+            <h3 className="line-clamp-1 text-sm font-bold text-[var(--color-text-primary)]">
+              {product.name}
+            </h3>
 
-        {product.description ? (
-          <p className="mt-2 line-clamp-2 min-h-10 text-sm leading-5 text-[var(--color-text-secondary)]">
-            {product.description}
-          </p>
-        ) : null}
+            {product.description ? (
+              <p className="line-clamp-2 min-h-10 text-sm leading-5 text-[var(--color-text-secondary)]">
+                {product.description}
+              </p>
+            ) : (
+              <p className="min-h-10 text-sm leading-5 text-[var(--color-text-muted)]">
+                View details and customize your order.
+              </p>
+            )}
+          </div>
+        </button>
 
-        <div className="mt-5 flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 px-4 pb-4">
           <p className="text-sm font-bold text-[var(--color-text-primary)]">
-            {formatMoneyFromCents(product.priceCents)}
+            {price}
           </p>
 
-          <button
+          <Button
             type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onQuickAdd(product);
-            }}
-            className="rounded-xl bg-[var(--color-brand)] px-4 py-2 text-xs font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
+            variant="outlineBrand"
+            size="sm"
+            onClick={() => onQuickAdd(product)}
+            className="hidden sm:inline-flex"
           >
-            + Add
-          </button>
+            Add
+          </Button>
+
+          <Button
+            type="button"
+            variant="brand"
+            size="icon"
+            onClick={() => onQuickAdd(product)}
+            className="sm:hidden"
+            aria-label={`Quick add ${product.name}`}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
-      </div>
-    </article>
+      </article>
+    </Card>
   );
 }

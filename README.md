@@ -2,11 +2,12 @@
 
 A production-grade online ordering platform built with Next.js, NestJS, PostgreSQL, Prisma and Docker.
 
-This project is designed as a full-stack portfolio project to demonstrate frontend architecture, backend API design, relational database modelling, and order workflow logic.
+Orderly is designed as a full-stack portfolio project to demonstrate frontend architecture, backend API design, relational database modelling, cart state management, and order workflow logic.
 
 ## Tech Stack
 
 - Frontend: Next.js, React, TypeScript, Tailwind CSS
+- State Management: Redux Toolkit
 - Backend: NestJS, TypeScript
 - Database: PostgreSQL, Prisma
 - DevOps: Docker Compose, pnpm workspace
@@ -18,9 +19,21 @@ This project is designed as a full-stack portfolio project to demonstrate fronte
 - Responsive customer-facing menu page
 - Restaurant-style hero section
 - Category tabs for menu filtering
-- Product cards with name, description and price
 - API-driven menu rendering from the NestJS backend
-- Basic empty and error states
+- Product cards with image, name, description and price
+- Product detail modal with size, add-ons and quantity selection
+- Empty and error states
+
+### Cart
+
+- Add items to cart
+- Update item quantity
+- Remove items from cart
+- Cart drawer
+- Header cart button with item count and subtotal
+- Mobile sticky cart bar
+- Cart subtotal calculation
+- localStorage cart persistence
 
 ### Backend API
 
@@ -28,22 +41,14 @@ This project is designed as a full-stack portfolio project to demonstrate fronte
 - Menu endpoint backed by PostgreSQL and Prisma
 - Seeded menu data for local development
 
-### Customer
+### Planned Features
 
-- Browse menu by category
-- View product details
-- Select product options
-- Add items to cart
-- Submit order
-- View order status
-
-### Admin
-
-- View incoming orders
-- Update order status
-- Manage products
-- Manage categories
-- Control store availability
+- Checkout flow
+- Order submission
+- Order status tracking
+- Admin order management
+- Product and category management
+- Store availability control
 
 ## Architecture
 
@@ -75,10 +80,15 @@ orderly/
 - [x] NestJS backend foundation
 - [x] Health API
 - [x] Menu API
-- [ ] Frontend menu page
-- [ ] Product detail modal
-- [ ] Cart drawer
+- [x] Frontend menu page
+- [x] Product detail modal
+- [x] Redux Toolkit cart state
+- [x] Cart drawer
+- [x] Header cart button
+- [x] Mobile cart bar
+- [x] localStorage cart persistence
 - [ ] Checkout flow
+- [ ] Order submission API
 - [ ] Admin order management
 
 ## Local Development
@@ -107,6 +117,12 @@ Start backend API:
 pnpm dev:api
 ```
 
+Start frontend app:
+
+```bash
+pnpm dev:web
+```
+
 Backend API:
 
 ```txt
@@ -123,6 +139,9 @@ GET /api/menu
 ## Key Engineering Decisions
 
 - Uses a separated frontend and backend architecture instead of a Next.js-only full-stack app.
+- Uses a feature-based frontend structure for menu and cart modules.
+- Uses Redux Toolkit for scalable client-side cart state management.
+- Uses localStorage persistence for cart continuity before checkout.
 - Uses PostgreSQL for relational product, option and order modelling.
 - Uses Prisma for type-safe database access and migration management.
 - Product prices will be recalculated on the backend instead of trusting client-side prices.
@@ -130,3 +149,9 @@ GET /api/menu
 - Docker Compose is used to make the local database setup reproducible.
 
 ## Next Steps
+
+- Build checkout page
+- Add customer information form
+- Add order summary
+- Implement order submission API
+- Persist submitted orders in PostgreSQL

@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Provider } from "react-redux";
 
 import { hydrateCart, selectCartItems } from "@/features/cart/cart-slice";
@@ -17,18 +17,32 @@ type StoreProviderProps = {
 
 export function StoreProvider({ children }: StoreProviderProps) {
   const [store] = useState(() => makeStore());
+  const lastPersistedCartRef = useRef<string>("");
 
   useEffect(() => {
     const persistedCart = readCartFromStorage();
 
     store.dispatch(hydrateCart(persistedCart));
 
+    lastPersistedCartRef.current = JSON.stringify({
+      items: persistedCart.items,
+    });
+
     const unsubscribe = store.subscribe(() => {
       const state = store.getState();
 
-      writeCartToStorage({
+      const nextPersistedCart = {
         items: selectCartItems(state),
-      });
+      };
+
+      const serializedCart = JSON.stringify(nextPersistedCart);
+
+      if (serializedCart === lastPersistedCartRef.current) {
+        return;
+      }
+
+      writeCartToStorage(nextPersistedCart);
+      lastPersistedCartRef.current = serializedCart;
     });
 
     return unsubscribe;

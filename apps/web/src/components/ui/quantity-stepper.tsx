@@ -23,7 +23,7 @@ export function QuantityStepper({
         type="button"
         onClick={() => onChange(Math.max(min, value - 1))}
         disabled={value <= min}
-        className="flex h-9 w-10 items-center justify-center text-lg text-[var(--color-text-strong)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]"
+        className="cursor-pointer flex h-9 w-10 items-center justify-center text-lg text-[var(--color-text-strong)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]"
         aria-label="Decrease quantity"
       >
         −
@@ -37,7 +37,7 @@ export function QuantityStepper({
         type="button"
         onClick={() => onChange(Math.min(max, value + 1))}
         disabled={value >= max}
-        className="flex h-9 w-10 items-center justify-center text-lg text-[var(--color-text-strong)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]"
+        className="cursor-pointer flex h-9 w-10 items-center justify-center text-lg text-[var(--color-text-strong)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]"
         aria-label="Increase quantity"
       >
         +
