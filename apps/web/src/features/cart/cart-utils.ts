@@ -121,3 +121,13 @@ export function getCartSubtotalCents(items: CartItem[]) {
 export function getCartItemCount(items: CartItem[]) {
   return items.reduce((total, item) => total + item.quantity, 0);
 }
+
+export function getCartSizeLabel(size: CartSelectedSize) {
+  const option = PRODUCT_SIZE_OPTIONS.find((option) => option.id === size);
+
+  if (!option) {
+    return size;
+  }
+
+  return `${option.label} ${option.caption}`;
+}

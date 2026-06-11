@@ -6,7 +6,7 @@
   --color-brand: #ff4d00;
   --color-brand-hover: #ea580c;
   --color-brand-text: #ea580c;
-  --color-brand-soft: #fff3ed;
+  --color-brand-soft: oklch(95.4% 0.038 75.164);
   --color-brand-text-hover: #c2410c;
 
   --color-background: #f8fafc;
@@ -30,6 +30,8 @@
   --color-border: #e5e7eb;
   --color-border-soft: #f5f5f5;
   --color-border-hover: #d4d4d4;
+
+  --color-success: #16a34a;
 
   --color-danger: #ef4444;
   --color-danger-strong: #b91c1c;
