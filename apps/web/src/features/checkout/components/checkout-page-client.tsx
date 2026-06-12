@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 import { CheckoutStepIndicator } from "./checkout-step-indicator";
 import { FulfillmentSelector } from "./fulfillment-selector";
@@ -17,10 +18,13 @@ import {
   getCheckoutTotalCents,
   hasCheckoutFieldErrors,
 } from "../checkout-utils";
+import { buildCreateOrderRequest } from "../checkout-mappers";
 import { formatMoneyFromCents } from "@/lib/format-money";
 import { getCartSubtotalCents } from "@/features/cart/cart-utils";
-import { selectCartHasHydrated } from "@/features/cart/cart-slice";
+import { selectCartHasHydrated, clearCart } from "@/features/cart/cart-slice";
 import { CheckoutSkeleton } from "@/features/checkout/components/checkout-skeleton";
+import { createOrder } from "@/features/checkout/api/create-order";
+import { CheckoutTransition } from "./checkout-transition";
 
 const initialFormState: CheckoutFormState = {
   fulfillmentType: "pickup",
@@ -38,12 +42,19 @@ const initialFormState: CheckoutFormState = {
 export function CheckoutPageClient() {
   const [form, setForm] = useState<CheckoutFormState>(initialFormState);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  // const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isRedirectingToSuccess, setIsRedirectingToSuccess] = useState(false);
 
   const fieldErrors = getCheckoutFieldErrors(form);
   const hasFieldErrors = hasCheckoutFieldErrors(fieldErrors);
   const visibleErrors = hasSubmitted ? fieldErrors : {};
-  const summaryErrors = hasSubmitted ? Object.values(fieldErrors) : [];
+  const summaryErrors = [
+    ...(hasSubmitted ? Object.values(fieldErrors) : []),
+    submitError,
+  ].filter((message): message is string => Boolean(message));
+  const router = useRouter();
+  const dispatch = useAppDispatch();
 
   const cartItems = useAppSelector((state) => state.cart.items);
   const hasHydrated = useAppSelector(selectCartHasHydrated);
@@ -66,17 +77,47 @@ export function CheckoutPageClient() {
     }));
   }
 
-  function handleContinue() {
+  async function handleContinue() {
     setHasSubmitted(true);
+    setSubmitError(null);
 
-    if (hasFieldErrors) {
+    if (hasFieldErrors || isSubmitting) {
       return;
     }
-    console.log("Checkout form ready", form);
+
+    setIsSubmitting(true);
+
+    try {
+      const order = await createOrder(
+        buildCreateOrderRequest({
+          form,
+          cartItems,
+        }),
+      );
+
+      setIsRedirectingToSuccess(true);
+      dispatch(clearCart());
+
+      router.push(
+        `/order-success?orderId=${order.orderId}&totalCents=${order.totalCents}&orderType=${order.orderType}`,
+      );
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while placing your order.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (!hasHydrated) {
     return <CheckoutSkeleton />;
+  }
+
+  if (isRedirectingToSuccess) {
+    return <CheckoutTransition />;
   }
 
   if (isCartEmpty) {
@@ -132,6 +173,11 @@ export function CheckoutPageClient() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px]">
           <div className="grid gap-5">
+            {submitError ? (
+              <div className="rounded-2xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-4 text-sm font-medium text-[var(--color-danger-strong)]">
+                {submitError}
+              </div>
+            ) : null}
             <FulfillmentSelector
               value={form.fulfillmentType}
               onChange={(fulfillmentType) => updateForm({ fulfillmentType })}
@@ -159,7 +205,8 @@ export function CheckoutPageClient() {
               subtotalCents={subtotalCents}
               fulfillmentType={form.fulfillmentType}
               validationErrors={summaryErrors}
-              disabled={false}
+              disabled={isSubmitting}
+              onSubmitLabel={isSubmitting ? "Placing order..." : "Place Order"}
               onSubmit={handleContinue}
             />
           </div>
@@ -177,11 +224,11 @@ export function CheckoutPageClient() {
 
           <button
             type="button"
-            disabled={false}
+            disabled={isSubmitting}
             onClick={handleContinue}
             className="h-12 rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-white transition hover:bg-[var(--color-brand-hover)] disabled:cursor-not-allowed disabled:bg-[var(--color-surface-disabled)] disabled:text-[var(--color-text-disabled)]"
           >
-            Continue to Review →
+            {isSubmitting ? "Placing..." : "Place Order →"}
           </button>
         </div>
       </div>
