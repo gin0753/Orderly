@@ -8,6 +8,7 @@ import { getCartItemCount, getCartSubtotalCents } from "./cart-utils";
 const initialState: CartState = {
   items: [],
   isCartOpen: false,
+  hasHydrated: false,
 };
 
 const cartSlice = createSlice({
@@ -16,6 +17,7 @@ const cartSlice = createSlice({
   reducers: {
     hydrateCart(state, action: PayloadAction<{ items: CartItem[] }>) {
       state.items = action.payload.items;
+      state.hasHydrated = true;
     },
 
     addItem(state, action: PayloadAction<CartItem>) {
@@ -95,6 +97,9 @@ export const {
 } = cartSlice.actions;
 
 export const selectCartItems = (state: RootState) => state.cart.items;
+
+export const selectCartHasHydrated = (state: RootState) =>
+  state.cart.hasHydrated;
 
 export const selectIsCartOpen = (state: RootState) => state.cart.isCartOpen;
 
