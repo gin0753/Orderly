@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { OrderType } from '@prisma/client';
 
 import { PrismaService } from '../../prisma/prisma.service';
@@ -6,6 +10,8 @@ import {
   CreateOrderDto,
   CreateOrderFulfillmentType,
 } from './dto/create-order.dto';
+import { ListOrdersQueryDto } from './dto/list-orders-query.dto';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 const DELIVERY_FEE_CENTS = 399;
 const SERVICE_FEE_CENTS = 120;
@@ -129,5 +135,52 @@ export class OrdersService {
     }
 
     return DELIVERY_FEE_CENTS;
+  }
+
+  async findAll(query: ListOrdersQueryDto) {
+    const { status, orderType } = query;
+
+    return this.prisma.order.findMany({
+      where: {
+        ...(status ? { status } : {}),
+        ...(orderType ? { orderType } : {}),
+      },
+      include: {
+        items: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 50,
+    });
+  }
+
+  async findOne(id: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${id} was not found`);
+    }
+
+    return order;
+  }
+
+  async updateStatus(id: string, updateOrderStatusDto: UpdateOrderStatusDto) {
+    await this.findOne(id);
+
+    return this.prisma.order.update({
+      where: { id },
+      data: {
+        status: updateOrderStatusDto.status,
+      },
+      include: {
+        items: true,
+      },
+    });
   }
 }
