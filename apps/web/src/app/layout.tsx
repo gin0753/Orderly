@@ -1,5 +1,3 @@
-import { SiteHeader } from "@/components/layout/site-header";
-import { CartDrawer } from "@/features/cart/components/cart-drawer/cart-drawer";
 import { Providers } from "./providers";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -17,11 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Providers>
-          <SiteHeader />
-          {children}
-          <CartDrawer />
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -1,3 +1,5 @@
+import { apiFetch } from "@/lib/api";
+
 export type CreateOrderFulfillmentType = "PICKUP" | "DELIVERY";
 
 export type CreateOrderRequest = {
@@ -40,33 +42,9 @@ export type CreateOrderResponse = {
   createdAt: string;
 };
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api";
-
-export async function createOrder(input: CreateOrderRequest) {
-  const response = await fetch(`${API_BASE_URL}/orders`, {
+export function createOrder(input: CreateOrderRequest) {
+  return apiFetch<CreateOrderResponse>("/orders", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(input),
   });
-
-  if (!response.ok) {
-    let message = "Failed to create order.";
-
-    try {
-      const error = await response.json();
-
-      if (typeof error.message === "string") {
-        message = error.message;
-      }
-    } catch {
-      // Keep fallback message.
-    }
-
-    throw new Error(message);
-  }
-
-  return response.json() as Promise<CreateOrderResponse>;
 }

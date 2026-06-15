@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 
 import type { CheckoutFieldErrors, CheckoutFormState } from "../checkout-types";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 
 type DeliveryAddressFormProps = {
   form: CheckoutFormState;
@@ -8,6 +10,17 @@ type DeliveryAddressFormProps = {
   onChange: (patch: Partial<CheckoutFormState>) => void;
   disabled: boolean;
 };
+
+const australianStates = [
+  { label: "VIC", value: "VIC" },
+  { label: "NSW", value: "NSW" },
+  { label: "QLD", value: "QLD" },
+  { label: "WA", value: "WA" },
+  { label: "SA", value: "SA" },
+  { label: "TAS", value: "TAS" },
+  { label: "ACT", value: "ACT" },
+  { label: "NT", value: "NT" },
+];
 
 export function DeliveryAddressForm({
   form,
@@ -46,13 +59,17 @@ export function DeliveryAddressForm({
             Address
           </span>
 
-          <input
+          <Input
             value={form.address}
             onChange={(event) => onChange({ address: event.target.value })}
             placeholder="Enter street address"
             autoComplete="street-address"
             aria-invalid={Boolean(errors.address)}
-            className={getInputClassName(errors.address)}
+            className={
+              errors.address
+                ? "border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:ring-[var(--color-danger)]/15"
+                : undefined
+            }
           />
 
           {errors.address ? <FieldError>{errors.address}</FieldError> : null}
@@ -64,12 +81,11 @@ export function DeliveryAddressForm({
               Apt, suite, etc. optional
             </span>
 
-            <input
+            <Input
               value={form.apartment}
               onChange={(event) => onChange({ apartment: event.target.value })}
               placeholder="Apartment, suite, unit, etc."
               autoComplete="address-line2"
-              className={getInputClassName()}
             />
           </label>
 
@@ -78,13 +94,17 @@ export function DeliveryAddressForm({
               City
             </span>
 
-            <input
+            <Input
               value={form.city}
               onChange={(event) => onChange({ city: event.target.value })}
               placeholder="Enter city"
               autoComplete="address-level2"
               aria-invalid={Boolean(errors.city)}
-              className={getInputClassName(errors.city)}
+              className={
+                errors.city
+                  ? "border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:ring-[var(--color-danger)]/15"
+                  : undefined
+              }
             />
 
             {errors.city ? <FieldError>{errors.city}</FieldError> : null}
@@ -97,14 +117,25 @@ export function DeliveryAddressForm({
               State
             </span>
 
-            <input
+            <Select
               value={form.state}
               onChange={(event) => onChange({ state: event.target.value })}
-              placeholder="Select state"
               autoComplete="address-level1"
               aria-invalid={Boolean(errors.state)}
-              className={getInputClassName(errors.state)}
-            />
+              className={
+                errors.state
+                  ? "border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:ring-[var(--color-danger)]/15"
+                  : undefined
+              }
+            >
+              <option value="">Select state</option>
+
+              {australianStates.map((state) => (
+                <option key={state.value} value={state.value}>
+                  {state.label}
+                </option>
+              ))}
+            </Select>
 
             {errors.state ? <FieldError>{errors.state}</FieldError> : null}
           </label>
@@ -114,14 +145,18 @@ export function DeliveryAddressForm({
               Postcode
             </span>
 
-            <input
+            <Input
               value={form.postcode}
               onChange={(event) => onChange({ postcode: event.target.value })}
               placeholder="Enter postcode"
               autoComplete="postal-code"
               inputMode="numeric"
               aria-invalid={Boolean(errors.postcode)}
-              className={getInputClassName(errors.postcode)}
+              className={
+                errors.postcode
+                  ? "border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:ring-[var(--color-danger)]/15"
+                  : undefined
+              }
             />
 
             {errors.postcode ? (

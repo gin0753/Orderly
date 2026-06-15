@@ -6,6 +6,7 @@ import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { formatMoneyFromCents } from "@/lib/format-money";
 
 import type { CartItem } from "../../cart-types";
+import { Card } from "@/components/ui/card";
 
 type CartItemRowProps = {
   item: CartItem;
@@ -26,7 +27,7 @@ export function CartItemRow({
     .join(" · ");
 
   return (
-    <article className="grid grid-cols-[72px_1fr] gap-4 rounded-2xl border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-3 transition hover:border-[var(--color-border)]">
+    <Card className="grid grid-cols-[72px_1fr] gap-4 border-[var(--color-border-soft)] p-3 shadow-none transition hover:border-[var(--color-border)]">
       <div className="relative h-[72px] w-[72px] overflow-hidden rounded-xl bg-[var(--color-surface-muted)]">
         {item.product.imageUrl ? (
           <Image
@@ -77,6 +78,6 @@ export function CartItemRow({
           </p>
         </div>
       </div>
-    </article>
+    </Card>
   );
 }
