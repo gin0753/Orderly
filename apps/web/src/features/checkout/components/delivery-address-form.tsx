@@ -169,15 +169,6 @@ export function DeliveryAddressForm({
   );
 }
 
-function getInputClassName(error?: string) {
-  return [
-    "h-12 rounded-xl border bg-white px-4 text-sm outline-none transition placeholder:text-[var(--color-text-disabled)] focus:ring-4 disabled:cursor-not-allowed disabled:bg-[var(--color-surface-disabled)] disabled:text-[var(--color-text-muted)]",
-    error
-      ? "border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:ring-[var(--color-danger-surface)]"
-      : "border-[var(--color-border)] focus:border-[var(--color-brand)] focus:ring-[var(--color-brand-soft)]",
-  ].join(" ");
-}
-
 function FieldError({ children }: { children: ReactNode }) {
   return (
     <span className="text-sm font-medium text-[var(--color-danger)]">

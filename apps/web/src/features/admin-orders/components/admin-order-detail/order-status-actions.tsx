@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 
-import { AdminOrderStatus } from "../types";
+import { AdminOrderStatus } from "../../types";
 
 type OrderStatusActionsProps = {
   currentStatus: AdminOrderStatus;

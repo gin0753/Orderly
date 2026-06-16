@@ -146,7 +146,11 @@ export class OrdersService {
         ...(orderType ? { orderType } : {}),
       },
       include: {
-        items: true,
+        items: {
+          include: {
+            options: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',

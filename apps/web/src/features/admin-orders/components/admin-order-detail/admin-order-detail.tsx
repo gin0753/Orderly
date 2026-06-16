@@ -2,10 +2,11 @@ import { Package, Phone, Truck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { formatMoneyFromCents } from "@/lib/format-money";
-import { AdminOrder, AdminOrderStatus } from "../types";
+import { AdminOrder, AdminOrderStatus } from "../../types";
 import { OrderStatusActions } from "./order-status-actions";
-import { OrderStatusBadge } from "./order-status-badge";
+import { OrderStatusBadge } from "../order-status-badge";
+import { AdminOrderItemsSection } from "./admin-order-items-section";
+import { AdminOrderPaymentSummary } from "./admin-order-payment-summary";
 
 type AdminOrderDetailProps = {
   order: AdminOrder | null;
@@ -103,33 +104,7 @@ export function AdminOrderDetail({
           </div>
         </section>
 
-        <section>
-          <h3 className="mb-3 text-sm font-bold">
-            Items ({order.items.length})
-          </h3>
-
-          <div className="space-y-3">
-            {order.items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-4 rounded-2xl border border-[var(--color-border)] p-3"
-              >
-                <div>
-                  <p className="font-bold">{item.name}</p>
-
-                  <p className="text-sm text-[var(--color-text-secondary)]">
-                    {item.sizeName ? `${item.sizeName} · ` : ""}
-                    Qty {item.quantity}
-                  </p>
-                </div>
-
-                <p className="font-bold">
-                  {formatMoneyFromCents(item.totalPriceCents)}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <AdminOrderItemsSection items={order.items} />
 
         <section>
           <h3 className="mb-3 text-sm font-bold">Order Notes</h3>
@@ -139,37 +114,7 @@ export function AdminOrderDetail({
           </p>
         </section>
 
-        <section>
-          <h3 className="mb-3 text-sm font-bold">Payment Summary</h3>
-
-          <div className="space-y-2 rounded-2xl border border-[var(--color-border)] p-4 text-sm">
-            <div className="flex justify-between">
-              <span className="text-[var(--color-text-secondary)]">
-                Subtotal
-              </span>
-              <span>{formatMoneyFromCents(order.subtotalCents)}</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span className="text-[var(--color-text-secondary)]">
-                Delivery fee
-              </span>
-              <span>{formatMoneyFromCents(order.deliveryFeeCents)}</span>
-            </div>
-
-            {typeof order.taxCents === "number" ? (
-              <div className="flex justify-between">
-                <span className="text-[var(--color-text-secondary)]">Tax</span>
-                <span>{formatMoneyFromCents(order.taxCents)}</span>
-              </div>
-            ) : null}
-
-            <div className="mt-3 flex justify-between border-t border-[var(--color-border)] pt-3 text-base font-bold">
-              <span>Total</span>
-              <span>{formatMoneyFromCents(order.totalCents)}</span>
-            </div>
-          </div>
-        </section>
+        <AdminOrderPaymentSummary order={order} />
 
         <OrderStatusActions
           currentStatus={order.status}

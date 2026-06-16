@@ -11,7 +11,7 @@ import {
   AdminOrderStatus,
   AdminOrderType,
 } from "../types";
-import { AdminOrderDetail } from "./admin-order-detail";
+import { AdminOrderDetail } from "./admin-order-detail/admin-order-detail";
 import { AdminOrderList } from "./admin-order-list";
 import { AdminOrdersFilters } from "./admin-orders-filters";
 import { AdminOrdersSummary } from "./admin-orders-summary";

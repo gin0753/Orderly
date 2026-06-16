@@ -12,14 +12,34 @@ export type AdminPaymentStatus = "PENDING" | "PAID" | "FAILED" | "REFUNDED";
 
 export type AdminOrderItem = {
   id: string;
+  orderId: string;
   productId?: string | null;
-  name: string;
-  imageUrl?: string | null;
+
+  productNameSnapshot: string;
+  productImageUrlSnapshot?: string | null;
+
+  sizeNameSnapshot?: string | null;
+  sizePriceCentsSnapshot?: number | null;
+
   quantity: number;
   unitPriceCents: number;
-  totalPriceCents: number;
-  sizeName?: string | null;
-  addOns?: unknown;
+  lineTotalCents: number;
+
+  options: AdminOrderItemOption[];
+
+  createdAt: string;
+};
+
+export type AdminOrderItemOption = {
+  id: string;
+  orderItemId: string;
+  optionId?: string | null;
+
+  optionGroupNameSnapshot: string;
+  optionNameSnapshot: string;
+  priceDeltaCentsSnapshot: number;
+
+  createdAt: string;
 };
 
 export type AdminOrder = {
@@ -34,6 +54,7 @@ export type AdminOrder = {
 
   subtotalCents: number;
   deliveryFeeCents: number;
+  serviceFeeCents: number;
   taxCents?: number | null;
   totalCents: number;
 

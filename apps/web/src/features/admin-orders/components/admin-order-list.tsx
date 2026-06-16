@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 import { AdminOrder } from "../types";
 import { AdminOrderCard } from "./admin-order-card";
+import { SkeletonBlock } from "@/components/ui/skeleton/skeleton-parts";
 
 type AdminOrderListProps = {
   orders: AdminOrder[];
@@ -27,14 +28,10 @@ export function AdminOrderList({
             </p>
           </div>
         </div>
-
         {isLoading ? (
           <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div
-                key={index}
-                className="h-24 animate-pulse rounded-2xl bg-[var(--color-surface-soft)]"
-              />
+            {Array.from({ length: 3 }).map((_, index) => (
+              <SkeletonBlock key={index} className="h-[104px] rounded-3xl" />
             ))}
           </div>
         ) : orders.length === 0 ? (
