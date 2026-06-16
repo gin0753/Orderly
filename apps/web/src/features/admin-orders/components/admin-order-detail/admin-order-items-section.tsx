@@ -1,5 +1,5 @@
 import { formatMoneyFromCents } from "@/lib/format-money";
-import { AdminOrderItem } from "../types";
+import { AdminOrderItem } from "../../types";
 
 type AdminOrderItemsSectionProps = {
   items: AdminOrderItem[];
