@@ -55,27 +55,21 @@ export function AdminOrdersPage() {
   }
 
   useEffect(() => {
-    let isMounted = true;
+    let ignore = false;
 
     async function loadInitialOrders() {
       try {
         const data = await getAdminOrders({});
 
-        if (!isMounted) {
-          return;
-        }
+        if (ignore) return;
 
         applyOrders(data);
       } catch {
-        if (!isMounted) {
-          return;
-        }
+        if (ignore) return;
 
         setError("Unable to load orders. Please try again.");
       } finally {
-        if (!isMounted) {
-          return;
-        }
+        if (ignore) return;
 
         setIsLoading(false);
       }
@@ -84,7 +78,7 @@ export function AdminOrdersPage() {
     void loadInitialOrders();
 
     return () => {
-      isMounted = false;
+      ignore = true;
     };
   }, [applyOrders]);
 

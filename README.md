@@ -2,7 +2,7 @@
 
 A production-grade online ordering platform built with Next.js, NestJS, PostgreSQL, Prisma and Docker.
 
-Orderly is designed as a full-stack portfolio project to demonstrate frontend architecture, backend API design, relational database modelling, cart state management, and order workflow logic.
+Orderly is designed as a full-stack portfolio project to demonstrate frontend architecture, backend API design, relational database modelling, cart state management, checkout flow, and order workflow logic.
 
 ## Tech Stack
 
@@ -14,41 +14,36 @@ Orderly is designed as a full-stack portfolio project to demonstrate frontend ar
 
 ## Core Features
 
-### Customer Menu
+### Customer Ordering
 
 - Responsive customer-facing menu page
-- Restaurant-style hero section
-- Category tabs for menu filtering
-- API-driven menu rendering from the NestJS backend
-- Product cards with image, name, description and price
+- API-driven menu rendering
 - Product detail modal with size, add-ons and quantity selection
-- Empty and error states
-
-### Cart
-
-- Add items to cart
-- Update item quantity
-- Remove items from cart
-- Cart drawer
+- Cart drawer with quantity updates and item removal
 - Header cart button with item count and subtotal
 - Mobile sticky cart bar
-- Cart subtotal calculation
 - localStorage cart persistence
+- Checkout page with fulfillment choice, customer details, delivery address and order notes
+- Order submission flow
+- Order success page
 
 ### Backend API
 
 - Health check endpoint
 - Menu endpoint backed by PostgreSQL and Prisma
+- Order creation API
+- Order listing API
+- Order detail API
+- Order status update API
 - Seeded menu data for local development
 
-### Planned Features
+### Admin
 
-- Checkout flow
-- Order submission
-- Order status tracking
-- Admin order management
-- Product and category management
-- Store availability control
+- Admin orders dashboard foundation
+- Order summary cards
+- Order list and detail panel
+- Order status badges
+- Order status update actions
 
 ## Architecture
 
@@ -80,16 +75,20 @@ orderly/
 - [x] NestJS backend foundation
 - [x] Health API
 - [x] Menu API
-- [x] Frontend menu page
+- [x] Customer menu page
 - [x] Product detail modal
 - [x] Redux Toolkit cart state
 - [x] Cart drawer
-- [x] Header cart button
-- [x] Mobile cart bar
 - [x] localStorage cart persistence
-- [ ] Checkout flow
-- [ ] Order submission API
-- [ ] Admin order management
+- [x] Checkout flow
+- [x] Order submission API
+- [x] Order success page
+- [x] Admin order API foundation
+- [x] Admin orders dashboard foundation
+- [ ] Admin filtering, search and pagination
+- [ ] Customer order status tracking
+- [ ] Admin authentication
+- [ ] Product and category management
 
 ## Local Development
 
@@ -132,26 +131,31 @@ http://localhost:4000/api
 Available endpoints:
 
 ```txt
-GET /api/health
-GET /api/menu
+GET    /api/health
+GET    /api/menu
+POST   /api/orders
+GET    /api/orders
+GET    /api/orders/:id
+PATCH  /api/orders/:id/status
 ```
 
 ## Key Engineering Decisions
 
 - Uses a separated frontend and backend architecture instead of a Next.js-only full-stack app.
-- Uses a feature-based frontend structure for menu and cart modules.
+- Uses a feature-based frontend structure for menu, cart, checkout and admin orders.
 - Uses Redux Toolkit for scalable client-side cart state management.
 - Uses localStorage persistence for cart continuity before checkout.
 - Uses PostgreSQL for relational product, option and order modelling.
 - Uses Prisma for type-safe database access and migration management.
-- Product prices will be recalculated on the backend instead of trusting client-side prices.
-- Orders will store product and price snapshots to preserve historical order accuracy.
-- Docker Compose is used to make the local database setup reproducible.
+- Recalculates order pricing on the backend instead of trusting client-side prices.
+- Stores product and price snapshots on orders to preserve historical accuracy.
+- Uses reusable UI primitives such as Button and Card to keep the design system consistent.
+- Uses Docker Compose to make local database setup reproducible.
 
 ## Next Steps
 
-- Build checkout page
-- Add customer information form
-- Add order summary
-- Implement order submission API
-- Persist submitted orders in PostgreSQL
+- Polish admin orders dashboard responsiveness and empty/loading/error states
+- Add admin order filtering, search and pagination
+- Add customer order status page
+- Add admin authentication and protected routes
+- Add product and category management
