@@ -1,128 +1,35 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  getAdminOrders,
-  updateAdminOrderStatus,
-} from "../api/admin-orders-api";
-import {
-  AdminOrder,
-  AdminOrderFilters,
-  AdminOrderStatus,
-  AdminOrderType,
-} from "../types";
+import { RefreshCw } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { useAdminOrders } from "../hooks/use-admin-orders";
 import { AdminOrderDetail } from "./admin-order-detail/admin-order-detail";
 import { AdminOrderList } from "./admin-order-list";
 import { AdminOrdersFilters } from "./admin-orders-filters";
 import { AdminOrdersSummary } from "./admin-orders-summary";
-import { Button } from "@/components/ui/button";
 
 export function AdminOrdersPage() {
-  const [orders, setOrders] = useState<AdminOrder[]>([]);
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  const [filters, setFilters] = useState<AdminOrderFilters>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const applyOrders = useCallback((data: AdminOrder[]) => {
-    setOrders(data);
-
-    setSelectedOrderId((currentSelectedId) => {
-      if (
-        currentSelectedId &&
-        data.some((order) => order.id === currentSelectedId)
-      ) {
-        return currentSelectedId;
-      }
-
-      return data[0]?.id ?? null;
-    });
-  }, []);
-
-  async function reloadOrders(nextFilters: AdminOrderFilters) {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const data = await getAdminOrders(nextFilters);
-      applyOrders(data);
-    } catch {
-      setError("Unable to load orders. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadInitialOrders() {
-      try {
-        const data = await getAdminOrders({});
-
-        if (ignore) return;
-
-        applyOrders(data);
-      } catch {
-        if (ignore) return;
-
-        setError("Unable to load orders. Please try again.");
-      } finally {
-        if (ignore) return;
-
-        setIsLoading(false);
-      }
-    }
-
-    void loadInitialOrders();
-
-    return () => {
-      ignore = true;
-    };
-  }, [applyOrders]);
-
-  const selectedOrder = useMemo(() => {
-    return orders.find((order) => order.id === selectedOrderId) ?? null;
-  }, [orders, selectedOrderId]);
-
-  async function handleOrderTypeChange(orderType?: AdminOrderType) {
-    const nextFilters = {
-      ...filters,
-      orderType,
-    };
-
-    setFilters(nextFilters);
-    await reloadOrders(nextFilters);
-  }
-
-  async function handleStatusChange(status?: AdminOrderStatus) {
-    const nextFilters = {
-      ...filters,
-      status,
-    };
-
-    setFilters(nextFilters);
-    await reloadOrders(nextFilters);
-  }
-
-  async function handleUpdateStatus(orderId: string, status: AdminOrderStatus) {
-    try {
-      setIsUpdatingStatus(true);
-
-      const updatedOrder = await updateAdminOrderStatus(orderId, status);
-
-      setOrders((currentOrders) =>
-        currentOrders.map((order) =>
-          order.id === updatedOrder.id ? updatedOrder : order,
-        ),
-      );
-
-      setSelectedOrderId(updatedOrder.id);
-    } finally {
-      setIsUpdatingStatus(false);
-    }
-  }
+  const {
+    allOrders,
+    visibleOrders,
+    selectedOrder,
+    selectedOrderId,
+    filters,
+    searchTerm,
+    isInitialLoading,
+    isRefreshing,
+    isUpdatingStatus,
+    error,
+    shouldShowFullPageError,
+    setSelectedOrderId,
+    setSearchTerm,
+    reloadOrders,
+    handleOrderTypeChange,
+    handleStatusChange,
+    handleClearFilters,
+    handleUpdateStatus,
+  } = useAdminOrders();
 
   return (
     <main className="min-h-screen bg-[var(--color-background)] text-[var(--color-text-primary)]">
@@ -138,20 +45,40 @@ export function AdminOrdersPage() {
             </p>
           </div>
 
-          <Button variant="secondary" size="md" className="w-fit">
-            Export
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              onClick={reloadOrders}
+              disabled={isRefreshing}
+            >
+              <RefreshCw
+                className={isRefreshing ? "size-4 animate-spin" : "size-4"}
+              />
+              Refresh
+            </Button>
+
+            <Button type="button" variant="secondary" size="md" disabled>
+              Export
+            </Button>
+          </div>
         </section>
 
-        <AdminOrdersSummary orders={orders} />
+        <AdminOrdersSummary orders={allOrders} />
 
         <AdminOrdersFilters
           filters={filters}
+          searchTerm={searchTerm}
+          visibleOrderCount={visibleOrders.length}
+          totalOrderCount={allOrders.length}
+          onSearchTermChange={setSearchTerm}
           onOrderTypeChange={handleOrderTypeChange}
           onStatusChange={handleStatusChange}
+          onClearFilters={handleClearFilters}
         />
 
-        {error ? (
+        {shouldShowFullPageError ? (
           <div className="rounded-3xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-6">
             <p className="text-sm font-bold text-[var(--color-danger-strong)]">
               {error}
@@ -159,27 +86,50 @@ export function AdminOrdersPage() {
 
             <Button
               type="button"
-              onClick={() => reloadOrders(filters)}
-              className="mt-4 bg-[var(--color-danger-strong)] text-[var(--color-text-inverse)] hover:opacity-90"
+              variant="danger"
+              onClick={reloadOrders}
+              className="mt-4"
             >
               Try again
             </Button>
           </div>
         ) : (
-          <section className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.85fr)]">
-            <AdminOrderList
-              orders={orders}
-              selectedOrderId={selectedOrderId}
-              isLoading={isLoading}
-              onSelectOrder={setSelectedOrderId}
-            />
+          <>
+            {error ? (
+              <div className="mb-5 flex flex-col gap-3 rounded-3xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-4 md:flex-row md:items-center md:justify-between">
+                <p className="text-sm font-bold text-[var(--color-danger-strong)]">
+                  {error}
+                </p>
 
-            <AdminOrderDetail
-              order={selectedOrder}
-              isUpdatingStatus={isUpdatingStatus}
-              onUpdateStatus={handleUpdateStatus}
-            />
-          </section>
+                <Button
+                  type="button"
+                  variant="danger"
+                  size="sm"
+                  onClick={reloadOrders}
+                  className="w-fit"
+                >
+                  Try again
+                </Button>
+              </div>
+            ) : null}
+
+            <section className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.85fr)]">
+              <AdminOrderList
+                orders={visibleOrders}
+                totalOrders={allOrders.length}
+                selectedOrderId={selectedOrderId}
+                isLoading={isInitialLoading}
+                isRefreshing={isRefreshing}
+                onSelectOrder={setSelectedOrderId}
+              />
+
+              <AdminOrderDetail
+                order={selectedOrder}
+                isUpdatingStatus={isUpdatingStatus}
+                onUpdateStatus={handleUpdateStatus}
+              />
+            </section>
+          </>
         )}
       </div>
     </main>
