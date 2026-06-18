@@ -34,7 +34,9 @@ function getSearchableOrderText(order: AdminOrder) {
 
 export function useAdminOrders() {
   const [allOrders, setAllOrders] = useState<AdminOrder[]>([]);
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<
+    string | null | undefined
+  >(undefined);
   const [filters, setFilters] = useState<AdminOrderFilters>({});
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -60,8 +62,41 @@ export function useAdminOrders() {
   }, []);
 
   useEffect(() => {
-    void reloadOrders();
-  }, [reloadOrders]);
+    let ignore = false;
+
+    async function loadInitialOrders() {
+      try {
+        const data = await getAdminOrders();
+
+        if (ignore) {
+          return;
+        }
+
+        setAllOrders(data);
+        setError(null);
+      } catch {
+        if (ignore) {
+          return;
+        }
+
+        setError(
+          "Unable to load orders. Please check the API server and try again.",
+        );
+      } finally {
+        if (ignore) {
+          return;
+        }
+
+        setIsInitialLoading(false);
+      }
+    }
+
+    void loadInitialOrders();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const visibleOrders = useMemo(() => {
     const normalizedSearchTerm = searchTerm.trim().toLowerCase();
@@ -83,22 +118,25 @@ export function useAdminOrders() {
     });
   }, [allOrders, filters, searchTerm]);
 
-  useEffect(() => {
-    setSelectedOrderId((currentSelectedId) => {
-      if (
-        currentSelectedId &&
-        visibleOrders.some((order) => order.id === currentSelectedId)
-      ) {
-        return currentSelectedId;
-      }
-
-      return visibleOrders[0]?.id ?? null;
-    });
-  }, [visibleOrders]);
-
   const selectedOrder = useMemo(() => {
-    return visibleOrders.find((order) => order.id === selectedOrderId) ?? null;
-  }, [visibleOrders, selectedOrderId]);
+    if (selectedOrderId === null) {
+      return null;
+    }
+
+    if (selectedOrderId) {
+      const selectedOrder = visibleOrders.find(
+        (order) => order.id === selectedOrderId,
+      );
+
+      if (selectedOrder) {
+        return selectedOrder;
+      }
+    }
+
+    return visibleOrders[0] ?? null;
+  }, [selectedOrderId, visibleOrders]);
+
+  const activeSelectedOrderId = selectedOrder?.id ?? null;
 
   function handleOrderTypeChange(orderType?: AdminOrderType) {
     setFilters((currentFilters) => ({
@@ -145,7 +183,7 @@ export function useAdminOrders() {
     allOrders,
     visibleOrders,
     selectedOrder,
-    selectedOrderId,
+    selectedOrderId: activeSelectedOrderId,
     filters,
     searchTerm,
     isInitialLoading,
