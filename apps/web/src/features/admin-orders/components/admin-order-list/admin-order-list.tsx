@@ -1,8 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { SkeletonBlock } from "@/components/ui/skeleton/skeleton-parts";
 
-import { AdminOrder } from "../types";
+import { AdminOrder } from "../../types";
 import { AdminOrderCard } from "./admin-order-card";
+import { AdminOrderListSkeleton } from "./admin-order-list-skeleton";
+import { AdminOrdersEmptyState } from "../feedback/admin-orders-empty-state";
 
 type AdminOrderListProps = {
   orders: AdminOrder[];
@@ -10,7 +11,9 @@ type AdminOrderListProps = {
   selectedOrderId: string | null;
   isLoading: boolean;
   isRefreshing: boolean;
+  isFiltered: boolean;
   onSelectOrder: (orderId: string) => void;
+  onClearFilters: () => void;
 };
 
 export function AdminOrderList({
@@ -19,7 +22,9 @@ export function AdminOrderList({
   selectedOrderId,
   isLoading,
   isRefreshing,
+  isFiltered,
   onSelectOrder,
+  onClearFilters,
 }: AdminOrderListProps) {
   const orderCountLabel =
     orders.length === totalOrders
@@ -33,29 +38,27 @@ export function AdminOrderList({
           <div>
             <h2 className="text-lg font-bold">Order List</h2>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              {orderCountLabel}
+              {isLoading ? "Loading orders..." : orderCountLabel}
             </p>
           </div>
+
           {isRefreshing && !isLoading ? (
-            <span className="rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)]">
+            <span
+              aria-live="polite"
+              className="rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)]"
+            >
               Refreshing...
             </span>
           ) : null}
         </div>
 
         {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <SkeletonBlock key={index} className="h-[104px] rounded-3xl" />
-            ))}
-          </div>
+          <AdminOrderListSkeleton />
         ) : orders.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--color-border)] p-8 text-center">
-            <p className="font-semibold">No orders found</p>
-            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-              Try changing your search or filters.
-            </p>
-          </div>
+          <AdminOrdersEmptyState
+            isFiltered={isFiltered}
+            onClearFilters={onClearFilters}
+          />
         ) : (
           <div className="space-y-3 lg:max-h-[650px] lg:overflow-y-auto lg:pr-1">
             {orders.map((order) => (

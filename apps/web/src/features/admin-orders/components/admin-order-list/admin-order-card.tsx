@@ -1,8 +1,8 @@
 import { ChevronRight, Package, Truck } from "lucide-react";
 
 import { formatMoneyFromCents } from "@/lib/format-money";
-import { AdminOrder } from "../types";
-import { OrderStatusBadge } from "./order-status-badge";
+import { AdminOrder } from "../../types";
+import { OrderStatusBadge } from "../order-status-badge";
 
 type AdminOrderCardProps = {
   order: AdminOrder;
