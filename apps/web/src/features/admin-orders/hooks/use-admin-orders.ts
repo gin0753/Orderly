@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   getAdminOrders,
@@ -9,73 +9,94 @@ import {
 import {
   AdminOrder,
   AdminOrderFilters,
+  AdminOrdersMeta,
+  AdminOrdersSummary,
   AdminOrderStatus,
   AdminOrderType,
 } from "../types";
 
-function getSearchableOrderText(order: AdminOrder) {
-  return [
-    order.id,
-    order.customerName,
-    order.customerPhone,
-    order.customerEmail,
-    order.orderType,
-    order.status,
-    order.deliveryAddress,
-    order.deliverySuburb,
-    order.deliveryPostcode,
-    order.notes,
-    ...order.items.map((item) => item.productNameSnapshot),
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-}
+const DEFAULT_PAGE_SIZE = 10;
+
+const initialSummary: AdminOrdersSummary = {
+  total: 0,
+  pending: 0,
+  preparing: 0,
+  ready: 0,
+  completed: 0,
+  cancelled: 0,
+};
+
+const initialMeta: AdminOrdersMeta = {
+  page: 1,
+  pageSize: DEFAULT_PAGE_SIZE,
+  total: 0,
+  totalPages: 1,
+  hasNextPage: false,
+  hasPreviousPage: false,
+};
+
+type LoadMode = "initial" | "query" | "refresh" | "silent";
 
 export function useAdminOrders() {
-  const [allOrders, setAllOrders] = useState<AdminOrder[]>([]);
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [summary, setSummary] = useState<AdminOrdersSummary>(initialSummary);
+  const [meta, setMeta] = useState<AdminOrdersMeta>(initialMeta);
+
   const [selectedOrderId, setSelectedOrderId] = useState<
     string | null | undefined
   >(undefined);
+
   const [filters, setFilters] = useState<AdminOrderFilters>({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
-  const reloadOrders = useCallback(async () => {
-    try {
-      setError(null);
-      setIsRefreshing(true);
+  const requestIdRef = useRef(0);
+  const hasCompletedInitialLoadRef = useRef(false);
+  const hasLoadedSuccessfullyRef = useRef(false);
 
-      const data = await getAdminOrders({});
-      setAllOrders(data);
-    } catch {
-      setError("Unable to load orders. Please try again.");
-    } finally {
-      setIsInitialLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
+  const loadOrders = useCallback(
+    async (mode: LoadMode = "query") => {
+      const requestId = ++requestIdRef.current;
+      const isInitialRequest = mode === "initial";
+      const isRefreshRequest = mode === "refresh";
+      const shouldShowListSkeleton = mode === "initial" || mode === "query";
 
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadInitialOrders() {
       try {
-        const data = await getAdminOrders();
+        if (shouldShowListSkeleton) {
+          setIsLoadingOrders(true);
+        }
 
-        if (ignore) {
+        if (isRefreshRequest) {
+          setIsRefreshing(true);
+        }
+
+        setError(null);
+
+        const response = await getAdminOrders({
+          ...filters,
+          search: debouncedSearchTerm || undefined,
+          page: meta.page,
+          pageSize: meta.pageSize,
+        });
+
+        if (requestId !== requestIdRef.current) {
           return;
         }
 
-        setAllOrders(data);
-        setError(null);
+        setOrders(response.data);
+        setSummary(response.summary);
+        setMeta(response.meta);
+
+        hasLoadedSuccessfullyRef.current = true;
       } catch {
-        if (ignore) {
+        if (requestId !== requestIdRef.current) {
           return;
         }
 
@@ -83,40 +104,53 @@ export function useAdminOrders() {
           "Unable to load orders. Please check the API server and try again.",
         );
       } finally {
-        if (ignore) {
+        if (requestId !== requestIdRef.current) {
           return;
         }
 
-        setIsInitialLoading(false);
-      }
-    }
+        if (shouldShowListSkeleton) {
+          setIsLoadingOrders(false);
+        }
 
-    void loadInitialOrders();
+        if (isRefreshRequest) {
+          setIsRefreshing(false);
+        }
+
+        if (isInitialRequest || !hasCompletedInitialLoadRef.current) {
+          hasCompletedInitialLoadRef.current = true;
+          setIsInitialLoading(false);
+        }
+      }
+    },
+    [debouncedSearchTerm, filters, meta.page, meta.pageSize],
+  );
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      const nextSearchTerm = searchTerm.trim();
+
+      setDebouncedSearchTerm(nextSearchTerm);
+
+      setMeta((currentMeta) =>
+        currentMeta.page === 1
+          ? currentMeta
+          : {
+              ...currentMeta,
+              page: 1,
+            },
+      );
+    }, 300);
 
     return () => {
-      ignore = true;
+      window.clearTimeout(timeoutId);
     };
-  }, []);
+  }, [searchTerm]);
 
-  const visibleOrders = useMemo(() => {
-    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  useEffect(() => {
+    const loadMode = hasCompletedInitialLoadRef.current ? "query" : "initial";
 
-    return allOrders.filter((order) => {
-      const matchesOrderType = filters.orderType
-        ? order.orderType === filters.orderType
-        : true;
-
-      const matchesStatus = filters.status
-        ? order.status === filters.status
-        : true;
-
-      const matchesSearch = normalizedSearchTerm
-        ? getSearchableOrderText(order).includes(normalizedSearchTerm)
-        : true;
-
-      return matchesOrderType && matchesStatus && matchesSearch;
-    });
-  }, [allOrders, filters, searchTerm]);
+    void loadOrders(loadMode);
+  }, [loadOrders]);
 
   const selectedOrder = useMemo(() => {
     if (selectedOrderId === null) {
@@ -124,24 +158,31 @@ export function useAdminOrders() {
     }
 
     if (selectedOrderId) {
-      const selectedOrder = visibleOrders.find(
-        (order) => order.id === selectedOrderId,
-      );
+      const selected = orders.find((order) => order.id === selectedOrderId);
 
-      if (selectedOrder) {
-        return selectedOrder;
+      if (selected) {
+        return selected;
       }
     }
 
-    return visibleOrders[0] ?? null;
-  }, [selectedOrderId, visibleOrders]);
+    return orders[0] ?? null;
+  }, [orders, selectedOrderId]);
 
   const activeSelectedOrderId = selectedOrder?.id ?? null;
+
+  const reloadOrders = useCallback(async () => {
+    await loadOrders("refresh");
+  }, [loadOrders]);
 
   function handleOrderTypeChange(orderType?: AdminOrderType) {
     setFilters((currentFilters) => ({
       ...currentFilters,
       orderType,
+    }));
+
+    setMeta((currentMeta) => ({
+      ...currentMeta,
+      page: 1,
     }));
   }
 
@@ -150,11 +191,37 @@ export function useAdminOrders() {
       ...currentFilters,
       status,
     }));
+
+    setMeta((currentMeta) => ({
+      ...currentMeta,
+      page: 1,
+    }));
   }
 
   function handleClearFilters() {
     setFilters({});
     setSearchTerm("");
+    setDebouncedSearchTerm("");
+
+    setMeta((currentMeta) => ({
+      ...currentMeta,
+      page: 1,
+    }));
+  }
+
+  function handlePageChange(page: number) {
+    setMeta((currentMeta) => ({
+      ...currentMeta,
+      page,
+    }));
+  }
+
+  function handlePageSizeChange(pageSize: number) {
+    setMeta((currentMeta) => ({
+      ...currentMeta,
+      page: 1,
+      pageSize,
+    }));
   }
 
   async function handleUpdateStatus(orderId: string, status: AdminOrderStatus) {
@@ -162,13 +229,9 @@ export function useAdminOrders() {
       setIsUpdatingStatus(true);
       setError(null);
 
-      const updatedOrder = await updateAdminOrderStatus(orderId, status);
+      await updateAdminOrderStatus(orderId, status);
 
-      setAllOrders((currentOrders) =>
-        currentOrders.map((order) =>
-          order.id === updatedOrder.id ? updatedOrder : order,
-        ),
-      );
+      await loadOrders("silent");
     } catch {
       setError("Unable to update order status. Please try again.");
     } finally {
@@ -177,16 +240,17 @@ export function useAdminOrders() {
   }
 
   const shouldShowFullPageError =
-    Boolean(error) && allOrders.length === 0 && !isInitialLoading;
+    Boolean(error) && !hasLoadedSuccessfullyRef.current && !isInitialLoading;
 
   return {
-    allOrders,
-    visibleOrders,
+    orders,
+    summary,
+    meta,
     selectedOrder,
     selectedOrderId: activeSelectedOrderId,
     filters,
     searchTerm,
-    isInitialLoading,
+    isLoadingOrders,
     isRefreshing,
     isUpdatingStatus,
     error,
@@ -197,6 +261,8 @@ export function useAdminOrders() {
     handleOrderTypeChange,
     handleStatusChange,
     handleClearFilters,
+    handlePageChange,
+    handlePageSizeChange,
     handleUpdateStatus,
   };
 }

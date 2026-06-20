@@ -1,15 +1,33 @@
-import { apiFetch } from "@/lib/api";
-import { AdminOrder, AdminOrderFilters, AdminOrderStatus } from "../types";
+import { apiFetch } from "@/lib/api-fetch";
 
-function buildOrdersQuery(filters: AdminOrderFilters) {
+import {
+  AdminOrder,
+  AdminOrdersQuery,
+  AdminOrdersResponse,
+  AdminOrderStatus,
+} from "../types";
+
+function buildOrdersQuery(query: AdminOrdersQuery) {
   const params = new URLSearchParams();
 
-  if (filters.orderType) {
-    params.set("orderType", filters.orderType);
+  if (query.orderType) {
+    params.set("orderType", query.orderType);
   }
 
-  if (filters.status) {
-    params.set("status", filters.status);
+  if (query.status) {
+    params.set("status", query.status);
+  }
+
+  if (query.search?.trim()) {
+    params.set("search", query.search.trim());
+  }
+
+  if (query.page) {
+    params.set("page", String(query.page));
+  }
+
+  if (query.pageSize) {
+    params.set("pageSize", String(query.pageSize));
   }
 
   const queryString = params.toString();
@@ -17,8 +35,8 @@ function buildOrdersQuery(filters: AdminOrderFilters) {
   return queryString ? `/orders?${queryString}` : "/orders";
 }
 
-export function getAdminOrders(filters: AdminOrderFilters = {}) {
-  return apiFetch<AdminOrder[]>(buildOrdersQuery(filters));
+export function getAdminOrders(query: AdminOrdersQuery = {}) {
+  return apiFetch<AdminOrdersResponse>(buildOrdersQuery(query));
 }
 
 export function updateAdminOrderStatus(

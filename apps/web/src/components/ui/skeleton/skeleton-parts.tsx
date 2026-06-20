@@ -61,22 +61,3 @@ export function SkeletonCard({
     </div>
   );
 }
-
-export function CheckoutSkeletonCard({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <section
-      className={cn(
-        "rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-sm",
-        className,
-      )}
-    >
-      {children}
-    </section>
-  );
-}

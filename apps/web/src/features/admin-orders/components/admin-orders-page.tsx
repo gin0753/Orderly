@@ -16,13 +16,14 @@ import {
 
 export function AdminOrdersPage() {
   const {
-    allOrders,
-    visibleOrders,
+    orders,
+    summary,
+    meta,
     selectedOrder,
     selectedOrderId,
     filters,
     searchTerm,
-    isInitialLoading,
+    isLoadingOrders,
     isRefreshing,
     isUpdatingStatus,
     error,
@@ -34,10 +35,11 @@ export function AdminOrdersPage() {
     handleStatusChange,
     handleClearFilters,
     handleUpdateStatus,
+    handlePageChange,
+    handlePageSizeChange,
   } = useAdminOrders();
 
-  const isLoading = isInitialLoading;
-  const isRetrying = isLoading || isRefreshing;
+  const isRetrying = isLoadingOrders || isRefreshing;
 
   const isFiltered =
     Boolean(filters.orderType) ||
@@ -85,13 +87,13 @@ export function AdminOrdersPage() {
           />
         ) : (
           <>
-            <AdminOrdersSummary orders={allOrders} />
+            <AdminOrdersSummary summary={summary} />
 
             <AdminOrdersFilters
               filters={filters}
               searchTerm={searchTerm}
-              visibleOrderCount={visibleOrders.length}
-              totalOrderCount={allOrders.length}
+              visibleOrderCount={meta.total}
+              totalOrderCount={summary.total}
               onSearchTermChange={setSearchTerm}
               onOrderTypeChange={handleOrderTypeChange}
               onStatusChange={handleStatusChange}
@@ -108,19 +110,20 @@ export function AdminOrdersPage() {
 
             <section className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.85fr)]">
               <AdminOrderList
-                orders={visibleOrders}
-                totalOrders={allOrders.length}
+                orders={orders}
+                meta={meta}
                 selectedOrderId={selectedOrderId}
-                isLoading={isLoading}
-                isRefreshing={isRefreshing}
+                isLoading={isLoadingOrders}
                 isFiltered={isFiltered}
                 onSelectOrder={setSelectedOrderId}
                 onClearFilters={handleClearFilters}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
               />
 
               <AdminOrderDetail
                 order={selectedOrder}
-                isLoading={isLoading}
+                isLoading={isLoadingOrders}
                 isUpdatingStatus={isUpdatingStatus}
                 onUpdateStatus={handleUpdateStatus}
                 onClose={() => setSelectedOrderId(null)}

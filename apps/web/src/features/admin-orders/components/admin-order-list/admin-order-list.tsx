@@ -1,35 +1,37 @@
 import { Card, CardContent } from "@/components/ui/card";
 
-import { AdminOrder } from "../../types";
+import { AdminOrder, AdminOrdersMeta } from "../../types";
 import { AdminOrderCard } from "./admin-order-card";
 import { AdminOrderListSkeleton } from "./admin-order-list-skeleton";
 import { AdminOrdersEmptyState } from "../feedback/admin-orders-empty-state";
+import { AdminOrdersPagination } from "../admin-orders-pagination";
 
 type AdminOrderListProps = {
   orders: AdminOrder[];
-  totalOrders: number;
+  meta: AdminOrdersMeta;
   selectedOrderId: string | null;
   isLoading: boolean;
-  isRefreshing: boolean;
   isFiltered: boolean;
   onSelectOrder: (orderId: string) => void;
   onClearFilters: () => void;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
 export function AdminOrderList({
   orders,
-  totalOrders,
+  meta,
   selectedOrderId,
   isLoading,
-  isRefreshing,
   isFiltered,
   onSelectOrder,
   onClearFilters,
+  onPageChange,
+  onPageSizeChange,
 }: AdminOrderListProps) {
-  const orderCountLabel =
-    orders.length === totalOrders
-      ? `${orders.length} orders`
-      : `${orders.length} of ${totalOrders} orders`;
+  const orderCountLabel = isLoading
+    ? "Loading orders..."
+    : `${orders.length} of ${meta.total} orders`;
 
   return (
     <Card className="rounded-[2rem]">
@@ -38,18 +40,9 @@ export function AdminOrderList({
           <div>
             <h2 className="text-lg font-bold">Order List</h2>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              {isLoading ? "Loading orders..." : orderCountLabel}
+              {orderCountLabel}
             </p>
           </div>
-
-          {isRefreshing && !isLoading ? (
-            <span
-              aria-live="polite"
-              className="rounded-full bg-[var(--color-surface-soft)] px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)]"
-            >
-              Refreshing...
-            </span>
-          ) : null}
         </div>
 
         {isLoading ? (
@@ -71,6 +64,14 @@ export function AdminOrderList({
             ))}
           </div>
         )}
+
+        {!isLoading && orders.length > 0 ? (
+          <AdminOrdersPagination
+            meta={meta}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+          />
+        ) : null}
       </CardContent>
     </Card>
   );

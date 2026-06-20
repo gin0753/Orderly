@@ -2,8 +2,27 @@ import {
   SkeletonLine,
   SkeletonCircle,
   SkeletonBlock,
-  CheckoutSkeletonCard,
 } from "@/components/ui/skeleton/skeleton-parts";
+import { cn } from "@/lib/cn";
+
+export function CheckoutSkeletonCard({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={cn(
+        "rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-sm",
+        className,
+      )}
+    >
+      {children}
+    </section>
+  );
+}
 
 export function CheckoutSkeleton() {
   return (

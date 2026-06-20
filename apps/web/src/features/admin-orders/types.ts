@@ -73,3 +73,33 @@ export type AdminOrderFilters = {
   orderType?: AdminOrderType;
   status?: AdminOrderStatus;
 };
+
+export type AdminOrdersSummary = {
+  total: number;
+  pending: number;
+  preparing: number;
+  ready: number;
+  completed: number;
+  cancelled: number;
+};
+
+export type AdminOrdersMeta = {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+};
+
+export type AdminOrdersResponse = {
+  data: AdminOrder[];
+  meta: AdminOrdersMeta;
+  summary: AdminOrdersSummary;
+};
+
+export type AdminOrdersQuery = AdminOrderFilters & {
+  search?: string;
+  page?: number;
+  pageSize?: number;
+};
