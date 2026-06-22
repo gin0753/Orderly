@@ -1,3 +1,4 @@
+import { Textarea } from "@/components/ui/textarea";
 import type { CheckoutFormState } from "../checkout-types";
 
 type OrderNotesFieldProps = {
@@ -25,12 +26,12 @@ export function OrderNotesField({ form, onChange }: OrderNotesFieldProps) {
       </div>
 
       <label className="mt-5 block">
-        <textarea
+        <Textarea
           value={value}
           maxLength={MAX_NOTES_LENGTH}
           onChange={(event) => onChange({ orderNotes: event.target.value })}
           placeholder="e.g. No onions, extra sauce on the side"
-          className="min-h-32 w-full resize-none rounded-xl border border-[var(--color-border)] bg-white p-4 text-sm outline-none transition placeholder:text-[var(--color-text-disabled)] focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand-soft)]"
+          className="min-h-32 p-4"
         />
 
         <span className="mt-2 block text-right text-xs text-[var(--color-text-muted)]">

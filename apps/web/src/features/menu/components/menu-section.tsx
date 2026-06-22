@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { MenuProduct } from "../types";
 
 import { ProductCard } from "./product-card";
@@ -34,12 +35,13 @@ export function MenuSection({
           ) : null}
         </div>
 
-        <button
+        <Button
           type="button"
-          className="cursor-pointer text-sm font-semibold text-[var(--color-brand-text)] transition hover:text-[var(--color-brand-text-hover)]"
+          onClick={() => {}}
+          className="h-auto rounded-none bg-transparent p-0 text-sm font-semibold text-[var(--color-brand-text)] shadow-none transition hover:bg-transparent hover:text-[var(--color-brand-text-hover)]"
         >
           See all
-        </button>
+        </Button>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

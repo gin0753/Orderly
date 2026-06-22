@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-
 import {
   openCart,
   selectCartItemCount,
@@ -9,6 +7,16 @@ import {
 } from "@/features/cart/cart-slice";
 import { formatMoneyFromCents } from "@/lib/format-money";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { AppHeaderShell } from "./app-header-shell";
+import { Button } from "../ui/button";
+
+const navLinks = [
+  { label: "Menu", href: "/" },
+  { label: "Deals", href: "/deals" },
+  { label: "Orders", href: "/orders" },
+  { label: "Catering", href: "/catering" },
+  { label: "About", href: "/about" },
+];
 
 export function SiteHeader() {
   const dispatch = useAppDispatch();
@@ -17,49 +25,14 @@ export function SiteHeader() {
   const cartSubtotalCents = useAppSelector(selectCartSubtotalCents);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-surface-glass)] backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight text-[var(--color-text-primary)]">
-            Orderly
-          </span>
-          <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-brand)]" />
-        </Link>
-
-        <nav className="hidden items-center gap-8 text-sm font-medium text-[var(--color-text-secondary)] md:flex">
-          <Link href="/" className="text-[var(--color-text-primary)]">
-            Menu
-          </Link>
-          <Link
-            href="/"
-            className="transition hover:text-[var(--color-text-primary)]"
-          >
-            Deals
-          </Link>
-          <Link
-            href="/"
-            className="transition hover:text-[var(--color-text-primary)]"
-          >
-            Orders
-          </Link>
-          <Link
-            href="/"
-            className="transition hover:text-[var(--color-text-primary)]"
-          >
-            Catering
-          </Link>
-          <Link
-            href="/"
-            className="transition hover:text-[var(--color-text-primary)]"
-          >
-            About
-          </Link>
-        </nav>
-
-        <button
+    <AppHeaderShell
+      logoHref="/"
+      navLinks={navLinks}
+      rightSlot={
+        <Button
           type="button"
           onClick={() => dispatch(openCart())}
-          className="cursor-pointer relative flex items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)] shadow-sm transition hover:border-neutral-300 hover:bg-[var(--color-surface-hover)]"
+          className="relative flex cursor-pointer items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)] shadow-sm transition hover:border-neutral-300 hover:bg-[var(--color-surface-muted)]"
           aria-label="Open cart"
         >
           <span className="relative flex h-5 w-5 items-center justify-center">
@@ -97,8 +70,8 @@ export function SiteHeader() {
               ? formatMoneyFromCents(cartSubtotalCents)
               : "Cart"}
           </span>
-        </button>
-      </div>
-    </header>
+        </Button>
+      }
+    />
   );
 }

@@ -1,11 +1,18 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { OrderType } from '@prisma/client';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { OrderStatus, OrderType, Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   CreateOrderDto,
   CreateOrderFulfillmentType,
 } from './dto/create-order.dto';
+import { ListOrdersQueryDto } from './dto/list-orders-query.dto';
+import { PerformOrderActionDto } from './dto/perform-order-action.dto';
+import { resolveOrderAction } from './order-action';
 
 const DELIVERY_FEE_CENTS = 399;
 const SERVICE_FEE_CENTS = 120;
@@ -129,5 +136,172 @@ export class OrdersService {
     }
 
     return DELIVERY_FEE_CENTS;
+  }
+
+  async findAll(query: ListOrdersQueryDto) {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const skip = (page - 1) * pageSize;
+
+    const search = query.search?.trim();
+
+    const searchConditions: Prisma.OrderWhereInput[] = search
+      ? [
+          {
+            customerName: {
+              contains: search,
+              mode: Prisma.QueryMode.insensitive,
+            },
+          },
+          {
+            customerPhone: {
+              contains: search,
+              mode: Prisma.QueryMode.insensitive,
+            },
+          },
+          {
+            customerEmail: {
+              contains: search,
+              mode: Prisma.QueryMode.insensitive,
+            },
+          },
+          {
+            notes: {
+              contains: search,
+              mode: Prisma.QueryMode.insensitive,
+            },
+          },
+          {
+            items: {
+              some: {
+                productNameSnapshot: {
+                  contains: search,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+            },
+          },
+        ]
+      : [];
+
+    const where: Prisma.OrderWhereInput = {
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.orderType ? { orderType: query.orderType } : {}),
+      ...(searchConditions.length > 0 ? { OR: searchConditions } : {}),
+    };
+
+    const [orders, total] = await this.prisma.$transaction([
+      this.prisma.order.findMany({
+        where,
+        include: {
+          items: {
+            include: {
+              options: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip,
+        take: pageSize,
+      }),
+
+      this.prisma.order.count({
+        where,
+      }),
+    ]);
+
+    const summary = await this.getOrdersSummary();
+
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+    return {
+      data: orders,
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+      summary,
+    };
+  }
+
+  private async getOrdersSummary() {
+    const [total, pending, accepted, preparing, ready, completed, cancelled] =
+      await Promise.all([
+        this.prisma.order.count(),
+        this.prisma.order.count({ where: { status: OrderStatus.PENDING } }),
+        this.prisma.order.count({ where: { status: OrderStatus.ACCEPTED } }),
+        this.prisma.order.count({ where: { status: OrderStatus.PREPARING } }),
+        this.prisma.order.count({ where: { status: OrderStatus.READY } }),
+        this.prisma.order.count({ where: { status: OrderStatus.COMPLETED } }),
+        this.prisma.order.count({ where: { status: OrderStatus.CANCELLED } }),
+      ]);
+
+    return {
+      total,
+      pending,
+      accepted,
+      preparing,
+      ready,
+      completed,
+      cancelled,
+    };
+  }
+
+  async findOne(id: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            options: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${id} was not found`);
+    }
+
+    return order;
+  }
+
+  async performAction(
+    id: string,
+    performOrderActionDto: PerformOrderActionDto,
+  ) {
+    const existingOrder = await this.findOne(id);
+
+    const nextStatus = resolveOrderAction(
+      existingOrder.status,
+      performOrderActionDto.action,
+    );
+
+    if (!nextStatus) {
+      throw new BadRequestException(
+        `Cannot perform ${performOrderActionDto.action} while order is ${existingOrder.status}.`,
+      );
+    }
+
+    // Repeated requests do not cause a duplicate database update.
+    if (existingOrder.status === nextStatus) {
+      return existingOrder;
+    }
+
+    return this.prisma.order.update({
+      where: { id },
+      data: {
+        status: nextStatus,
+      },
+      include: {
+        items: true,
+      },
+    });
   }
 }

@@ -11,6 +11,7 @@ import {
   SERVICE_FEE_CENTS,
 } from "../checkout-utils";
 import type { FulfillmentType } from "../checkout-types";
+import { Button } from "@/components/ui/button";
 
 type CheckoutOrderSummaryProps = {
   items: CartItem[];
@@ -181,14 +182,14 @@ export function CheckoutOrderSummary({
         </div>
       ) : null}
 
-      <button
+      <Button
         type="button"
         disabled={disabled}
         onClick={onSubmit}
-        className="mt-6 h-13 w-full rounded-2xl bg-[var(--color-brand)] px-5 text-sm font-semibold text-white transition hover:bg-[var(--color-brand-hover)] disabled:cursor-not-allowed disabled:bg-[var(--color-surface-disabled)] disabled:text-[var(--color-text-disabled)]"
+        className="mt-6 h-[52px] w-full rounded-2xl bg-[var(--color-brand)] px-5 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)] disabled:cursor-not-allowed disabled:bg-[var(--color-surface-disabled)] disabled:text-[var(--color-text-disabled)]"
       >
         {onSubmitLabel}
-      </button>
+      </Button>
 
       <p className="mt-4 text-center text-xs text-[var(--color-text-muted)]">
         🔒 Your information is secure and encrypted

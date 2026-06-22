@@ -25,6 +25,7 @@ import { selectCartHasHydrated, clearCart } from "@/features/cart/cart-slice";
 import { CheckoutSkeleton } from "@/features/checkout/components/checkout-skeleton";
 import { createOrder } from "@/features/checkout/api/create-order";
 import { CheckoutTransition } from "./checkout-transition";
+import { Button } from "@/components/ui/button";
 
 const initialFormState: CheckoutFormState = {
   fulfillmentType: "pickup",
@@ -222,14 +223,14 @@ export function CheckoutPageClient() {
             </p>
           </div>
 
-          <button
+          <Button
             type="button"
             disabled={isSubmitting}
             onClick={handleContinue}
-            className="h-12 rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-white transition hover:bg-[var(--color-brand-hover)] disabled:cursor-not-allowed disabled:bg-[var(--color-surface-disabled)] disabled:text-[var(--color-text-disabled)]"
+            className="h-12 rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)] disabled:cursor-not-allowed disabled:bg-[var(--color-surface-disabled)] disabled:text-[var(--color-text-disabled)]"
           >
             {isSubmitting ? "Placing..." : "Place Order →"}
-          </button>
+          </Button>
         </div>
       </div>
     </main>

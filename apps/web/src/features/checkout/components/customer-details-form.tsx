@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 import type { CheckoutFieldErrors, CheckoutFormState } from "../checkout-types";
 
 type CustomerDetailsFormProps = {
@@ -27,13 +28,17 @@ export function CustomerDetailsForm({
           <span className="text-sm font-medium text-[var(--color-text-primary)]">
             Full name
           </span>
-          <input
+          <Input
             value={form.fullName}
             onChange={(event) => onChange({ fullName: event.target.value })}
             placeholder="Enter your full name"
             autoComplete="name"
             aria-invalid={Boolean(errors.fullName)}
-            className={getInputClassName(errors.fullName)}
+            className={
+              errors.fullName
+                ? "border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:ring-[var(--color-danger)]/15"
+                : undefined
+            }
           />
           {errors.fullName ? <FieldError>{errors.fullName}</FieldError> : null}
         </label>
@@ -42,14 +47,18 @@ export function CustomerDetailsForm({
           <span className="text-sm font-medium text-[var(--color-text-primary)]">
             Phone number
           </span>
-          <input
+          <Input
             type="tel"
             value={form.phone}
             onChange={(event) => onChange({ phone: event.target.value })}
             placeholder="(+61) 123–456789"
             autoComplete="tel"
             aria-invalid={Boolean(errors.phone)}
-            className={getInputClassName(errors.phone)}
+            className={
+              errors.phone
+                ? "border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:ring-[var(--color-danger)]/15"
+                : undefined
+            }
           />
           {errors.phone ? <FieldError>{errors.phone}</FieldError> : null}
         </label>
@@ -58,29 +67,24 @@ export function CustomerDetailsForm({
           <span className="text-sm font-medium text-[var(--color-text-primary)]">
             Email address
           </span>
-          <input
+          <Input
             type="email"
             value={form.email}
             onChange={(event) => onChange({ email: event.target.value })}
             placeholder="you@email.com"
             autoComplete="email"
             aria-invalid={Boolean(errors.email)}
-            className={getInputClassName(errors.email)}
+            className={
+              errors.email
+                ? "border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:ring-[var(--color-danger)]/15"
+                : undefined
+            }
           />
           {errors.email ? <FieldError>{errors.email}</FieldError> : null}
         </label>
       </div>
     </section>
   );
-}
-
-function getInputClassName(error?: string) {
-  return [
-    "h-12 rounded-xl border bg-white px-4 text-sm outline-none transition placeholder:text-[var(--color-text-disabled)] focus:ring-4",
-    error
-      ? "border-[var(--color-danger)] focus:ring-[var(--color-danger-surface)]"
-      : "border-[var(--color-border)] focus:border-[var(--color-brand)] focus:ring-[var(--color-brand-soft)]",
-  ].join(" ");
 }
 
 function FieldError({ children }: { children: React.ReactNode }) {
