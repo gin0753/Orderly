@@ -34,7 +34,7 @@ export function AdminOrdersPage() {
     handleOrderTypeChange,
     handleStatusChange,
     handleClearFilters,
-    handleUpdateStatus,
+    handlePerformOrderAction,
     handlePageChange,
     handlePageSizeChange,
   } = useAdminOrders();
@@ -125,7 +125,7 @@ export function AdminOrdersPage() {
                 order={selectedOrder}
                 isLoading={isLoadingOrders}
                 isUpdatingStatus={isUpdatingStatus}
-                onUpdateStatus={handleUpdateStatus}
+                onPerformAction={handlePerformOrderAction}
                 onClose={() => setSelectedOrderId(null)}
               />
             </section>

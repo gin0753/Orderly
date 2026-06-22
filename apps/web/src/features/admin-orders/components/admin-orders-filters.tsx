@@ -30,6 +30,7 @@ const statusFilters: Array<{
   value?: AdminOrderStatus;
 }> = [
   { label: "New", value: "PENDING" },
+  { label: "Accepted", value: "ACCEPTED" },
   { label: "Preparing", value: "PREPARING" },
   { label: "Ready", value: "READY" },
   { label: "Completed", value: "COMPLETED" },

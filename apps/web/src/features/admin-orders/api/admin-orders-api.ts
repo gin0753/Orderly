@@ -2,9 +2,9 @@ import { apiFetch } from "@/lib/api-fetch";
 
 import {
   AdminOrder,
+  AdminOrderAction,
   AdminOrdersQuery,
   AdminOrdersResponse,
-  AdminOrderStatus,
 } from "../types";
 
 function buildOrdersQuery(query: AdminOrdersQuery) {
@@ -39,12 +39,12 @@ export function getAdminOrders(query: AdminOrdersQuery = {}) {
   return apiFetch<AdminOrdersResponse>(buildOrdersQuery(query));
 }
 
-export function updateAdminOrderStatus(
+export function performAdminOrderAction(
   orderId: string,
-  status: AdminOrderStatus,
+  action: AdminOrderAction,
 ) {
-  return apiFetch<AdminOrder>(`/orders/${orderId}/status`, {
+  return apiFetch<AdminOrder>(`/orders/${orderId}/action`, {
     method: "PATCH",
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ action }),
   });
 }

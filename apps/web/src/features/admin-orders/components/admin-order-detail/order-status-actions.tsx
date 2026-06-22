@@ -1,61 +1,67 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 
-import { AdminOrderStatus } from "../../types";
+import { AdminOrderAction, AdminOrderStatus } from "../../types";
 
 type OrderStatusActionsProps = {
   currentStatus: AdminOrderStatus;
   isUpdating: boolean;
-  onUpdateStatus: (status: AdminOrderStatus) => void;
+  onPerformAction: (action: AdminOrderAction) => void;
   className?: string;
 };
 
-function getAvailableActions(currentStatus: AdminOrderStatus) {
+type AvailableAction = {
+  label: string;
+  description: string;
+  action: AdminOrderAction;
+};
+
+function getAvailableAction(
+  currentStatus: AdminOrderStatus,
+): AvailableAction | null {
   if (currentStatus === "PENDING") {
-    return [
-      {
-        label: "Accept order",
-        nextStatus: "PREPARING" as const,
-        variant: "brand" as const,
-      },
-    ];
+    return {
+      label: "Accept order",
+      description: "Confirm that the restaurant has accepted this order.",
+      action: "ACCEPT",
+    };
+  }
+
+  if (currentStatus === "ACCEPTED") {
+    return {
+      label: "Start preparing",
+      description: "Move this order into active preparation.",
+      action: "START_PREPARING",
+    };
   }
 
   if (currentStatus === "PREPARING") {
-    return [
-      {
-        label: "Mark ready",
-        nextStatus: "READY" as const,
-        variant: "successSoft" as const,
-      },
-      {
-        label: "Complete order",
-        nextStatus: "COMPLETED" as const,
-        variant: "brand" as const,
-      },
-    ];
+    return {
+      label: "Mark as ready",
+      description: "Use this when the order is ready for pickup or delivery.",
+      action: "MARK_READY",
+    };
   }
 
   if (currentStatus === "READY") {
-    return [
-      {
-        label: "Complete order",
-        nextStatus: "COMPLETED" as const,
-        variant: "brand" as const,
-      },
-    ];
+    return {
+      label: "Complete order",
+      description:
+        "Use this after the order has been handed over or delivered.",
+      action: "COMPLETE",
+    };
   }
 
-  return [];
+  return null;
 }
 
 export function OrderStatusActions({
   currentStatus,
   isUpdating,
-  onUpdateStatus,
+  onPerformAction,
   className,
 }: OrderStatusActionsProps) {
-  const actions = getAvailableActions(currentStatus);
+  const action = getAvailableAction(currentStatus);
 
   if (currentStatus === "COMPLETED") {
     return (
@@ -71,7 +77,21 @@ export function OrderStatusActions({
     );
   }
 
-  if (actions.length === 0) {
+  if (currentStatus === "CANCELLED") {
+    return (
+      <div className={cn("w-full", className)}>
+        <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+          Order cancelled
+        </p>
+
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+          This order can no longer be progressed.
+        </p>
+      </div>
+    );
+  }
+
+  if (!action) {
     return (
       <div className={cn("w-full", className)}>
         <p className="text-sm font-semibold text-[var(--color-text-primary)]">
@@ -86,24 +106,29 @@ export function OrderStatusActions({
   }
 
   return (
-    <div className={cn("w-full", className)}>
-      <p className="mb-3 text-sm font-bold">Update status</p>
-
-      <div className="flex flex-col gap-2 sm:flex-row">
-        {actions.map((action) => (
-          <Button
-            key={action.nextStatus}
-            type="button"
-            variant={action.variant}
-            size="lg"
-            disabled={isUpdating}
-            onClick={() => onUpdateStatus(action.nextStatus)}
-            className="flex-1 rounded-full shadow-none"
-          >
-            {isUpdating ? "Updating..." : action.label}
-          </Button>
-        ))}
+    <div
+      className={cn(
+        "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+        className,
+      )}
+    >
+      <div>
+        <p className="text-sm font-bold">Next step</p>
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+          {action.description}
+        </p>
       </div>
+
+      <Button
+        type="button"
+        variant="brand"
+        size="lg"
+        disabled={isUpdating}
+        onClick={() => onPerformAction(action.action)}
+        className="w-full shrink-0 rounded-full shadow-none sm:w-auto"
+      >
+        {isUpdating ? "Updating..." : action.label}
+      </Button>
     </div>
   );
 }

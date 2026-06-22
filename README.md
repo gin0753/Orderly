@@ -2,7 +2,7 @@
 
 A production-grade online ordering platform built with Next.js, NestJS, PostgreSQL, Prisma and Docker.
 
-Orderly is designed as a full-stack portfolio project to demonstrate frontend architecture, backend API design, relational database modelling, cart state management, checkout flow, and order workflow logic.
+Orderly demonstrates a full customer ordering flow and an admin order-management workflow, including cart state, checkout, relational order modelling, server-side filtering, pagination, and protected business rules.
 
 ## Tech Stack
 
@@ -10,40 +10,62 @@ Orderly is designed as a full-stack portfolio project to demonstrate frontend ar
 - State Management: Redux Toolkit
 - Backend: NestJS, TypeScript
 - Database: PostgreSQL, Prisma
-- DevOps: Docker Compose, pnpm workspace
+- Tooling: pnpm workspace, Docker Compose
 
-## Core Features
+## Features
 
 ### Customer Ordering
 
-- Responsive customer-facing menu page
-- API-driven menu rendering
-- Product detail modal with size, add-ons and quantity selection
-- Cart drawer with quantity updates and item removal
-- Header cart button with item count and subtotal
-- Mobile sticky cart bar
-- localStorage cart persistence
-- Checkout page with fulfillment choice, customer details, delivery address and order notes
-- Order submission flow
-- Order success page
+- Responsive menu with API-driven products and categories
+- Product modal with size, add-ons and quantity selection
+- Redux Toolkit cart with localStorage persistence
+- Cart drawer, mobile cart bar and order summary
+- Checkout with pickup/delivery, customer details, address and notes
+- Order submission and success page
 
-### Backend API
+### Admin Orders
 
-- Health check endpoint
-- Menu endpoint backed by PostgreSQL and Prisma
-- Order creation API
-- Order listing API
-- Order detail API
-- Order status update API
-- Seeded menu data for local development
+- Responsive admin orders dashboard
+- Server-side search, status/type filters and pagination
+- Order summary metrics, list and detail panel
+- Loading, empty, error and refresh states
+- Action-based order workflow:
 
-### Admin
+```txt
+PENDING → ACCEPTED → PREPARING → READY → COMPLETED
+```
 
-- Admin orders dashboard foundation
-- Order summary cards
-- Order list and detail panel
-- Order status badges
-- Order status update actions
+- Backend-enforced workflow rules and idempotent repeated actions
+
+### API
+
+```txt
+GET    /api/health
+GET    /api/menu
+
+POST   /api/orders
+GET    /api/orders
+GET    /api/orders/:id
+PATCH  /api/orders/:id/action
+```
+
+Example order action request:
+
+```json
+{
+  "action": "ACCEPT"
+}
+```
+
+Supported actions:
+
+```txt
+ACCEPT
+START_PREPARING
+MARK_READY
+COMPLETE
+CANCEL
+```
 
 ## Architecture
 
@@ -66,96 +88,53 @@ orderly/
     shared/   # Shared types and schemas
 ```
 
-## Current Progress
-
-- [x] Monorepo setup
-- [x] Docker PostgreSQL setup
-- [x] Prisma schema and migrations
-- [x] Seed data
-- [x] NestJS backend foundation
-- [x] Health API
-- [x] Menu API
-- [x] Customer menu page
-- [x] Product detail modal
-- [x] Redux Toolkit cart state
-- [x] Cart drawer
-- [x] localStorage cart persistence
-- [x] Checkout flow
-- [x] Order submission API
-- [x] Order success page
-- [x] Admin order API foundation
-- [x] Admin orders dashboard foundation
-- [ ] Admin filtering, search and pagination
-- [ ] Customer order status tracking
-- [ ] Admin authentication
-- [ ] Product and category management
-
 ## Local Development
-
-Start PostgreSQL:
 
 ```bash
 pnpm db:up
-```
-
-Run database migration:
-
-```bash
 pnpm db:migrate
-```
-
-Seed development data:
-
-```bash
 pnpm db:seed
-```
-
-Start backend API:
-
-```bash
 pnpm dev:api
-```
-
-Start frontend app:
-
-```bash
 pnpm dev:web
 ```
 
-Backend API:
+Frontend:
+
+```txt
+http://localhost:3000
+```
+
+Backend:
 
 ```txt
 http://localhost:4000/api
 ```
 
-Available endpoints:
-
-```txt
-GET    /api/health
-GET    /api/menu
-POST   /api/orders
-GET    /api/orders
-GET    /api/orders/:id
-PATCH  /api/orders/:id/status
-```
-
 ## Key Engineering Decisions
 
-- Uses a separated frontend and backend architecture instead of a Next.js-only full-stack app.
-- Uses a feature-based frontend structure for menu, cart, checkout and admin orders.
-- Uses Redux Toolkit for scalable client-side cart state management.
-- Uses localStorage persistence for cart continuity before checkout.
-- Uses PostgreSQL for relational product, option and order modelling.
-- Uses Prisma for type-safe database access and migration management.
-- Recalculates order pricing on the backend instead of trusting client-side prices.
-- Stores product and price snapshots on orders to preserve historical accuracy.
-- Uses reusable UI primitives such as Button and Card to keep the design system consistent.
-- Uses Docker Compose to make local database setup reproducible.
+- Separate Next.js frontend and NestJS REST API.
+- Feature-based frontend modules for menu, cart, checkout and admin orders.
+- Redux Toolkit for scalable client-side cart state.
+- Backend price recalculation and order snapshots for historical accuracy.
+- Server-side admin search, filters and pagination rather than loading every order.
+- Action-based order API: clients express intent, while the backend controls valid state transitions.
+- Reusable UI primitives such as Button, Card, Input and Select.
+- Docker Compose for reproducible local PostgreSQL setup.
+
+## Current Progress
+
+- [x] Customer menu, product customisation and cart
+- [x] Checkout and order submission
+- [x] Prisma order modelling and order snapshots
+- [x] Admin orders dashboard
+- [x] Search, filtering and pagination
+- [x] Action-based order workflow with unit tests
+- [ ] Customer order status tracking
+- [ ] Admin authentication and protected routes
+- [ ] Product and category management
 
 ## Next Steps
 
-- Polish admin orders dashboard responsiveness and empty/loading/error states
-- Add admin order filtering, search and pagination
-- Add customer order status page
-- Add admin authentication and protected routes
+- Add admin authentication and route protection
+- Add customer order status tracking
 - Add product and category management

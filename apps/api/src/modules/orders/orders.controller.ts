@@ -11,7 +11,7 @@ import {
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
 import { ListOrdersQueryDto } from './dto/list-orders-query.dto';
-import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { PerformOrderActionDto } from './dto/perform-order-action.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -32,11 +32,11 @@ export class OrdersController {
     return this.ordersService.findOne(id);
   }
 
-  @Patch(':id/status')
-  updateStatus(
+  @Patch(':id/action')
+  performAction(
     @Param('id') id: string,
-    @Body() updateOrderStatusDto: UpdateOrderStatusDto,
+    @Body() performOrderActionDto: PerformOrderActionDto,
   ) {
-    return this.ordersService.updateStatus(id, updateOrderStatusDto);
+    return this.ordersService.performAction(id, performOrderActionDto);
   }
 }

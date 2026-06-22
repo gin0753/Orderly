@@ -17,6 +17,11 @@ const summaryItems: Array<{
     helper: "Needs attention",
   },
   {
+    label: "Accepted",
+    key: "accepted",
+    helper: "Waiting to start",
+  },
+  {
     label: "Preparing",
     key: "preparing",
     helper: "In kitchen",
@@ -35,7 +40,7 @@ const summaryItems: Array<{
 
 export function AdminOrdersSummary({ summary }: AdminOrdersSummaryProps) {
   return (
-    <section className="mb-5 grid gap-3 md:grid-cols-4">
+    <section className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-5">
       {summaryItems.map((item) => (
         <Card key={item.key} className="rounded-3xl">
           <CardContent className="p-4 md:p-5">

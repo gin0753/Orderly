@@ -18,21 +18,26 @@ export function AdminOrdersPagination({
   onPageChange,
   onPageSizeChange,
 }: AdminOrdersPaginationProps) {
-  const firstVisibleOrder = (meta.page - 1) * meta.pageSize + 1;
-  const lastVisibleOrder = Math.min(meta.page * meta.pageSize, meta.total);
+  const hasOrders = meta.total > 0;
+
+  const firstVisibleOrder = hasOrders ? (meta.page - 1) * meta.pageSize + 1 : 0;
+
+  const lastVisibleOrder = hasOrders
+    ? Math.min(meta.page * meta.pageSize, meta.total)
+    : 0;
 
   return (
-    <div className="mt-4 flex flex-col gap-4 border-t border-[var(--color-border-soft)] pt-4 text-sm md:flex-row md:items-center md:justify-between">
-      <p className="text-[var(--color-text-secondary)]">
-        Showing{" "}
-        <span className="font-bold text-[var(--color-text-primary)]">
-          {firstVisibleOrder}–{lastVisibleOrder}
-        </span>{" "}
-        of {meta.total} orders
-      </p>
+    <div className="mt-4 flex flex-col gap-4 border-t border-[var(--color-border-soft)] pt-4 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[var(--color-text-secondary)]">
+          Showing{" "}
+          <span className="font-bold text-[var(--color-text-primary)]">
+            {firstVisibleOrder}–{lastVisibleOrder}
+          </span>{" "}
+          of {meta.total} orders
+        </p>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <label className="flex items-center gap-2 text-[var(--color-text-secondary)]">
+        <label className="flex shrink-0 items-center gap-2 text-[var(--color-text-secondary)]">
           <span className="whitespace-nowrap">Rows per page</span>
 
           <Select
@@ -48,12 +53,15 @@ export function AdminOrdersPagination({
             ))}
           </Select>
         </label>
+      </div>
 
+      <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto sm:self-end">
         <Button
           variant="secondary"
           size="sm"
           disabled={!meta.hasPreviousPage}
           onClick={() => onPageChange(meta.page - 1)}
+          className="flex-1 whitespace-nowrap sm:flex-none"
         >
           <ChevronLeft className="size-4" />
           Previous
@@ -64,6 +72,7 @@ export function AdminOrdersPagination({
           size="sm"
           disabled={!meta.hasNextPage}
           onClick={() => onPageChange(meta.page + 1)}
+          className="flex-1 whitespace-nowrap sm:flex-none"
         >
           Next
           <ChevronRight className="size-4" />

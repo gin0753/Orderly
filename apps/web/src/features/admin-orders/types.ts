@@ -77,6 +77,7 @@ export type AdminOrderFilters = {
 export type AdminOrdersSummary = {
   total: number;
   pending: number;
+  accepted: number;
   preparing: number;
   ready: number;
   completed: number;
@@ -103,3 +104,10 @@ export type AdminOrdersQuery = AdminOrderFilters & {
   page?: number;
   pageSize?: number;
 };
+
+export type AdminOrderAction =
+  | "ACCEPT"
+  | "START_PREPARING"
+  | "MARK_READY"
+  | "COMPLETE"
+  | "CANCEL";

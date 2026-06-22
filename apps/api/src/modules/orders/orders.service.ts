@@ -11,7 +11,8 @@ import {
   CreateOrderFulfillmentType,
 } from './dto/create-order.dto';
 import { ListOrdersQueryDto } from './dto/list-orders-query.dto';
-import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { PerformOrderActionDto } from './dto/perform-order-action.dto';
+import { resolveOrderAction } from './order-action';
 
 const DELIVERY_FEE_CENTS = 399;
 const SERVICE_FEE_CENTS = 120;
@@ -230,10 +231,11 @@ export class OrdersService {
   }
 
   private async getOrdersSummary() {
-    const [total, pending, preparing, ready, completed, cancelled] =
+    const [total, pending, accepted, preparing, ready, completed, cancelled] =
       await Promise.all([
         this.prisma.order.count(),
         this.prisma.order.count({ where: { status: OrderStatus.PENDING } }),
+        this.prisma.order.count({ where: { status: OrderStatus.ACCEPTED } }),
         this.prisma.order.count({ where: { status: OrderStatus.PREPARING } }),
         this.prisma.order.count({ where: { status: OrderStatus.READY } }),
         this.prisma.order.count({ where: { status: OrderStatus.COMPLETED } }),
@@ -243,6 +245,7 @@ export class OrdersService {
     return {
       total,
       pending,
+      accepted,
       preparing,
       ready,
       completed,
@@ -269,20 +272,35 @@ export class OrdersService {
     return order;
   }
 
-  async updateStatus(id: string, updateOrderStatusDto: UpdateOrderStatusDto) {
-    await this.findOne(id);
+  async performAction(
+    id: string,
+    performOrderActionDto: PerformOrderActionDto,
+  ) {
+    const existingOrder = await this.findOne(id);
+
+    const nextStatus = resolveOrderAction(
+      existingOrder.status,
+      performOrderActionDto.action,
+    );
+
+    if (!nextStatus) {
+      throw new BadRequestException(
+        `Cannot perform ${performOrderActionDto.action} while order is ${existingOrder.status}.`,
+      );
+    }
+
+    // Repeated requests do not cause a duplicate database update.
+    if (existingOrder.status === nextStatus) {
+      return existingOrder;
+    }
 
     return this.prisma.order.update({
       where: { id },
       data: {
-        status: updateOrderStatusDto.status,
+        status: nextStatus,
       },
       include: {
-        items: {
-          include: {
-            options: true,
-          },
-        },
+        items: true,
       },
     });
   }

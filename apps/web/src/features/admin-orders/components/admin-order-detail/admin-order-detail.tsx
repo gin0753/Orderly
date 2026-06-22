@@ -8,7 +8,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 
-import { AdminOrder, AdminOrderStatus } from "../../types";
+import { AdminOrder, AdminOrderAction } from "../../types";
 import { OrderStatusBadge } from "../order-status-badge";
 import { AdminOrderDetailSkeleton } from "./admin-order-detail-skeleton";
 import { AdminOrderItemsSection } from "./admin-order-items-section";
@@ -19,8 +19,8 @@ type AdminOrderDetailProps = {
   order: AdminOrder | null;
   isLoading?: boolean;
   isUpdatingStatus: boolean;
+  onPerformAction: (orderId: string, action: AdminOrderAction) => void;
   onClose?: () => void;
-  onUpdateStatus: (orderId: string, status: AdminOrderStatus) => void;
 };
 
 function getDeliveryAddress(order: AdminOrder) {
@@ -33,7 +33,7 @@ export function AdminOrderDetail({
   order,
   isLoading = false,
   isUpdatingStatus,
-  onUpdateStatus,
+  onPerformAction,
   onClose,
 }: AdminOrderDetailProps) {
   if (isLoading) {
@@ -157,7 +157,8 @@ export function AdminOrderDetail({
         <OrderStatusActions
           currentStatus={order.status}
           isUpdating={isUpdatingStatus}
-          onUpdateStatus={(status) => onUpdateStatus(order.id, status)}
+          onPerformAction={(action) => onPerformAction(order.id, action)}
+          className="w-full"
         />
       </CardFooter>
     </Card>

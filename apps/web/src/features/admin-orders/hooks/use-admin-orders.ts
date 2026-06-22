@@ -4,10 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   getAdminOrders,
-  updateAdminOrderStatus,
+  performAdminOrderAction,
 } from "../api/admin-orders-api";
 import {
   AdminOrder,
+  AdminOrderAction,
   AdminOrderFilters,
   AdminOrdersMeta,
   AdminOrdersSummary,
@@ -20,6 +21,7 @@ const DEFAULT_PAGE_SIZE = 10;
 const initialSummary: AdminOrdersSummary = {
   total: 0,
   pending: 0,
+  accepted: 0,
   preparing: 0,
   ready: 0,
   completed: 0,
@@ -42,6 +44,8 @@ export function useAdminOrders() {
   const [summary, setSummary] = useState<AdminOrdersSummary>(initialSummary);
   const [meta, setMeta] = useState<AdminOrdersMeta>(initialMeta);
 
+  // undefined = let the hook auto-select the first visible order.
+  // null = user explicitly closed the detail panel.
   const [selectedOrderId, setSelectedOrderId] = useState<
     string | null | undefined
   >(undefined);
@@ -54,18 +58,24 @@ export function useAdminOrders() {
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [hasLoadedSuccessfully, setHasLoadedSuccessfully] = useState(false);
 
+  // Full-page error: initial request has no usable data.
   const [error, setError] = useState<string | null>(null);
+
+  // Inline error: page has existing data, but refresh/action/query failed.
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const requestIdRef = useRef(0);
   const hasCompletedInitialLoadRef = useRef(false);
-  const hasLoadedSuccessfullyRef = useRef(false);
 
   const loadOrders = useCallback(
     async (mode: LoadMode = "query") => {
       const requestId = ++requestIdRef.current;
+
       const isInitialRequest = mode === "initial";
       const isRefreshRequest = mode === "refresh";
+      const isSilentRequest = mode === "silent";
       const shouldShowListSkeleton = mode === "initial" || mode === "query";
 
       try {
@@ -78,6 +88,7 @@ export function useAdminOrders() {
         }
 
         setError(null);
+        setActionError(null);
 
         const response = await getAdminOrders({
           ...filters,
@@ -86,6 +97,8 @@ export function useAdminOrders() {
           pageSize: meta.pageSize,
         });
 
+        // Ignore stale requests, such as a slower old search response
+        // arriving after a newer search request has finished.
         if (requestId !== requestIdRef.current) {
           return;
         }
@@ -93,16 +106,29 @@ export function useAdminOrders() {
         setOrders(response.data);
         setSummary(response.summary);
         setMeta(response.meta);
-
-        hasLoadedSuccessfullyRef.current = true;
+        setHasLoadedSuccessfully(true);
       } catch {
         if (requestId !== requestIdRef.current) {
           return;
         }
 
-        setError(
-          "Unable to load orders. Please check the API server and try again.",
-        );
+        if (isInitialRequest) {
+          setError(
+            "Unable to load orders. Please check the API server and try again.",
+          );
+        } else if (isRefreshRequest) {
+          setActionError(
+            "Unable to refresh orders. Your current order data is still visible.",
+          );
+        } else if (isSilentRequest) {
+          setActionError(
+            "The order was updated, but the latest order list could not be refreshed.",
+          );
+        } else {
+          setActionError(
+            "Unable to load the requested orders. Please try again.",
+          );
+        }
       } finally {
         if (requestId !== requestIdRef.current) {
           return;
@@ -171,8 +197,10 @@ export function useAdminOrders() {
   const activeSelectedOrderId = selectedOrder?.id ?? null;
 
   const reloadOrders = useCallback(async () => {
-    await loadOrders("refresh");
-  }, [loadOrders]);
+    const loadMode = hasLoadedSuccessfully ? "refresh" : "initial";
+
+    await loadOrders(loadMode);
+  }, [hasLoadedSuccessfully, loadOrders]);
 
   function handleOrderTypeChange(orderType?: AdminOrderType) {
     setFilters((currentFilters) => ({
@@ -224,23 +252,26 @@ export function useAdminOrders() {
     }));
   }
 
-  async function handleUpdateStatus(orderId: string, status: AdminOrderStatus) {
+  async function handlePerformOrderAction(
+    orderId: string,
+    action: AdminOrderAction,
+  ) {
     try {
       setIsUpdatingStatus(true);
-      setError(null);
+      setActionError(null);
 
-      await updateAdminOrderStatus(orderId, status);
+      await performAdminOrderAction(orderId, action);
 
       await loadOrders("silent");
     } catch {
-      setError("Unable to update order status. Please try again.");
+      setActionError("Unable to update this order. Please try again.");
     } finally {
       setIsUpdatingStatus(false);
     }
   }
 
   const shouldShowFullPageError =
-    Boolean(error) && !hasLoadedSuccessfullyRef.current && !isInitialLoading;
+    Boolean(error) && !hasLoadedSuccessfully && !isInitialLoading;
 
   return {
     orders,
@@ -254,15 +285,17 @@ export function useAdminOrders() {
     isRefreshing,
     isUpdatingStatus,
     error,
+    actionError,
     shouldShowFullPageError,
     setSelectedOrderId,
     setSearchTerm,
+    setActionError,
     reloadOrders,
     handleOrderTypeChange,
     handleStatusChange,
     handleClearFilters,
     handlePageChange,
     handlePageSizeChange,
-    handleUpdateStatus,
+    handlePerformOrderAction,
   };
 }
