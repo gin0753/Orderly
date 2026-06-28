@@ -247,12 +247,13 @@ model AdminUser {
 }
 
 model AdminSession {
-  id               String   @id @default(cuid())
-  adminUserId      String
-  refreshTokenHash String
-  expiresAt        DateTime
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                  String    @id @default(cuid())
+  adminUserId         String
+  refreshTokenHash    String
+  refreshTokenVersion Int       @default(0)
+  expiresAt           DateTime
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   adminUser AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
 

@@ -8,10 +8,11 @@ import {
   Query,
 } from '@nestjs/common';
 
+import { RequireAdmin } from '../auth/decorators/require-admin.decorator';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { OrdersService } from './orders.service';
 import { ListOrdersQueryDto } from './dto/list-orders-query.dto';
 import { PerformOrderActionDto } from './dto/perform-order-action.dto';
+import { OrdersService } from './orders.service';
 
 @Controller('orders')
 export class OrdersController {
@@ -23,16 +24,19 @@ export class OrdersController {
   }
 
   @Get()
+  @RequireAdmin()
   findAll(@Query() query: ListOrdersQueryDto) {
     return this.ordersService.findAll(query);
   }
 
   @Get(':id')
+  @RequireAdmin()
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
   }
 
   @Patch(':id/action')
+  @RequireAdmin()
   performAction(
     @Param('id') id: string,
     @Body() performOrderActionDto: PerformOrderActionDto,
