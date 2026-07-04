@@ -42,7 +42,7 @@ const variantClasses: Record<ButtonVariant, string> = {
     "border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)] hover:bg-[var(--color-brand)] hover:text-[var(--color-text-inverse)]",
 
   warningSoft:
-    "border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100",
+    "border border-orange-200 bg-orange-50 text-[var(--color-brand-text-hover)] hover:bg-[var(--color-brand-soft)]",
 
   successSoft:
     "border border-green-200 bg-green-50 text-[var(--color-success)] hover:bg-green-100",

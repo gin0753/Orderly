@@ -32,7 +32,7 @@ export function CartDrawerFooter({
         <Link
           href="/checkout"
           onClick={() => dispatch(closeCart())}
-          className="mt-6 flex h-13 w-full items-center justify-center rounded-2xl bg-[var(--color-brand)] px-5 text-sm font-semibold text-white transition hover:bg-[var(--color-brand-hover)]"
+          className="mt-6 flex h-13 w-full items-center justify-center rounded-2xl bg-[var(--color-brand)] px-5 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
         >
           View Cart & Checkout
         </Link>

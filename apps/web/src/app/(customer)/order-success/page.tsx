@@ -46,7 +46,7 @@ export default async function OrderSuccessPage({
             <span className="text-sm text-[var(--color-text-secondary)]">
               Status
             </span>
-            <span className="rounded-full bg-[var(--color-brand)] px-3 py-1 text-xs font-semibold text-white">
+            <span className="rounded-full bg-[var(--color-brand)] px-3 py-1 text-xs font-semibold text-[var(--color-text-inverse)]">
               Pending
             </span>
           </div>
@@ -75,7 +75,7 @@ export default async function OrderSuccessPage({
         <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row">
           <Link
             href="/"
-            className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-white transition hover:bg-[var(--color-brand-hover)]"
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
           >
             Start another order
           </Link>

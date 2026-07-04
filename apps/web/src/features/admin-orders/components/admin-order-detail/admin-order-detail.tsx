@@ -121,7 +121,7 @@ export function AdminOrderDetail({
 
           <div className="rounded-2xl bg-[var(--color-surface-soft)] p-4">
             <div className="flex items-center gap-3">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-[var(--color-brand)]">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-brand)]">
                 <FulfillmentIcon className="size-5" />
               </span>
 

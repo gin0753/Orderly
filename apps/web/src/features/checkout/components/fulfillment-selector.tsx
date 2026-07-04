@@ -56,7 +56,7 @@ export function FulfillmentSelector({
                 "flex items-center gap-4 rounded-2xl border p-4 text-left transition cursor-pointer",
                 isSelected
                   ? "border-[var(--color-brand)] bg-[var(--color-brand-soft)]"
-                  : "border-[var(--color-border)] bg-white hover:border-[var(--color-border-hover)]",
+                  : "border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-border-hover)]",
               ].join(" ")}
             >
               <span className="flex size-11 items-center justify-center rounded-full bg-[var(--color-surface-hover)] text-xl">
