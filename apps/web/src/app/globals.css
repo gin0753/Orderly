@@ -46,6 +46,15 @@
 
   --color-info-surface: #eff6ff;
   --color-info-strong: #1d4ed8;
+
+  --color-page-background: var(--color-background);
+  --color-border-subtle: var(--color-border);
+
+  --color-notice-background: var(--color-brand-soft);
+  --color-notice-foreground: var(--color-brand-text);
+
+  --color-danger-background: var(--color-danger-surface);
+  --color-danger-foreground: var(--color-danger-strong);
 }
 
 .orderly-warm-gradient {

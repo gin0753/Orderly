@@ -69,14 +69,11 @@ function AdminRouteLoadingState({
   label = "Checking your admin session...",
 }: AdminRouteLoadingStateProps) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[var(--color-background)] px-4">
-      <div className="w-full max-w-sm space-y-4">
-        <div className="h-3 w-28 animate-pulse rounded bg-[var(--color-surface-disabled)]" />
-        <div className="h-10 animate-pulse rounded-lg bg-[var(--color-surface-disabled)]" />
-        <div className="h-64 animate-pulse rounded-xl bg-[var(--color-surface-disabled)]" />
-        <p className="text-center text-sm text-[var(--color-text-muted)]">
-          {label}
-        </p>
+    <main className="flex min-h-screen items-center justify-center bg-[var(--color-page-background)] px-4">
+      <div className="flex flex-col items-center gap-4 text-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--color-border-subtle)] border-t-[var(--color-brand)]" />
+
+        <p className="text-sm text-[var(--color-text-muted)]">{label}</p>
       </div>
     </main>
   );

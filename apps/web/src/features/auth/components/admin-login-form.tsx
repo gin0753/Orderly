@@ -6,8 +6,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   clearAuthError,
+  clearAuthNotice,
   loginAdmin,
   selectAuthError,
+  selectAuthNotice,
   selectAuthStatus,
   selectIsLoggingIn,
 } from "@/features/auth/store/auth-slice";
@@ -24,6 +26,7 @@ export function AdminLoginForm() {
 
   const authStatus = useAppSelector(selectAuthStatus);
   const authError = useAppSelector(selectAuthError);
+  const authNotice = useAppSelector(selectAuthNotice);
   const isLoggingIn = useAppSelector(selectIsLoggingIn);
 
   const [email, setEmail] = useState("");
@@ -75,6 +78,8 @@ export function AdminLoginForm() {
     }
 
     setFormError(null);
+
+    await dispatch(clearAuthNotice());
 
     await dispatch(
       loginAdmin({
@@ -171,10 +176,20 @@ export function AdminLoginForm() {
           </div>
         </div>
 
+        {authNotice ? (
+          <p
+            role="status"
+            aria-live="polite"
+            className="rounded-lg bg-[var(--color-notice-background)] px-3 py-2 text-sm font-medium text-[var(--color-notice-foreground)]"
+          >
+            {authNotice}
+          </p>
+        ) : null}
+
         {visibleError ? (
           <p
             role="alert"
-            className="rounded-lg border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] px-3 py-2 text-sm text-[var(--color-danger-strong)]"
+            className="rounded-lg bg-[var(--color-danger-background)] px-3 py-2 text-sm font-medium text-[var(--color-danger-foreground)]"
           >
             {visibleError}
           </p>

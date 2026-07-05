@@ -17,6 +17,7 @@ type AuthState = {
   isLoggingIn: boolean;
   isLoggingOut: boolean;
   error: string | null;
+  notice: string | null;
 };
 
 const initialState: AuthState = {
@@ -26,6 +27,7 @@ const initialState: AuthState = {
   isLoggingIn: false,
   isLoggingOut: false,
   error: null,
+  notice: null,
 };
 
 function toAuthFailure(error: unknown, fallbackMessage: string): AuthFailure {
@@ -95,11 +97,16 @@ const authSlice = createSlice({
       state.error = null;
     },
 
+    clearAuthNotice(state) {
+      state.notice = null;
+    },
+
     sessionExpired(state) {
       state.user = null;
       state.status = "unauthenticated";
       state.initialized = true;
       state.error = null;
+      state.notice = "Your session expired. Sign in again to continue.";
       state.isLoggingIn = false;
       state.isLoggingOut = false;
     },
@@ -115,6 +122,7 @@ const authSlice = createSlice({
         state.status = "authenticated";
         state.initialized = true;
         state.error = null;
+        state.notice = null;
       })
       .addCase(hydrateAdminSession.rejected, (state, action) => {
         const failure = action.payload;
@@ -135,6 +143,7 @@ const authSlice = createSlice({
       .addCase(loginAdmin.pending, (state) => {
         state.isLoggingIn = true;
         state.error = null;
+        state.notice = null;
       })
       .addCase(loginAdmin.fulfilled, (state, action) => {
         state.user = action.payload;
@@ -142,6 +151,7 @@ const authSlice = createSlice({
         state.initialized = true;
         state.isLoggingIn = false;
         state.error = null;
+        state.notice = null;
       })
       .addCase(loginAdmin.rejected, (state, action) => {
         state.user = null;
@@ -161,6 +171,7 @@ const authSlice = createSlice({
         state.initialized = true;
         state.isLoggingOut = false;
         state.error = null;
+        state.notice = null;
       })
       .addCase(logoutAdmin.rejected, (state, action) => {
         state.isLoggingOut = false;
@@ -170,7 +181,8 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearAuthError, sessionExpired } = authSlice.actions;
+export const { clearAuthError, clearAuthNotice, sessionExpired } =
+  authSlice.actions;
 
 export const selectAuthUser = (state: RootState) => state.auth.user;
 
@@ -180,6 +192,8 @@ export const selectAuthInitialized = (state: RootState) =>
   state.auth.initialized;
 
 export const selectAuthError = (state: RootState) => state.auth.error;
+
+export const selectAuthNotice = (state: RootState) => state.auth.notice;
 
 export const selectIsLoggingIn = (state: RootState) => state.auth.isLoggingIn;
 
