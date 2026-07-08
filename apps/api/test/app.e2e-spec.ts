@@ -101,8 +101,18 @@ describe('App API (e2e)', () => {
 
       const combinedCookies = setCookies.join(';');
 
-      expect(combinedCookies).toContain('orderly_admin_access=');
-      expect(combinedCookies).toContain('orderly_admin_refresh=');
+      expect(
+        setCookies.some((cookie) =>
+          cookie.startsWith('orderly_admin_access=;'),
+        ),
+      ).toBe(true);
+
+      expect(
+        setCookies.some((cookie) =>
+          cookie.startsWith('orderly_admin_refresh=;'),
+        ),
+      ).toBe(true);
+
       expect(combinedCookies).toContain('Path=/api');
     });
 
