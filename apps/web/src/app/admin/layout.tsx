@@ -1,14 +1,16 @@
-import { AdminHeader } from "@/components/layout/admin-header";
+import type { ReactNode } from "react";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+import { AdminAuthBootstrap } from "@/features/auth/components/admin-auth-bootstrap";
+
+type AdminLayoutProps = {
+  children: ReactNode;
+};
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
-    <main className="min-h-screen bg-[var(--color-background)] text-[var(--color-text-primary)]">
-      <AdminHeader />
+    <>
+      <AdminAuthBootstrap />
       {children}
-    </main>
+    </>
   );
 }

@@ -17,7 +17,7 @@ export function CheckoutStepIndicator() {
                 className={[
                   "flex size-9 items-center justify-center rounded-full text-sm font-semibold",
                   isActive
-                    ? "bg-[var(--color-brand)] text-white"
+                    ? "bg-[var(--color-brand)] text-[var(--color-text-inverse)]"
                     : "bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]",
                 ].join(" ")}
               >

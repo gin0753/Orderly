@@ -28,7 +28,7 @@ export default function AdminOrdersError({
             We could not render the orders dashboard.
           </p>
 
-          <p className="mt-4 rounded-2xl bg-white/70 p-4 text-sm text-[var(--color-text-secondary)]">
+          <p className="mt-4 rounded-2xl bg-[var(--color-surface)]/70 p-4 text-sm text-[var(--color-text-secondary)]">
             {error.message}
           </p>
 

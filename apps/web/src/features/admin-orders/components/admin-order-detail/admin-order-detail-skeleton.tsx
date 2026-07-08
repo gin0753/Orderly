@@ -30,8 +30,8 @@ export function AdminOrderDetailSkeleton() {
             <SkeletonLine className="mb-3 h-4 w-24" />
 
             <SkeletonBlock className="rounded-2xl p-4">
-              <SkeletonLine className="h-4 w-2/3 bg-white" />
-              <SkeletonLine className="mt-3 h-4 w-1/2 bg-white" />
+              <SkeletonLine className="h-4 w-2/3 bg-[var(--color-surface)]" />
+              <SkeletonLine className="mt-3 h-4 w-1/2 bg-[var(--color-surface)]" />
             </SkeletonBlock>
           </section>
         ))}

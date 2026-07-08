@@ -36,7 +36,9 @@ function buildOrdersQuery(query: AdminOrdersQuery) {
 }
 
 export function getAdminOrders(query: AdminOrdersQuery = {}) {
-  return apiFetch<AdminOrdersResponse>(buildOrdersQuery(query));
+  return apiFetch<AdminOrdersResponse>(buildOrdersQuery(query), {
+    auth: "required",
+  });
 }
 
 export function performAdminOrderAction(
@@ -45,6 +47,10 @@ export function performAdminOrderAction(
 ) {
   return apiFetch<AdminOrder>(`/orders/${orderId}/action`, {
     method: "PATCH",
+    auth: "required",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({ action }),
   });
 }

@@ -17,7 +17,7 @@ export function AdminOrdersLoadErrorState({
   return (
     <Card className="rounded-3xl border-[var(--color-danger-border)] bg-[var(--color-danger-surface)]">
       <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-        <span className="flex size-12 items-center justify-center rounded-full bg-white/70 text-[var(--color-danger-strong)]">
+        <span className="flex size-12 items-center justify-center rounded-full bg-[var(--color-surface)]/70 text-[var(--color-danger-strong)]">
           <AlertTriangle className="size-5" />
         </span>
 

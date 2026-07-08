@@ -139,7 +139,7 @@ export function CheckoutPageClient() {
 
           <Link
             href="/"
-            className="mt-8 inline-flex h-12 items-center justify-center rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-white transition hover:bg-[var(--color-brand-hover)]"
+            className="mt-8 inline-flex h-12 items-center justify-center rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
           >
             Browse menu
           </Link>
