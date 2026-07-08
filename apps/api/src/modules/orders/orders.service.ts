@@ -13,6 +13,8 @@ import {
 import { ListOrdersQueryDto } from './dto/list-orders-query.dto';
 import { PerformOrderActionDto } from './dto/perform-order-action.dto';
 import { resolveOrderAction } from './order-action';
+import { GuestOrderLookupDto } from './dto/guest-order-lookup.dto';
+import { mapOrderToTrackingResponse } from './mappers/order-tracking.mapper';
 
 const DELIVERY_FEE_CENTS = 399;
 const SERVICE_FEE_CENTS = 120;
@@ -36,14 +38,15 @@ export class OrdersService {
     );
 
     const totalCents = subtotalCents + deliveryFeeCents + SERVICE_FEE_CENTS;
+    const orderNumber = await this.generateOrderNumber();
 
     const order = await this.prisma.order.create({
       data: {
+        orderNumber,
         orderType:
           dto.fulfillmentType === CreateOrderFulfillmentType.PICKUP
             ? OrderType.PICKUP
             : OrderType.DELIVERY,
-
         customerName: dto.customer.name,
         customerPhone: dto.customer.phone,
         customerEmail: dto.customer.email,
@@ -96,12 +99,30 @@ export class OrdersService {
 
     return {
       orderId: order.id,
+      orderNumber: order.orderNumber,
       status: order.status,
       paymentStatus: order.paymentStatus,
       orderType: order.orderType,
       totalCents: order.totalCents,
       createdAt: order.createdAt,
     };
+  }
+
+  private async generateOrderNumber(): Promise<string> {
+    const latestOrder = await this.prisma.order.findFirst({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        orderNumber: true,
+      },
+    });
+
+    const latestNumber = latestOrder?.orderNumber
+      ? Number(latestOrder.orderNumber)
+      : 10000;
+
+    return String(latestNumber + 1);
   }
 
   private validateOrderPayload(dto: CreateOrderDto) {
@@ -303,5 +324,51 @@ export class OrdersService {
         items: true,
       },
     });
+  }
+
+  async lookupGuestOrder(dto: GuestOrderLookupDto) {
+    const orderNumber = dto.orderNumber.trim().replace(/^#/, '');
+    const email = dto.email?.trim().toLowerCase();
+    const phone = dto.phone?.trim();
+
+    if (!email && !phone) {
+      throw new BadRequestException(
+        'Email or phone is required to track an order.',
+      );
+    }
+
+    const where: Prisma.OrderWhereInput = {
+      orderNumber,
+    };
+
+    if (email) {
+      where.customerEmail = {
+        equals: email,
+        mode: Prisma.QueryMode.insensitive,
+      };
+    }
+
+    if (phone) {
+      where.customerPhone = phone;
+    }
+
+    const order = await this.prisma.order.findFirst({
+      where,
+      include: {
+        items: {
+          include: {
+            options: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(
+        'Order not found. Please check your order number and contact detail.',
+      );
+    }
+
+    return mapOrderToTrackingResponse(order);
   }
 }

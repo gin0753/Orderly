@@ -35,6 +35,7 @@ export type CreateOrderRequest = {
 
 export type CreateOrderResponse = {
   orderId: string;
+  orderNumber: string;
   status: string;
   paymentStatus: string;
   orderType: string;
@@ -45,6 +46,9 @@ export type CreateOrderResponse = {
 export function createOrder(input: CreateOrderRequest) {
   return apiFetch<CreateOrderResponse>("/orders", {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(input),
   });
 }
