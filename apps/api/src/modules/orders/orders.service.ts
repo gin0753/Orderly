@@ -329,31 +329,37 @@ export class OrdersService {
   async lookupGuestOrder(dto: GuestOrderLookupDto) {
     const orderNumber = dto.orderNumber.trim().replace(/^#/, '');
     const email = dto.email?.trim().toLowerCase();
-    const phone = dto.phone?.trim();
+    const phone = dto.phone ? dto.phone.replace(/\D/g, '') : undefined;
 
     if (!email && !phone) {
       throw new BadRequestException(
-        'Email or phone is required to track an order.',
+        'Please provide the email or phone number used at checkout.',
       );
     }
 
-    const where: Prisma.OrderWhereInput = {
-      orderNumber,
-    };
-
-    if (email) {
-      where.customerEmail = {
-        equals: email,
-        mode: Prisma.QueryMode.insensitive,
-      };
-    }
-
-    if (phone) {
-      where.customerPhone = phone;
-    }
-
     const order = await this.prisma.order.findFirst({
-      where,
+      where: {
+        orderNumber,
+        OR: [
+          ...(email
+            ? [
+                {
+                  customerEmail: {
+                    equals: email,
+                    mode: 'insensitive' as const,
+                  },
+                },
+              ]
+            : []),
+          ...(phone
+            ? [
+                {
+                  customerPhone: phone,
+                },
+              ]
+            : []),
+        ],
+      },
       include: {
         items: {
           include: {
