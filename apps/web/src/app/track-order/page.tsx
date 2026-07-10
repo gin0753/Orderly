@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { OrderlyLogo } from "@/components/brand/orderly-logo";
 import { Card } from "@/components/ui/card";
-import { OrderLookupForm } from "@/features/order-tracking/components/order-lookup-form";
+import { OrderLookupForm } from "@/features/order-tracking/components/lookup/order-lookup-form";
 
 export const metadata = {
   title: "Track Order | Orderly",

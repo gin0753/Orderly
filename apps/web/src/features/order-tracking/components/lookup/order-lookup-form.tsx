@@ -6,13 +6,12 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { lookupGuestOrder } from "../api/order-tracking-api";
+import { lookupGuestOrder } from "../../api/order-tracking-api";
 import type {
   GuestOrderLookupRequest,
   SubmitStatus,
-} from "../types/order-tracking.types";
-
-const TRACKING_LOOKUP_STORAGE_KEY = "orderly:tracking-lookup";
+} from "../../types/order-tracking.types";
+import { TRACKING_LOOKUP_STORAGE_KEY } from "../../constants/order-tracking-storage";
 
 const normalizeOrderNumber = (value: string) => {
   return value.trim().replace(/^#/, "");

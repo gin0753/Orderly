@@ -1,3 +1,5 @@
+import { cn } from "@/lib/cn";
+
 type OrderlyLogoProps = {
   size?: "sm" | "md" | "lg";
   className?: string;
@@ -23,20 +25,18 @@ export function OrderlyLogo({ size = "md", className }: OrderlyLogoProps) {
 
   return (
     <span
-      className={[
+      className={cn(
         "inline-flex items-baseline gap-1 font-extrabold tracking-tight text-[var(--color-text-primary)]",
         config.text,
         className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      )}
     >
       <span>Orderly</span>
       <span
-        className={[
+        className={cn(
           "inline-block rounded-full bg-[var(--color-brand)]",
           config.dot,
-        ].join(" ")}
+        )}
         aria-hidden="true"
       />
     </span>
