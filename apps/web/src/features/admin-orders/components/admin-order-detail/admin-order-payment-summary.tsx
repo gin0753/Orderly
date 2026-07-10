@@ -32,10 +32,10 @@ export function AdminOrderPaymentSummary({
           </div>
         ))}
 
-        {typeof order.taxCents === "number" ? (
+        {typeof order.serviceFeeCents === "number" ? (
           <div className="flex justify-between">
             <span className="text-[var(--color-text-secondary)]">Tax</span>
-            <span>{formatMoneyFromCents(order.taxCents)}</span>
+            <span>{formatMoneyFromCents(order.serviceFeeCents)}</span>
           </div>
         ) : null}
 

@@ -4,7 +4,7 @@ import { formatMoneyFromCents } from "@/lib/format-money";
 
 type OrderSuccessPageProps = {
   searchParams: Promise<{
-    orderId?: string;
+    orderNumber?: string;
     totalCents?: string;
     orderType?: string;
   }>;
@@ -15,7 +15,7 @@ export default async function OrderSuccessPage({
 }: OrderSuccessPageProps) {
   const params = await searchParams;
 
-  const orderId = params.orderId;
+  const orderNumber = params.orderNumber;
   const orderType = params.orderType;
   const totalCents = Number(params.totalCents);
 
@@ -52,7 +52,9 @@ export default async function OrderSuccessPage({
           </div>
 
           <div className="grid gap-4 pt-4 text-sm">
-            {orderId ? <SummaryRow label="Order ID" value={orderId} /> : null}
+            {orderNumber ? (
+              <SummaryRow label="Order number" value={`#${orderNumber}`} />
+            ) : null}
 
             {orderType ? (
               <SummaryRow
@@ -73,9 +75,25 @@ export default async function OrderSuccessPage({
         </div>
 
         <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row">
+          {orderNumber ? (
+            <Link
+              href={`/track-order/${encodeURIComponent(orderNumber)}`}
+              className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
+            >
+              Track your order
+            </Link>
+          ) : (
+            <Link
+              href="/track-order"
+              className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
+            >
+              Track an order
+            </Link>
+          )}
+
           <Link
             href="/"
-            className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 text-sm font-semibold text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-hover)]"
           >
             Start another order
           </Link>

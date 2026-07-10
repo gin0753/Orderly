@@ -107,7 +107,13 @@ export function useOrderTracking(orderNumber: string) {
   }, [loadOrder]);
 
   useEffect(() => {
-    void loadOrder("initial");
+    const timeoutId = window.setTimeout(() => {
+      void loadOrder("initial");
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [loadOrder]);
 
   useEffect(() => {

@@ -27,7 +27,21 @@ function DetailCard({ label, children, className = "" }: DetailCardProps) {
   );
 }
 
+function formatDeliveryAddress(order: OrderTrackingResponse) {
+  return [
+    order.addressLine1,
+    order.addressLine2,
+    order.city,
+    order.state,
+    order.postcode,
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
 export function OrderTrackingDetails({ order }: OrderTrackingDetailsProps) {
+  const formattedAddress = formatDeliveryAddress(order);
+
   return (
     <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 md:p-6">
       <h2 className="text-lg font-bold tracking-tight text-[var(--color-text-primary)]">
@@ -53,13 +67,20 @@ export function OrderTrackingDetails({ order }: OrderTrackingDetailsProps) {
           </p>
         </DetailCard>
 
-        {order.deliveryAddress ? (
-          <DetailCard label="Delivery address" className="sm:col-span-2">
-            <p className="mt-2 text-sm font-medium text-[var(--color-text-primary)]">
-              {order.deliveryAddress}
-            </p>
-          </DetailCard>
-        ) : null}
+        <DetailCard
+          label={
+            order.orderType === "PICKUP"
+              ? "Pickup location"
+              : "Delivery address"
+          }
+          className="sm:col-span-2"
+        >
+          <p className="mt-2 text-sm font-medium text-[var(--color-text-primary)]">
+            {order.orderType === "PICKUP"
+              ? "123 Collins St, Melbourne VIC 3000"
+              : formattedAddress || "Delivery address unavailable"}
+          </p>
+        </DetailCard>
 
         {order.notes ? (
           <DetailCard label="Order notes" className="sm:col-span-2">

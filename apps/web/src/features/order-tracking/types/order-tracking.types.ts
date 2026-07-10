@@ -7,6 +7,8 @@ export type OrderStatus =
 
 export type OrderType = "PICKUP" | "DELIVERY";
 
+export type PaymentStatus = "PENDING" | "PAID" | "FAILED" | "REFUNDED";
+
 export type SubmitStatus = "idle" | "submitting" | "navigating";
 
 export type GuestOrderLookupRequest = {
@@ -17,8 +19,9 @@ export type GuestOrderLookupRequest = {
 
 export type OrderTrackingItemOption = {
   id: string;
+  optionGroupName: string;
   name: string;
-  priceCents: number;
+  priceDeltaCents: number;
 };
 
 export type OrderTrackingItem = {
@@ -39,16 +42,27 @@ export type OrderTrackingResponse = {
   orderNumber: string;
   status: OrderStatus;
   orderType: OrderType;
+  paymentStatus: PaymentStatus;
+
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-  deliveryAddress: string | null;
+
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  state: string | null;
+  postcode: string | null;
+
   notes: string | null;
+
   items: OrderTrackingItem[];
+
   subtotalCents: number;
   deliveryFeeCents: number;
-  taxCents: number;
+  serviceFeeCents: number;
   totalCents: number;
+
   createdAt: string;
   updatedAt: string;
 };

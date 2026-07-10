@@ -1,6 +1,6 @@
-import { Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 
-import { OrderTrackingResponse } from '../types/order-tracking-response.type';
+import type { OrderTrackingResponse } from '../types/order-tracking-response.type';
 
 type OrderWithTrackingRelations = Prisma.OrderGetPayload<{
   include: {

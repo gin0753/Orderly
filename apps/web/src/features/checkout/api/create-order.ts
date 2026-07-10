@@ -38,7 +38,7 @@ export type CreateOrderResponse = {
   orderNumber: string;
   status: string;
   paymentStatus: string;
-  orderType: string;
+  orderType: "PICKUP" | "DELIVERY";
   totalCents: number;
   createdAt: string;
 };

@@ -13,27 +13,22 @@ type OrderStatusTimelineProps = {
 const STATUS_STEPS: {
   status: Exclude<OrderStatus, "CANCELLED">;
   label: string;
-  helper: string;
 }[] = [
   {
     status: "PENDING",
     label: "Placed",
-    helper: "Order received",
   },
   {
     status: "PREPARING",
     label: "Preparing",
-    helper: "Kitchen is working",
   },
   {
     status: "READY",
     label: "Ready",
-    helper: "Ready soon",
   },
   {
     status: "COMPLETED",
     label: "Completed",
-    helper: "Order finished",
   },
 ];
 
@@ -43,6 +38,25 @@ const ACTIVE_INDEX_BY_STATUS: Record<OrderStatus, number> = {
   READY: 2,
   COMPLETED: 3,
   CANCELLED: 0,
+};
+
+const getStepHelper = (
+  status: Exclude<OrderStatus, "CANCELLED">,
+  orderType: OrderType,
+) => {
+  if (status === "PENDING") {
+    return "Order received";
+  }
+
+  if (status === "PREPARING") {
+    return "Kitchen is working";
+  }
+
+  if (status === "READY") {
+    return orderType === "PICKUP" ? "Ready for pickup" : "Ready for delivery";
+  }
+
+  return "Order finished";
 };
 
 export function OrderStatusTimeline({
@@ -55,7 +69,7 @@ export function OrderStatusTimeline({
     return (
       <div className="rounded-3xl border border-[var(--color-danger-border)] bg-[var(--color-danger-background)] p-5">
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-lg text-[var(--color-danger-foreground)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-lg font-bold text-[var(--color-danger-foreground)]">
             !
           </div>
 
@@ -113,13 +127,16 @@ export function OrderStatusTimeline({
                 />
               ) : null}
 
-              <div className="relative z-10 flex gap-3 md:block">
+              <div
+                className="relative z-10 flex gap-3 md:block"
+                aria-current={isCurrent ? "step" : undefined}
+              >
                 <div
                   className={cn(
                     "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-bold",
                     isActiveOrDone
                       ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-[var(--color-text-inverse)]"
-                      : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-subtle)]",
+                      : "border-[var(--color-border)] bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)]",
                   )}
                 >
                   {isDone ? "✓" : index + 1}
@@ -137,7 +154,9 @@ export function OrderStatusTimeline({
                     {step.label}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">
-                    {index === 0 ? formatDateTime(createdAt) : step.helper}
+                    {index === 0
+                      ? formatDateTime(createdAt)
+                      : getStepHelper(step.status, orderType)}
                   </p>
                 </div>
               </div>

@@ -11,7 +11,7 @@ import type {
   GuestOrderLookupRequest,
   SubmitStatus,
 } from "../../types/order-tracking.types";
-import { TRACKING_LOOKUP_STORAGE_KEY } from "../../constants/order-tracking-storage";
+import { saveTrackingLookup } from "../../utils/order-tracking-storage";
 
 const normalizeOrderNumber = (value: string) => {
   return value.trim().replace(/^#/, "");
@@ -57,10 +57,16 @@ const getSubmitButtonLabel = (status: SubmitStatus) => {
   return "Track Order";
 };
 
-export function OrderLookupForm() {
+type OrderLookupFormProps = {
+  initialOrderNumber?: string;
+};
+
+export function OrderLookupForm({
+  initialOrderNumber = "",
+}: OrderLookupFormProps) {
   const router = useRouter();
 
-  const [orderNumber, setOrderNumber] = useState("");
+  const [orderNumber, setOrderNumber] = useState(initialOrderNumber);
   const [contact, setContact] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
@@ -96,15 +102,11 @@ export function OrderLookupForm() {
     try {
       const order = await lookupGuestOrder(payload);
 
-      window.sessionStorage.setItem(
-        TRACKING_LOOKUP_STORAGE_KEY,
-        JSON.stringify({
-          orderNumber: order.orderNumber,
-          email: payload.email,
-          phone: payload.phone,
-          lookedUpAt: Date.now(),
-        }),
-      );
+      saveTrackingLookup({
+        orderNumber: order.orderNumber,
+        email: payload.email,
+        phone: payload.phone,
+      });
 
       setSubmitStatus("navigating");
 

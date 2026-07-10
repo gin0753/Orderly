@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 
+import { OrderlyLogo } from "@/components/brand/orderly-logo";
 import { Card } from "@/components/ui/card";
 
 import { useOrderTracking } from "../../hooks/use-order-tracking";
@@ -13,34 +15,16 @@ import { OrderTrackingHeader } from "./order-tracking-header";
 import { OrderTrackingLoadingState } from "./order-tracking-loading-state";
 import { OrderTrackingVerificationState } from "./order-tracking-verification-state";
 import { TrackingOrderSummary } from "./tracking-order-summary";
-import { OrderlyLogo } from "@/components/brand/orderly-logo";
 
 type OrderTrackingResultProps = {
   orderNumber: string;
 };
 
-export function OrderTrackingResult({ orderNumber }: OrderTrackingResultProps) {
-  const {
-    order,
-    error,
-    isInitialLoading,
-    isRefreshing,
-    needsVerification,
-    refreshOrder,
-  } = useOrderTracking(orderNumber);
+type OrderTrackingPageShellProps = {
+  children: ReactNode;
+};
 
-  if (isInitialLoading) {
-    return <OrderTrackingLoadingState />;
-  }
-
-  if (needsVerification) {
-    return <OrderTrackingVerificationState />;
-  }
-
-  if (error || !order) {
-    return <OrderTrackingErrorState error={error} onRetry={refreshOrder} />;
-  }
-
+function OrderTrackingPageShell({ children }: OrderTrackingPageShellProps) {
   return (
     <main className="min-h-screen bg-[var(--color-page-background)] px-4 py-6 text-[var(--color-text-primary)] md:px-8 md:py-10">
       <div className="mx-auto max-w-6xl">
@@ -57,43 +41,84 @@ export function OrderTrackingResult({ orderNumber }: OrderTrackingResultProps) {
           </Link>
         </header>
 
-        <OrderTrackingHeader
-          order={order}
-          isRefreshing={isRefreshing}
-          onRefresh={refreshOrder}
-        />
-
-        <div className="grid gap-6 lg:grid-cols-[1fr_0.78fr]">
-          <div className="space-y-6">
-            <OrderStatusTimeline
-              status={order.status}
-              orderType={order.orderType}
-              createdAt={order.createdAt}
-              updatedAt={order.updatedAt}
-            />
-
-            <OrderTrackingDetails order={order} />
-          </div>
-
-          <div className="space-y-6">
-            <TrackingOrderSummary order={order} />
-
-            <Card className="border-[var(--color-brand-soft)] bg-[var(--color-notice-background)] p-6">
-              <p className="text-sm font-semibold text-[var(--color-notice-foreground)]">
-                Need help with this order?
-              </p>
-
-              <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
-                Keep your order number ready when contacting support.
-              </p>
-
-              <p className="mt-4 text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
-                {formatMoneyFromCents(order.totalCents)}
-              </p>
-            </Card>
-          </div>
-        </div>
+        {children}
       </div>
     </main>
+  );
+}
+
+export function OrderTrackingResult({ orderNumber }: OrderTrackingResultProps) {
+  const {
+    order,
+    error,
+    isInitialLoading,
+    isRefreshing,
+    needsVerification,
+    refreshOrder,
+  } = useOrderTracking(orderNumber);
+
+  if (isInitialLoading) {
+    return (
+      <OrderTrackingPageShell>
+        <OrderTrackingLoadingState />
+      </OrderTrackingPageShell>
+    );
+  }
+
+  if (needsVerification) {
+    return (
+      <OrderTrackingPageShell>
+        <OrderTrackingVerificationState />
+      </OrderTrackingPageShell>
+    );
+  }
+
+  if (error || !order) {
+    return (
+      <OrderTrackingPageShell>
+        <OrderTrackingErrorState error={error} onRetry={refreshOrder} />
+      </OrderTrackingPageShell>
+    );
+  }
+
+  return (
+    <OrderTrackingPageShell>
+      <OrderTrackingHeader
+        order={order}
+        isRefreshing={isRefreshing}
+        onRefresh={refreshOrder}
+      />
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_0.78fr]">
+        <div className="space-y-6">
+          <OrderStatusTimeline
+            status={order.status}
+            orderType={order.orderType}
+            createdAt={order.createdAt}
+            updatedAt={order.updatedAt}
+          />
+
+          <OrderTrackingDetails order={order} />
+        </div>
+
+        <div className="space-y-6">
+          <TrackingOrderSummary order={order} />
+
+          <Card className="border-[var(--color-brand-soft)] bg-[var(--color-notice-background)] p-6">
+            <p className="text-sm font-semibold text-[var(--color-notice-foreground)]">
+              Need help with this order?
+            </p>
+
+            <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
+              Keep your order number ready when contacting support.
+            </p>
+
+            <p className="mt-4 text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
+              {formatMoneyFromCents(order.totalCents)}
+            </p>
+          </Card>
+        </div>
+      </div>
+    </OrderTrackingPageShell>
   );
 }

@@ -29,7 +29,17 @@ const trustHighlights = [
   },
 ];
 
-export default function TrackOrderPage() {
+type TrackOrderPageProps = {
+  searchParams: Promise<{
+    orderNumber?: string;
+  }>;
+};
+
+export default async function TrackOrderPage({
+  searchParams,
+}: TrackOrderPageProps) {
+  const params = await searchParams;
+  const initialOrderNumber = params.orderNumber ?? "";
   return (
     <main className="min-h-screen bg-[var(--color-page-background)] px-4 py-6 text-[var(--color-text-primary)] md:px-8 md:py-10">
       <div className="mx-auto max-w-7xl">
@@ -102,7 +112,7 @@ export default function TrackOrderPage() {
                     </p>
                   </div>
 
-                  <OrderLookupForm />
+                  <OrderLookupForm initialOrderNumber={initialOrderNumber} />
 
                   <p className="mt-5 text-center text-sm text-[var(--color-text-muted)]">
                     Having trouble?{" "}
