@@ -55,7 +55,6 @@ export type AdminOrder = {
   subtotalCents: number;
   deliveryFeeCents: number;
   serviceFeeCents: number;
-  taxCents?: number | null;
   totalCents: number;
 
   deliveryAddress?: string | null;

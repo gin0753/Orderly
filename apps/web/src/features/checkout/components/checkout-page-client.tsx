@@ -26,6 +26,7 @@ import { CheckoutSkeleton } from "@/features/checkout/components/checkout-skelet
 import { createOrder } from "@/features/checkout/api/create-order";
 import { CheckoutTransition } from "./checkout-transition";
 import { Button } from "@/components/ui/button";
+import { saveTrackingLookup } from "@/features/order-tracking/utils/order-tracking-storage";
 
 const initialFormState: CheckoutFormState = {
   fulfillmentType: "pickup",
@@ -89,18 +90,26 @@ export function CheckoutPageClient() {
     setIsSubmitting(true);
 
     try {
-      const order = await createOrder(
-        buildCreateOrderRequest({
-          form,
-          cartItems,
-        }),
-      );
+      const createOrderRequest = buildCreateOrderRequest({
+        form,
+        cartItems,
+      });
+
+      const order = await createOrder(createOrderRequest);
+
+      saveTrackingLookup({
+        orderNumber: order.orderNumber,
+        email: createOrderRequest.customer.email,
+        phone: createOrderRequest.customer.phone,
+      });
 
       setIsRedirectingToSuccess(true);
       dispatch(clearCart());
 
       router.push(
-        `/order-success?orderId=${order.orderId}&totalCents=${order.totalCents}&orderType=${order.orderType}`,
+        `/order-success?orderNumber=${encodeURIComponent(
+          order.orderNumber,
+        )}&totalCents=${order.totalCents}&orderType=${order.orderType}`,
       );
     } catch (error) {
       setSubmitError(

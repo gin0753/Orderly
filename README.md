@@ -48,6 +48,14 @@ PENDING → ACCEPTED → PREPARING → READY → COMPLETED
 - Login rate limiting
 - Unit and E2E tests for auth and route boundaries
 
+### Guest Order Tracking
+
+- Public guest order tracking by order number + email or phone
+- Secure lookup flow that prevents order details being exposed by order number alone
+- Customer-facing order progress timeline
+- Pickup / delivery details and order summary
+- Manual refresh and lightweight auto-refresh for status updates
+
 ## API
 
 ### Public
