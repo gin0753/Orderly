@@ -2,11 +2,12 @@ import Image from "next/image";
 import { Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { formatMoneyFromCents } from "@/lib/format-money";
 
 import type { CartItem } from "../../cart-types";
-import { Card } from "@/components/ui/card";
+import { getCartItemOptionSummary } from "../../cart-utils";
 
 type CartItemRowProps = {
   item: CartItem;
@@ -19,12 +20,7 @@ export function CartItemRow({
   onRemove,
   onQuantityChange,
 }: CartItemRowProps) {
-  const selectedOptionsText = [
-    item.selectedSize,
-    ...item.selectedAddOns.map((addOn) => addOn.name),
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const selectedOptionsText = getCartItemOptionSummary(item);
 
   return (
     <Card className="grid grid-cols-[72px_1fr] gap-4 border-[var(--color-border-soft)] p-3 shadow-none transition hover:border-[var(--color-border)]">
@@ -52,7 +48,7 @@ export function CartItemRow({
             </h3>
 
             {selectedOptionsText ? (
-              <p className="mt-1 line-clamp-2 text-xs capitalize leading-5 text-[var(--color-text-muted)]">
+              <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--color-text-muted)]">
                 {selectedOptionsText}
               </p>
             ) : null}

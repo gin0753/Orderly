@@ -42,6 +42,12 @@ enum AdminRole {
   ADMIN
 }
 
+enum ProductOptionGroupKind {
+  SIZE
+  MODIFIER
+  ADD_ON
+}
+
 model User {
   id           String   @id @default(uuid()) @db.Uuid
   name         String
@@ -58,11 +64,14 @@ model User {
 }
 
 model Category {
-  id        String  @id @default(uuid()) @db.Uuid
-  name      String
-  slug      String  @unique
-  sortOrder Int     @default(0)
-  isActive  Boolean @default(true)
+  id String @id @default(uuid()) @db.Uuid
+
+  name        String
+  slug        String    @unique
+  description String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  archivedAt  DateTime?
 
   products Product[]
 
@@ -71,6 +80,7 @@ model Category {
 
   @@index([isActive])
   @@index([sortOrder])
+  @@index([archivedAt, isActive, sortOrder])
 }
 
 model Product {
@@ -79,10 +89,11 @@ model Product {
 
   name        String
   description String?
-  basePrice   Decimal @db.Decimal(10, 2)
+  basePrice   Decimal  @db.Decimal(10, 2)
   imageUrl    String?
-  isAvailable Boolean @default(true)
-  sortOrder   Int     @default(0)
+  isAvailable Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  archivedAt  DateTime?
 
   category     Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   optionGroups ProductOptionGroup[]
@@ -94,6 +105,7 @@ model Product {
   @@index([categoryId])
   @@index([isAvailable])
   @@index([sortOrder])
+  @@index([categoryId, archivedAt, isAvailable, sortOrder])
 }
 
 model ProductOptionGroup {
@@ -101,11 +113,13 @@ model ProductOptionGroup {
   productId String @db.Uuid
 
   name       String
+  kind       ProductOptionGroupKind @default(MODIFIER)
   type       OptionGroupType
-  isRequired Boolean         @default(false)
-  minSelect  Int             @default(0)
-  maxSelect  Int             @default(1)
-  sortOrder  Int             @default(0)
+  isRequired Boolean                @default(false)
+  minSelect  Int                    @default(0)
+  maxSelect  Int                    @default(1)
+  sortOrder  Int                    @default(0)
+  isActive   Boolean                @default(true)
 
   product Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   options ProductOption[]
@@ -115,6 +129,7 @@ model ProductOptionGroup {
 
   @@index([productId])
   @@index([sortOrder])
+  @@index([productId, isActive, sortOrder])
 }
 
 model ProductOption {
@@ -124,6 +139,7 @@ model ProductOption {
   name        String
   priceDelta  Decimal @default(0) @db.Decimal(10, 2)
   isAvailable Boolean @default(true)
+  isDefault   Boolean @default(false)
   sortOrder   Int     @default(0)
 
   optionGroup      ProductOptionGroup @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
@@ -135,6 +151,7 @@ model ProductOption {
   @@index([optionGroupId])
   @@index([isAvailable])
   @@index([sortOrder])
+  @@index([optionGroupId, isAvailable, sortOrder])
 }
 
 model StoreSettings {

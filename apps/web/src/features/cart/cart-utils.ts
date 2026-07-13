@@ -1,113 +1,51 @@
 import {
-  CartAddOn,
   CartItem,
   CartProductSnapshot,
-  CartSelectedSize,
+  CartSelectedOption,
 } from "./cart-types";
-
-export const PRODUCT_SIZE_OPTIONS: {
-  id: CartSelectedSize;
-  label: string;
-  caption: string;
-  priceDeltaCents: number;
-}[] = [
-  {
-    id: "small",
-    label: "Small",
-    caption: "10”",
-    priceDeltaCents: -100,
-  },
-  {
-    id: "medium",
-    label: "Medium",
-    caption: "12”",
-    priceDeltaCents: 0,
-  },
-  {
-    id: "large",
-    label: "Large",
-    caption: "14”",
-    priceDeltaCents: 200,
-  },
-];
-
-export const PRODUCT_ADD_ON_OPTIONS: CartAddOn[] = [
-  {
-    id: "extra-cheese",
-    name: "Extra Cheese",
-    priceDeltaCents: 200,
-  },
-  {
-    id: "olives",
-    name: "Olives",
-    priceDeltaCents: 150,
-  },
-  {
-    id: "mushrooms",
-    name: "Mushrooms",
-    priceDeltaCents: 150,
-  },
-];
 
 export function buildCartItemKey(params: {
   productId: string;
-  selectedSize: CartSelectedSize;
-  selectedAddOnIds: string[];
+  selectedOptionIds: string[];
 }) {
-  const sortedAddOnIds = [...params.selectedAddOnIds].sort();
+  const sortedOptionIds = [...new Set(params.selectedOptionIds)].sort();
 
-  return [
-    params.productId,
-    params.selectedSize,
-    sortedAddOnIds.join("-") || "no-addons",
-  ].join("__");
+  return [params.productId, sortedOptionIds.join("-") || "no-options"].join(
+    "__",
+  );
 }
 
 export function getUnitPriceCents(params: {
   product: CartProductSnapshot;
-  selectedSize: CartSelectedSize;
-  selectedAddOns: CartAddOn[];
+  selectedOptions: CartSelectedOption[];
 }) {
-  const sizeOption = PRODUCT_SIZE_OPTIONS.find(
-    (option) => option.id === params.selectedSize,
-  );
-
-  const sizeDeltaCents = sizeOption?.priceDeltaCents ?? 0;
-
-  const addOnsDeltaCents = params.selectedAddOns.reduce(
-    (total, addOn) => total + addOn.priceDeltaCents,
+  const optionPriceDeltaCents = params.selectedOptions.reduce(
+    (total, option) => total + option.priceDeltaCents,
     0,
   );
 
-  return Math.max(
-    0,
-    params.product.priceCents + sizeDeltaCents + addOnsDeltaCents,
-  );
+  return Math.max(0, params.product.priceCents + optionPriceDeltaCents);
 }
 
 export function createCartItem(params: {
   product: CartProductSnapshot;
-  selectedSize: CartSelectedSize;
-  selectedAddOns: CartAddOn[];
+  selectedOptions: CartSelectedOption[];
   quantity: number;
 }): CartItem {
-  const unitPriceCents = getUnitPriceCents({
-    product: params.product,
-    selectedSize: params.selectedSize,
-    selectedAddOns: params.selectedAddOns,
-  });
+  const selectedOptionIds = params.selectedOptions.map((option) => option.id);
 
   return {
     key: buildCartItemKey({
       productId: params.product.id,
-      selectedSize: params.selectedSize,
-      selectedAddOnIds: params.selectedAddOns.map((addOn) => addOn.id),
+      selectedOptionIds,
     }),
     product: params.product,
-    selectedSize: params.selectedSize,
-    selectedAddOns: params.selectedAddOns,
+    selectedOptions: params.selectedOptions,
     quantity: params.quantity,
-    unitPriceCents,
+    unitPriceCents: getUnitPriceCents({
+      product: params.product,
+      selectedOptions: params.selectedOptions,
+    }),
   };
 }
 
@@ -122,12 +60,18 @@ export function getCartItemCount(items: CartItem[]) {
   return items.reduce((total, item) => total + item.quantity, 0);
 }
 
-export function getCartSizeLabel(size: CartSelectedSize) {
-  const option = PRODUCT_SIZE_OPTIONS.find((option) => option.id === size);
+export function getCartItemSize(item: CartItem) {
+  return item.selectedOptions.find((option) => option.kind === "SIZE");
+}
 
-  if (!option) {
-    return size;
-  }
+export function getCartItemModifiers(item: CartItem) {
+  return item.selectedOptions.filter((option) => option.kind === "MODIFIER");
+}
 
-  return `${option.label} ${option.caption}`;
+export function getCartItemAddOns(item: CartItem) {
+  return item.selectedOptions.filter((option) => option.kind === "ADD_ON");
+}
+
+export function getCartItemOptionSummary(item: CartItem) {
+  return item.selectedOptions.map((option) => option.name).join(" · ");
 }

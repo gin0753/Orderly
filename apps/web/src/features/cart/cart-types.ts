@@ -6,10 +6,13 @@ export type CartProductSnapshot = {
   priceCents: number;
 };
 
-export type CartSelectedSize = "small" | "medium" | "large";
+export type CartOptionGroupKind = "SIZE" | "MODIFIER" | "ADD_ON";
 
-export type CartAddOn = {
+export type CartSelectedOption = {
   id: string;
+  optionGroupId: string;
+  optionGroupName: string;
+  kind: CartOptionGroupKind;
   name: string;
   priceDeltaCents: number;
 };
@@ -17,9 +20,13 @@ export type CartAddOn = {
 export type CartItem = {
   key: string;
   product: CartProductSnapshot;
-  selectedSize: CartSelectedSize;
-  selectedAddOns: CartAddOn[];
+  selectedOptions: CartSelectedOption[];
   quantity: number;
+
+  /**
+   * Used only for immediate cart UI rendering.
+   * The backend recalculates the authoritative price from the database.
+   */
   unitPriceCents: number;
 };
 

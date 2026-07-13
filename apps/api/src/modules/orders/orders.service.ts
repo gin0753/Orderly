@@ -2,94 +2,206 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
-import { OrderStatus, OrderType, Prisma } from '@prisma/client';
+import {
+  OptionGroupType,
+  OrderStatus,
+  OrderType,
+  Prisma,
+  ProductOptionGroupKind,
+} from '@prisma/client';
+import type { StoreSettings } from '@prisma/client';
 
 import { PrismaService } from '../../prisma/prisma.service';
+import { moneyToCents } from '../../utils/moneyToCents';
+
 import {
   CreateOrderDto,
   CreateOrderFulfillmentType,
 } from './dto/create-order.dto';
+import { GuestOrderLookupDto } from './dto/guest-order-lookup.dto';
 import { ListOrdersQueryDto } from './dto/list-orders-query.dto';
 import { PerformOrderActionDto } from './dto/perform-order-action.dto';
-import { resolveOrderAction } from './order-action';
-import { GuestOrderLookupDto } from './dto/guest-order-lookup.dto';
 import { mapOrderToTrackingResponse } from './mappers/order-tracking.mapper';
+import { resolveOrderAction } from './order-action';
 
-const DELIVERY_FEE_CENTS = 399;
 const SERVICE_FEE_CENTS = 120;
 const FREE_DELIVERY_THRESHOLD_CENTS = 5000;
+
+type OrderableProduct = Prisma.ProductGetPayload<{
+  include: {
+    category: true;
+    optionGroups: {
+      include: {
+        options: true;
+      };
+    };
+  };
+}>;
+
+type SelectedDatabaseOption = {
+  group: OrderableProduct['optionGroups'][number];
+  option: OrderableProduct['optionGroups'][number]['options'][number];
+};
+
+type ResolvedOrderItem = {
+  productId: string;
+
+  productNameSnapshot: string;
+  productImageUrlSnapshot: string | null;
+
+  sizeNameSnapshot: string | null;
+  sizePriceCentsSnapshot: number | null;
+
+  quantity: number;
+  unitPriceCents: number;
+  lineTotalCents: number;
+
+  options: Array<{
+    optionId: string;
+    optionGroupNameSnapshot: string;
+    optionNameSnapshot: string;
+    priceDeltaCentsSnapshot: number;
+  }>;
+};
 
 @Injectable()
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createOrder(dto: CreateOrderDto) {
-    this.validateOrderPayload(dto);
+    this.validateOrderFulfillment(dto);
 
-    const subtotalCents = dto.items.reduce(
-      (total, item) => total + item.lineTotalCents,
-      0,
-    );
+    const customerPhone = this.normalizeCustomerPhone(dto.customer.phone);
 
-    const deliveryFeeCents = this.getDeliveryFeeCents(
-      subtotalCents,
-      dto.fulfillmentType,
-    );
+    return this.prisma.$transaction(async (tx) => {
+      const storeSettings = await tx.storeSettings.findUnique({
+        where: {
+          id: 'default',
+        },
+      });
 
-    const totalCents = subtotalCents + deliveryFeeCents + SERVICE_FEE_CENTS;
-    const orderNumber = await this.generateOrderNumber();
+      if (!storeSettings) {
+        throw new ServiceUnavailableException(
+          'Store settings are not configured.',
+        );
+      }
 
-    const order = await this.prisma.order.create({
-      data: {
-        orderNumber,
-        orderType:
-          dto.fulfillmentType === CreateOrderFulfillmentType.PICKUP
-            ? OrderType.PICKUP
-            : OrderType.DELIVERY,
-        customerName: dto.customer.name,
-        customerPhone: dto.customer.phone,
-        customerEmail: dto.customer.email,
+      this.validateStoreAvailability(storeSettings, dto.fulfillmentType);
 
-        addressLine1: dto.address?.addressLine1,
-        addressLine2: dto.address?.addressLine2,
-        city: dto.address?.city,
-        state: dto.address?.state,
-        postcode: dto.address?.postcode,
+      const resolvedItems = await this.resolveOrderItems(tx, dto.items);
 
-        notes: dto.notes,
+      const subtotalCents = resolvedItems.reduce(
+        (total, item) => total + item.lineTotalCents,
+        0,
+      );
 
+      const minimumOrderAmountCents = moneyToCents(
+        storeSettings.minimumOrderAmount,
+      );
+
+      if (subtotalCents < minimumOrderAmountCents) {
+        throw new BadRequestException(
+          `The minimum order amount is $${(
+            minimumOrderAmountCents / 100
+          ).toFixed(2)}.`,
+        );
+      }
+
+      const deliveryFeeCents = this.getDeliveryFeeCents(
         subtotalCents,
-        deliveryFeeCents,
-        serviceFeeCents: SERVICE_FEE_CENTS,
-        totalCents,
+        dto.fulfillmentType,
+        moneyToCents(storeSettings.deliveryFee),
+      );
 
-        items: {
-          create: dto.items.map((item) => ({
-            productId: item.productId,
+      const totalCents = subtotalCents + deliveryFeeCents + SERVICE_FEE_CENTS;
 
-            productNameSnapshot: item.productName,
-            productImageUrlSnapshot: item.productImageUrl,
+      const orderNumber = await this.generateOrderNumber(tx);
 
-            sizeNameSnapshot: item.sizeName,
-            sizePriceCentsSnapshot: item.sizePriceCents,
+      const order = await tx.order.create({
+        data: {
+          orderNumber,
 
-            quantity: item.quantity,
-            unitPriceCents: item.unitPriceCents,
-            lineTotalCents: item.lineTotalCents,
+          orderType:
+            dto.fulfillmentType === CreateOrderFulfillmentType.PICKUP
+              ? OrderType.PICKUP
+              : OrderType.DELIVERY,
 
-            options: {
-              create: item.addOns.map((addOn) => ({
-                optionGroupNameSnapshot: 'Add-ons',
-                optionNameSnapshot: addOn.name,
-                priceDeltaCentsSnapshot: addOn.priceCents,
-              })),
+          customerName: dto.customer.name.trim(),
+          customerPhone,
+          customerEmail: dto.customer.email.trim().toLowerCase(),
+
+          addressLine1: dto.address?.addressLine1.trim(),
+          addressLine2: dto.address?.addressLine2?.trim() || undefined,
+          city: dto.address?.city.trim(),
+          state: dto.address?.state.trim(),
+          postcode: dto.address?.postcode.trim(),
+
+          notes: dto.notes?.trim() || undefined,
+
+          subtotalCents,
+          deliveryFeeCents,
+          serviceFeeCents: SERVICE_FEE_CENTS,
+          totalCents,
+
+          items: {
+            create: resolvedItems.map((item) => ({
+              productId: item.productId,
+
+              productNameSnapshot: item.productNameSnapshot,
+              productImageUrlSnapshot: item.productImageUrlSnapshot,
+
+              sizeNameSnapshot: item.sizeNameSnapshot,
+              sizePriceCentsSnapshot: item.sizePriceCentsSnapshot,
+
+              quantity: item.quantity,
+              unitPriceCents: item.unitPriceCents,
+              lineTotalCents: item.lineTotalCents,
+
+              options: {
+                create: item.options,
+              },
+            })),
+          },
+        },
+
+        include: {
+          items: {
+            include: {
+              options: true,
             },
-          })),
+          },
+        },
+      });
+
+      return {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        orderType: order.orderType,
+        totalCents: order.totalCents,
+        createdAt: order.createdAt,
+      };
+    });
+  }
+
+  private async resolveOrderItems(
+    tx: Prisma.TransactionClient,
+    items: CreateOrderDto['items'],
+  ): Promise<ResolvedOrderItem[]> {
+    const productIds = [...new Set(items.map((item) => item.productId))];
+
+    const products = await tx.product.findMany({
+      where: {
+        id: {
+          in: productIds,
         },
       },
       include: {
-        items: {
+        category: true,
+        optionGroups: {
           include: {
             options: true,
           },
@@ -97,56 +209,221 @@ export class OrdersService {
       },
     });
 
-    return {
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-      status: order.status,
-      paymentStatus: order.paymentStatus,
-      orderType: order.orderType,
-      totalCents: order.totalCents,
-      createdAt: order.createdAt,
-    };
-  }
+    const productsById = new Map(
+      products.map((product) => [product.id, product]),
+    );
 
-  private async generateOrderNumber(): Promise<string> {
-    const latestOrder = await this.prisma.order.findFirst({
-      orderBy: {
-        createdAt: 'desc',
-      },
-      select: {
-        orderNumber: true,
-      },
+    return items.map((item) => {
+      const product = productsById.get(item.productId);
+
+      if (!product) {
+        throw new BadRequestException('One or more products no longer exist.');
+      }
+
+      this.validateProductAvailability(product);
+
+      const selectedOptions = this.resolveSelectedOptions(
+        product,
+        item.selectedOptionIds,
+      );
+
+      this.validateOptionSelections(product, selectedOptions);
+
+      const basePriceCents = moneyToCents(product.basePrice);
+
+      const optionPriceCents = selectedOptions.reduce(
+        (total, selected) => total + moneyToCents(selected.option.priceDelta),
+        0,
+      );
+
+      const unitPriceCents = basePriceCents + optionPriceCents;
+
+      if (unitPriceCents < 0) {
+        throw new BadRequestException(
+          `${product.name} has an invalid price configuration.`,
+        );
+      }
+
+      const lineTotalCents = unitPriceCents * item.quantity;
+
+      const selectedSizeOptions = selectedOptions.filter(
+        ({ group }) => group.kind === ProductOptionGroupKind.SIZE,
+      );
+
+      if (selectedSizeOptions.length > 1) {
+        throw new BadRequestException(
+          `${product.name} has an invalid size configuration.`,
+        );
+      }
+
+      const selectedSize = selectedSizeOptions[0];
+
+      return {
+        productId: product.id,
+
+        productNameSnapshot: product.name,
+        productImageUrlSnapshot: product.imageUrl,
+
+        sizeNameSnapshot: selectedSize?.option.name ?? null,
+
+        sizePriceCentsSnapshot: selectedSize
+          ? moneyToCents(selectedSize.option.priceDelta)
+          : null,
+
+        quantity: item.quantity,
+        unitPriceCents,
+        lineTotalCents,
+
+        options: selectedOptions
+          .filter(({ group }) => group.kind !== ProductOptionGroupKind.SIZE)
+          .map(({ group, option }) => ({
+            optionId: option.id,
+
+            optionGroupNameSnapshot: group.name,
+
+            optionNameSnapshot: option.name,
+
+            priceDeltaCentsSnapshot: moneyToCents(option.priceDelta),
+          })),
+      };
     });
-
-    const latestNumber = latestOrder?.orderNumber
-      ? Number(latestOrder.orderNumber)
-      : 10000;
-
-    return String(latestNumber + 1);
   }
 
-  private validateOrderPayload(dto: CreateOrderDto) {
+  private validateProductAvailability(product: OrderableProduct) {
+    const isUnavailable =
+      !product.isAvailable ||
+      product.archivedAt !== null ||
+      !product.category.isActive ||
+      product.category.archivedAt !== null;
+
+    if (isUnavailable) {
+      throw new BadRequestException(`${product.name} is no longer available.`);
+    }
+  }
+
+  private resolveSelectedOptions(
+    product: OrderableProduct,
+    selectedOptionIds: string[],
+  ): SelectedDatabaseOption[] {
+    const optionsById = new Map<string, SelectedDatabaseOption>();
+
+    for (const group of product.optionGroups) {
+      for (const option of group.options) {
+        optionsById.set(option.id, {
+          group,
+          option,
+        });
+      }
+    }
+
+    return selectedOptionIds.map((optionId) => {
+      const selected = optionsById.get(optionId);
+
+      if (!selected) {
+        throw new BadRequestException(
+          `An invalid option was selected for ${product.name}.`,
+        );
+      }
+
+      if (!selected.group.isActive || !selected.option.isAvailable) {
+        throw new BadRequestException(
+          `${selected.option.name} is no longer available for ${product.name}.`,
+        );
+      }
+
+      return selected;
+    });
+  }
+
+  private validateOptionSelections(
+    product: OrderableProduct,
+    selectedOptions: SelectedDatabaseOption[],
+  ) {
+    for (const group of product.optionGroups) {
+      if (!group.isActive) {
+        continue;
+      }
+
+      const selectedCount = selectedOptions.filter(
+        (selected) => selected.group.id === group.id,
+      ).length;
+
+      const minimumRequired = Math.max(
+        group.minSelect,
+        group.isRequired ? 1 : 0,
+      );
+
+      const maximumAllowed =
+        group.type === OptionGroupType.SINGLE ? 1 : group.maxSelect;
+
+      if (selectedCount < minimumRequired) {
+        throw new BadRequestException(
+          `Please select at least ${minimumRequired} option${
+            minimumRequired === 1 ? '' : 's'
+          } from ${group.name} for ${product.name}.`,
+        );
+      }
+
+      if (selectedCount > maximumAllowed) {
+        throw new BadRequestException(
+          `Please select no more than ${maximumAllowed} option${
+            maximumAllowed === 1 ? '' : 's'
+          } from ${group.name} for ${product.name}.`,
+        );
+      }
+    }
+  }
+
+  private validateOrderFulfillment(dto: CreateOrderDto) {
     if (
       dto.fulfillmentType === CreateOrderFulfillmentType.DELIVERY &&
       !dto.address
     ) {
       throw new BadRequestException('Delivery orders require an address.');
     }
+  }
 
-    for (const item of dto.items) {
-      const expectedLineTotal = item.unitPriceCents * item.quantity;
-
-      if (item.lineTotalCents !== expectedLineTotal) {
-        throw new BadRequestException(
-          `Invalid line total for item: ${item.productName}`,
-        );
-      }
+  private validateStoreAvailability(
+    storeSettings: StoreSettings,
+    fulfillmentType: CreateOrderFulfillmentType,
+  ) {
+    if (!storeSettings.isAcceptingOrders) {
+      throw new BadRequestException(
+        'The store is not currently accepting orders.',
+      );
     }
+
+    if (
+      fulfillmentType === CreateOrderFulfillmentType.PICKUP &&
+      !storeSettings.pickupEnabled
+    ) {
+      throw new BadRequestException('Pickup is not currently available.');
+    }
+
+    if (
+      fulfillmentType === CreateOrderFulfillmentType.DELIVERY &&
+      !storeSettings.deliveryEnabled
+    ) {
+      throw new BadRequestException('Delivery is not currently available.');
+    }
+  }
+
+  private normalizeCustomerPhone(phone: string): string {
+    const normalizedPhone = phone.replace(/\D/g, '');
+
+    if (!normalizedPhone) {
+      throw new BadRequestException(
+        'A valid customer phone number is required.',
+      );
+    }
+
+    return normalizedPhone;
   }
 
   private getDeliveryFeeCents(
     subtotalCents: number,
     fulfillmentType: CreateOrderFulfillmentType,
+    configuredDeliveryFeeCents: number,
   ) {
     if (fulfillmentType === CreateOrderFulfillmentType.PICKUP) {
       return 0;
@@ -156,7 +433,30 @@ export class OrdersService {
       return 0;
     }
 
-    return DELIVERY_FEE_CENTS;
+    return configuredDeliveryFeeCents;
+  }
+
+  private async generateOrderNumber(
+    tx: Prisma.TransactionClient,
+  ): Promise<string> {
+    const latestOrder = await tx.order.findFirst({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        orderNumber: true,
+      },
+    });
+
+    const parsedLatestNumber = latestOrder?.orderNumber
+      ? Number(latestOrder.orderNumber)
+      : 10000;
+
+    const latestNumber = Number.isFinite(parsedLatestNumber)
+      ? parsedLatestNumber
+      : 10000;
+
+    return String(latestNumber + 1);
   }
 
   async findAll(query: ListOrdersQueryDto) {
@@ -206,9 +506,23 @@ export class OrdersService {
       : [];
 
     const where: Prisma.OrderWhereInput = {
-      ...(query.status ? { status: query.status } : {}),
-      ...(query.orderType ? { orderType: query.orderType } : {}),
-      ...(searchConditions.length > 0 ? { OR: searchConditions } : {}),
+      ...(query.status
+        ? {
+            status: query.status,
+          }
+        : {}),
+
+      ...(query.orderType
+        ? {
+            orderType: query.orderType,
+          }
+        : {}),
+
+      ...(searchConditions.length > 0
+        ? {
+            OR: searchConditions,
+          }
+        : {}),
     };
 
     const [orders, total] = await this.prisma.$transaction([
@@ -255,12 +569,42 @@ export class OrdersService {
     const [total, pending, accepted, preparing, ready, completed, cancelled] =
       await Promise.all([
         this.prisma.order.count(),
-        this.prisma.order.count({ where: { status: OrderStatus.PENDING } }),
-        this.prisma.order.count({ where: { status: OrderStatus.ACCEPTED } }),
-        this.prisma.order.count({ where: { status: OrderStatus.PREPARING } }),
-        this.prisma.order.count({ where: { status: OrderStatus.READY } }),
-        this.prisma.order.count({ where: { status: OrderStatus.COMPLETED } }),
-        this.prisma.order.count({ where: { status: OrderStatus.CANCELLED } }),
+
+        this.prisma.order.count({
+          where: {
+            status: OrderStatus.PENDING,
+          },
+        }),
+
+        this.prisma.order.count({
+          where: {
+            status: OrderStatus.ACCEPTED,
+          },
+        }),
+
+        this.prisma.order.count({
+          where: {
+            status: OrderStatus.PREPARING,
+          },
+        }),
+
+        this.prisma.order.count({
+          where: {
+            status: OrderStatus.READY,
+          },
+        }),
+
+        this.prisma.order.count({
+          where: {
+            status: OrderStatus.COMPLETED,
+          },
+        }),
+
+        this.prisma.order.count({
+          where: {
+            status: OrderStatus.CANCELLED,
+          },
+        }),
       ]);
 
     return {
@@ -276,7 +620,9 @@ export class OrdersService {
 
   async findOne(id: string) {
     const order = await this.prisma.order.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
       include: {
         items: {
           include: {
@@ -310,13 +656,14 @@ export class OrdersService {
       );
     }
 
-    // Repeated requests do not cause a duplicate database update.
     if (existingOrder.status === nextStatus) {
       return existingOrder;
     }
 
     return this.prisma.order.update({
-      where: { id },
+      where: {
+        id,
+      },
       data: {
         status: nextStatus,
       },
@@ -328,7 +675,9 @@ export class OrdersService {
 
   async lookupGuestOrder(dto: GuestOrderLookupDto) {
     const orderNumber = dto.orderNumber.trim().replace(/^#/, '');
+
     const email = dto.email?.trim().toLowerCase();
+
     const phone = dto.phone ? dto.phone.replace(/\D/g, '') : undefined;
 
     if (!email && !phone) {
@@ -340,17 +689,19 @@ export class OrdersService {
     const order = await this.prisma.order.findFirst({
       where: {
         orderNumber,
+
         OR: [
           ...(email
             ? [
                 {
                   customerEmail: {
                     equals: email,
-                    mode: 'insensitive' as const,
+                    mode: Prisma.QueryMode.insensitive,
                   },
                 },
               ]
             : []),
+
           ...(phone
             ? [
                 {
@@ -360,6 +711,7 @@ export class OrdersService {
             : []),
         ],
       },
+
       include: {
         items: {
           include: {

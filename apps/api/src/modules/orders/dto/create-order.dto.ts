@@ -1,16 +1,20 @@
+import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   ArrayMinSize,
+  ArrayUnique,
   IsArray,
   IsEmail,
   IsEnum,
   IsInt,
   IsOptional,
   IsString,
+  IsUUID,
+  Max,
   MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 export enum CreateOrderFulfillmentType {
   PICKUP = 'PICKUP',
@@ -54,54 +58,20 @@ class CreateOrderAddressDto {
   postcode!: string;
 }
 
-class CreateOrderItemAddOnDto {
-  @IsString()
-  @MaxLength(120)
-  name!: string;
-
-  @IsInt()
-  @Min(0)
-  priceCents!: number;
-}
-
 class CreateOrderItemDto {
-  @IsString()
+  @IsUUID()
   productId!: string;
-
-  @IsString()
-  @MaxLength(160)
-  productName!: string;
-
-  @IsOptional()
-  @IsString()
-  productImageUrl?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  sizeName?: string;
-
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  sizePriceCents?: number;
 
   @IsInt()
   @Min(1)
+  @Max(99)
   quantity!: number;
 
-  @IsInt()
-  @Min(0)
-  unitPriceCents!: number;
-
-  @IsInt()
-  @Min(0)
-  lineTotalCents!: number;
-
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => CreateOrderItemAddOnDto)
-  addOns!: CreateOrderItemAddOnDto[];
+  @ArrayUnique()
+  @ArrayMaxSize(30)
+  @IsUUID(undefined, { each: true })
+  selectedOptionIds!: string[];
 }
 
 export class CreateOrderDto {
@@ -124,6 +94,7 @@ export class CreateOrderDto {
 
   @IsArray()
   @ArrayMinSize(1)
+  @ArrayMaxSize(50)
   @ValidateNested({ each: true })
   @Type(() => CreateOrderItemDto)
   items!: CreateOrderItemDto[];

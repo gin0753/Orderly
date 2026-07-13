@@ -2,6 +2,12 @@ import { apiFetch } from "@/lib/api-fetch";
 
 export type CreateOrderFulfillmentType = "PICKUP" | "DELIVERY";
 
+export type CreateOrderRequestItem = {
+  productId: string;
+  quantity: number;
+  selectedOptionIds: string[];
+};
+
 export type CreateOrderRequest = {
   fulfillmentType: CreateOrderFulfillmentType;
   customer: {
@@ -17,20 +23,7 @@ export type CreateOrderRequest = {
     postcode: string;
   };
   notes?: string;
-  items: Array<{
-    productId: string;
-    productName: string;
-    productImageUrl?: string;
-    sizeName?: string;
-    sizePriceCents?: number;
-    quantity: number;
-    unitPriceCents: number;
-    lineTotalCents: number;
-    addOns: Array<{
-      name: string;
-      priceCents: number;
-    }>;
-  }>;
+  items: CreateOrderRequestItem[];
 };
 
 export type CreateOrderResponse = {

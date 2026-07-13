@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatMoneyFromCents } from "@/lib/format-money";
 import type { CartItem } from "@/features/cart/cart-types";
-import { getCartSizeLabel } from "@/features/cart/cart-utils";
+import { getCartItemOptionSummary } from "@/features/cart/cart-utils";
 
 import {
   FREE_DELIVERY_THRESHOLD_CENTS,
@@ -38,6 +38,8 @@ export function CheckoutOrderSummary({
     fulfillmentType,
   });
 
+  const itemCount = items.reduce((total, item) => total + item.quantity, 0);
+
   const amountAwayFromFreeDelivery = Math.max(
     FREE_DELIVERY_THRESHOLD_CENTS - subtotalCents,
     0,
@@ -51,7 +53,7 @@ export function CheckoutOrderSummary({
             Your Order
           </h2>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            {items.length} {items.length === 1 ? "item" : "items"}
+            {itemCount} {itemCount === 1 ? "item" : "items"}
           </p>
         </div>
 
@@ -66,6 +68,8 @@ export function CheckoutOrderSummary({
       <div className="mt-6 divide-y divide-[var(--color-border)]">
         {items.map((item) => {
           const itemTotalCents = item.unitPriceCents * item.quantity;
+
+          const optionSummary = getCartItemOptionSummary(item);
 
           return (
             <div key={item.key} className="flex gap-4 py-4 first:pt-0">
@@ -83,20 +87,14 @@ export function CheckoutOrderSummary({
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="line-clamp-1 font-semibold text-[var(--color-text-primary)]">
                       {item.product.name}
                     </h3>
 
-                    <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                      {getCartSizeLabel(item.selectedSize)}
-                    </p>
-
-                    {item.selectedAddOns.length > 0 ? (
+                    {optionSummary ? (
                       <p className="mt-1 line-clamp-2 text-sm text-[var(--color-text-secondary)]">
-                        {item.selectedAddOns
-                          .map((addOn) => addOn.name)
-                          .join(", ")}
+                        {optionSummary}
                       </p>
                     ) : null}
                   </div>

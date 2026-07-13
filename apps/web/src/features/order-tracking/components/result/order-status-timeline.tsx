@@ -10,8 +10,10 @@ type OrderStatusTimelineProps = {
   updatedAt: string;
 };
 
+type TimelineStatus = "PENDING" | "PREPARING" | "READY" | "COMPLETED";
+
 const STATUS_STEPS: {
-  status: Exclude<OrderStatus, "CANCELLED">;
+  status: TimelineStatus;
   label: string;
 }[] = [
   {
@@ -32,32 +34,40 @@ const STATUS_STEPS: {
   },
 ];
 
-const ACTIVE_INDEX_BY_STATUS: Record<OrderStatus, number> = {
+const ACTIVE_INDEX_BY_STATUS: Record<
+  Exclude<OrderStatus, "CANCELLED">,
+  number
+> = {
   PENDING: 0,
+  ACCEPTED: 0,
   PREPARING: 1,
   READY: 2,
   COMPLETED: 3,
-  CANCELLED: 0,
 };
 
-const getStepHelper = (
-  status: Exclude<OrderStatus, "CANCELLED">,
+function getStepHelper(
+  stepStatus: TimelineStatus,
+  orderStatus: OrderStatus,
   orderType: OrderType,
-) => {
-  if (status === "PENDING") {
+) {
+  if (stepStatus === "PENDING") {
+    if (orderStatus === "ACCEPTED") {
+      return "Restaurant confirmed your order";
+    }
+
     return "Order received";
   }
 
-  if (status === "PREPARING") {
+  if (stepStatus === "PREPARING") {
     return "Kitchen is working";
   }
 
-  if (status === "READY") {
+  if (stepStatus === "READY") {
     return orderType === "PICKUP" ? "Ready for pickup" : "Ready for delivery";
   }
 
   return "Order finished";
-};
+}
 
 export function OrderStatusTimeline({
   status,
@@ -77,6 +87,7 @@ export function OrderStatusTimeline({
             <h2 className="text-base font-bold text-[var(--color-danger-foreground)]">
               This order has been cancelled
             </h2>
+
             <p className="mt-1 text-sm leading-6 text-[var(--color-danger-foreground)]">
               The order was updated on {formatDateTime(updatedAt)}. Please
               contact the restaurant if you need help.
@@ -96,6 +107,7 @@ export function OrderStatusTimeline({
           <h2 className="text-lg font-bold tracking-tight text-[var(--color-text-primary)]">
             Order progress
           </h2>
+
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">
             {orderType === "PICKUP"
               ? "Follow your pickup order from placed to completed."
@@ -110,8 +122,12 @@ export function OrderStatusTimeline({
 
       <div className="grid gap-4 md:grid-cols-4">
         {STATUS_STEPS.map((step, index) => {
-          const isCurrent = index === activeIndex;
-          const isDone = index < activeIndex;
+          const isAcceptedPlacedStep = status === "ACCEPTED" && index === 0;
+
+          const isCurrent = index === activeIndex && status !== "ACCEPTED";
+
+          const isDone = index < activeIndex || isAcceptedPlacedStep;
+
           const isActiveOrDone = isCurrent || isDone;
 
           return (
@@ -153,10 +169,11 @@ export function OrderStatusTimeline({
                   >
                     {step.label}
                   </p>
+
                   <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">
-                    {index === 0
+                    {step.status === "PENDING" && status !== "ACCEPTED"
                       ? formatDateTime(createdAt)
-                      : getStepHelper(step.status, orderType)}
+                      : getStepHelper(step.status, status, orderType)}
                   </p>
                 </div>
               </div>
