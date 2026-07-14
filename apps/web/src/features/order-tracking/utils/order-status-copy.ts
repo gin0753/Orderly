@@ -10,6 +10,7 @@ export const TERMINAL_ORDER_STATUSES: readonly OrderStatus[] = [
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING: "Placed",
+  ACCEPTED: "Accepted",
   PREPARING: "Preparing",
   READY: "Ready",
   COMPLETED: "Completed",
@@ -19,6 +20,8 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 export const ORDER_STATUS_BADGE_CLASS_NAMES: Record<OrderStatus, string> = {
   PENDING:
     "bg-[var(--color-notice-background)] text-[var(--color-notice-foreground)]",
+  ACCEPTED:
+    "bg-[var(--color-success-surface)] text-[var(--color-success-strong)]",
   PREPARING:
     "bg-[var(--color-notice-background)] text-[var(--color-notice-foreground)]",
   READY: "bg-[var(--color-success-surface)] text-[var(--color-success-strong)]",
