@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 
 import {
   getAdminCategories,
@@ -20,6 +20,7 @@ export const adminMenuQueryOptions = {
     return queryOptions({
       queryKey: adminMenuQueryKeys.categoryList(normalizedQuery),
       queryFn: () => getAdminCategories(normalizedQuery),
+      placeholderData: keepPreviousData,
     });
   },
 
@@ -29,6 +30,7 @@ export const adminMenuQueryOptions = {
     return queryOptions({
       queryKey: adminMenuQueryKeys.productList(normalizedQuery),
       queryFn: () => getAdminProducts(normalizedQuery),
+      placeholderData: keepPreviousData,
     });
   },
 

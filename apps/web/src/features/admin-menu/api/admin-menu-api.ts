@@ -29,8 +29,6 @@ function buildQueryString(parameters: Record<string, QueryParameterValue>) {
 
 export function getAdminCategories(query: AdminCategoriesQuery = {}) {
   const queryString = buildQueryString({
-    page: query.page,
-    pageSize: query.pageSize,
     search: query.search?.trim(),
     status: query.status,
   });

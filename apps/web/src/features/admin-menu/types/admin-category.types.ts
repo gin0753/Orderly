@@ -1,10 +1,6 @@
-import type { AdminMenuPaginatedResponse } from "./admin-menu.types";
-
 export type AdminCategoryStatusFilter = "active" | "inactive";
 
 export interface AdminCategoriesQuery {
-  page?: number;
-  pageSize?: number;
   search?: string;
   status?: AdminCategoryStatusFilter;
 }
@@ -14,8 +10,8 @@ export interface AdminCategoryListItem {
   name: string;
   slug: string;
   description: string | null;
-  isActive: boolean;
   sortOrder: number;
+  isActive: boolean;
   productCount: number;
   createdAt: string;
   updatedAt: string;
@@ -27,7 +23,7 @@ export interface AdminCategoriesSummary {
   inactive: number;
 }
 
-export type AdminCategoriesResponse = AdminMenuPaginatedResponse<
-  AdminCategoryListItem,
-  AdminCategoriesSummary
->;
+export interface AdminCategoriesResponse {
+  data: AdminCategoryListItem[];
+  summary: AdminCategoriesSummary;
+}

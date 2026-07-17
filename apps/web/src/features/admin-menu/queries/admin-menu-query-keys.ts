@@ -11,8 +11,6 @@ export function normalizeAdminCategoriesQuery(
   const search = query.search?.trim();
 
   return {
-    page: query.page ?? ADMIN_MENU_DEFAULT_PAGE,
-    pageSize: query.pageSize ?? ADMIN_MENU_DEFAULT_PAGE_SIZE,
     ...(search ? { search } : {}),
     ...(query.status ? { status: query.status } : {}),
   };
