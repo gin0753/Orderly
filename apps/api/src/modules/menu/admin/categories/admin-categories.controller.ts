@@ -6,6 +6,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 
 import { RequireAdmin } from '../../../auth/decorators/require-admin.decorator';
@@ -15,6 +16,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { ReorderCategoriesDto } from './dto/reorder-categories.dto';
 import { UpdateCategoryAvailabilityDto } from './dto/update-category-availability.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { GetAdminCategoriesQueryDto } from './dto/get-admin-categories-query.dto';
 
 @RequireAdmin()
 @Controller('admin/menu/categories')
@@ -24,8 +26,8 @@ export class AdminCategoriesController {
   ) {}
 
   @Get()
-  findAll() {
-    return this.adminCategoriesService.findAll();
+  findAll(@Query() query: GetAdminCategoriesQueryDto) {
+    return this.adminCategoriesService.findAll(query);
   }
 
   @Post()

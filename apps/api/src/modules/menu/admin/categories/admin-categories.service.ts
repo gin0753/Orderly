@@ -13,49 +13,108 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { ReorderCategoriesDto } from './dto/reorder-categories.dto';
 import { UpdateCategoryAvailabilityDto } from './dto/update-category-availability.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import {
+  AdminCategoryStatus,
+  GetAdminCategoriesQueryDto,
+} from './dto/get-admin-categories-query.dto';
 
 @Injectable()
 export class AdminCategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
-    const categories = await this.prisma.category.findMany({
-      where: {
-        archivedAt: null,
-      },
-      orderBy: [
-        {
-          sortOrder: 'asc',
-        },
-        {
-          name: 'asc',
-        },
-      ],
-      include: {
-        _count: {
-          select: {
-            products: {
-              where: {
-                archivedAt: null,
+  async findAll(query: GetAdminCategoriesQueryDto = {}) {
+    const search = query.search?.trim();
+
+    const isActive =
+      query.status === AdminCategoryStatus.ACTIVE
+        ? true
+        : query.status === AdminCategoryStatus.INACTIVE
+          ? false
+          : undefined;
+
+    const where: Prisma.CategoryWhereInput = {
+      archivedAt: null,
+
+      ...(search
+        ? {
+            OR: [
+              {
+                name: {
+                  contains: search,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+              {
+                description: {
+                  contains: search,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+            ],
+          }
+        : {}),
+
+      ...(isActive !== undefined
+        ? {
+            isActive,
+          }
+        : {}),
+    };
+
+    const [categories, total, active, inactive] =
+      await this.prisma.$transaction([
+        this.prisma.category.findMany({
+          where,
+          orderBy: [
+            {
+              sortOrder: 'asc',
+            },
+            {
+              createdAt: 'asc',
+            },
+          ],
+          include: {
+            _count: {
+              select: {
+                products: {
+                  where: {
+                    archivedAt: null,
+                  },
+                },
               },
             },
           },
-        },
-      },
-    });
+        }),
 
-    const data = categories.map((category) =>
-      mapAdminCategory(category, category._count.products),
-    );
+        this.prisma.category.count({
+          where: {
+            archivedAt: null,
+          },
+        }),
 
-    const active = categories.filter((category) => category.isActive).length;
+        this.prisma.category.count({
+          where: {
+            archivedAt: null,
+            isActive: true,
+          },
+        }),
+
+        this.prisma.category.count({
+          where: {
+            archivedAt: null,
+            isActive: false,
+          },
+        }),
+      ]);
 
     return {
-      data,
+      data: categories.map((category) =>
+        mapAdminCategory(category, category._count.products),
+      ),
       summary: {
-        total: categories.length,
+        total,
         active,
-        inactive: categories.length - active,
+        inactive,
       },
     };
   }
