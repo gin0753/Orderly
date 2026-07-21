@@ -20,7 +20,6 @@ export const adminMenuQueryOptions = {
     return queryOptions({
       queryKey: adminMenuQueryKeys.categoryList(normalizedQuery),
       queryFn: () => getAdminCategories(normalizedQuery),
-      placeholderData: keepPreviousData,
     });
   },
 

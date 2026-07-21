@@ -1,15 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
-
+import { useAdminCategoriesFilters } from "../../hooks/use-admin-categories-filters";
 import { adminMenuQueryOptions } from "../../queries/admin-menu-query-options";
-import type { AdminCategoryStatusFilter } from "../../types/admin-category.types";
+import { AdminCategoriesErrorState } from "./admin-categories-error-state";
 import {
   AdminCategoriesSummary,
   AdminCategoriesSummarySkeleton,
@@ -19,98 +15,23 @@ import {
   AdminCategoriesTableSkeleton,
 } from "./admin-categories-table";
 import { AdminCategoriesToolbar } from "./admin-categories-toolbar";
-
-const SEARCH_DEBOUNCE_MS = 300;
-
-function parseStatus(
-  value: string | null,
-): AdminCategoryStatusFilter | undefined {
-  return value === "active" || value === "inactive" ? value : undefined;
-}
-
-type SearchParamUpdateValue = string | number | null | undefined;
+import { AdminCategoriesReorderSection } from "./reorder/admin-categories-reorder-section";
 
 export function AdminCategoriesScreen() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const filters = useAdminCategoriesFilters();
 
-  const search = searchParams.get("search")?.trim() ?? "";
-  const status = parseStatus(searchParams.get("status"));
+  const [isReorderMode, setIsReorderMode] = useState(false);
 
-  const [searchInput, setSearchInput] = useState(search);
-
-  const debouncedSearch = useDebouncedValue(
-    searchInput.trim(),
-    SEARCH_DEBOUNCE_MS,
-  );
-
-  const updateSearchParams = useCallback(
-    (updates: Record<string, SearchParamUpdateValue>) => {
-      const nextSearchParams = new URLSearchParams(searchParams.toString());
-
-      for (const [key, value] of Object.entries(updates)) {
-        if (value === undefined || value === null || value === "") {
-          nextSearchParams.delete(key);
-        } else {
-          nextSearchParams.set(key, String(value));
-        }
-      }
-
-      const queryString = nextSearchParams.toString();
-
-      router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
-        scroll: false,
-      });
-    },
-    [pathname, router, searchParams],
-  );
-
-  useEffect(() => {
-    setSearchInput(search);
-  }, [search]);
-
-  useEffect(() => {
-    if (debouncedSearch === search) {
-      return;
-    }
-
-    updateSearchParams({
-      search: debouncedSearch || null,
-    });
-  }, [debouncedSearch, search, updateSearchParams]);
+  const [reorderSuccessMessage, setReorderSuccessMessage] = useState<
+    string | null
+  >(null);
 
   const categoriesQuery = useQuery(
     adminMenuQueryOptions.categories({
-      search: search || undefined,
-      status,
+      search: filters.search || undefined,
+      status: filters.status,
     }),
   );
-
-  const hasActiveFilters = Boolean(search || status);
-
-  function handleStatusChange(
-    nextStatus: AdminCategoryStatusFilter | undefined,
-  ) {
-    updateSearchParams({
-      status: nextStatus,
-    });
-  }
-
-  function handlePageChange(nextPage: number) {
-    updateSearchParams({
-      page: nextPage > 1 ? nextPage : null,
-    });
-  }
-
-  function handleResetFilters() {
-    setSearchInput("");
-
-    updateSearchParams({
-      search: null,
-      status: null,
-    });
-  }
 
   if (categoriesQuery.isPending && !categoriesQuery.data) {
     return (
@@ -125,33 +46,18 @@ export function AdminCategoriesScreen() {
   }
 
   if (categoriesQuery.isError && !categoriesQuery.data) {
-    const errorMessage =
+    const message =
       categoriesQuery.error instanceof Error
         ? categoriesQuery.error.message
         : "Unable to load menu categories.";
 
     return (
-      <Card
-        className={[
-          "border border-[var(--color-danger-border)]",
-          "bg-[var(--color-danger-surface)]",
-          "px-6 py-12 text-center",
-        ].join(" ")}
-      >
-        <h2 className="text-base font-semibold text-[var(--color-danger-strong)]">
-          Categories could not be loaded
-        </h2>
-
-        <p className="mx-auto mt-2 max-w-lg text-sm text-[var(--color-text-secondary)]">
-          {errorMessage}
-        </p>
-
-        <div className="mt-5">
-          <Button type="button" onClick={() => categoriesQuery.refetch()}>
-            Try again
-          </Button>
-        </div>
-      </Card>
+      <AdminCategoriesErrorState
+        message={message}
+        onRetry={() => {
+          void categoriesQuery.refetch();
+        }}
+      />
     );
   }
 
@@ -160,25 +66,69 @@ export function AdminCategoriesScreen() {
   if (!response) {
     return null;
   }
-  console.log(response, 1);
+
+  function handleStartReorder() {
+    setReorderSuccessMessage(null);
+    setIsReorderMode(true);
+  }
+
+  function handleCancelReorder() {
+    setIsReorderMode(false);
+  }
+
+  function handleReorderSuccess() {
+    setIsReorderMode(false);
+
+    setReorderSuccessMessage("Category order saved successfully.");
+  }
+
   return (
     <div aria-busy={categoriesQuery.isFetching} className="space-y-5">
       <AdminCategoriesSummary summary={response.summary} />
 
-      <AdminCategoriesToolbar
-        searchValue={searchInput}
-        status={status}
-        hasActiveFilters={hasActiveFilters}
-        isUpdating={categoriesQuery.isFetching && !categoriesQuery.isPending}
-        onSearchChange={setSearchInput}
-        onStatusChange={handleStatusChange}
-        onReset={handleResetFilters}
-      />
+      {reorderSuccessMessage ? (
+        <div
+          role="status"
+          className={[
+            "rounded-lg px-4 py-3",
+            "border border-[var(--color-success)]",
+            "bg-[var(--color-success-surface)]",
+            "text-sm font-medium",
+            "text-[var(--color-success-strong)]",
+          ].join(" ")}
+        >
+          {reorderSuccessMessage}
+        </div>
+      ) : null}
 
-      <AdminCategoriesTable
-        categories={response.data}
-        hasActiveFilters={hasActiveFilters}
-      />
+      {isReorderMode ? (
+        <AdminCategoriesReorderSection
+          fallbackItemCount={response.summary.total}
+          onCancel={handleCancelReorder}
+          onSuccess={handleReorderSuccess}
+        />
+      ) : (
+        <>
+          <AdminCategoriesToolbar
+            searchValue={filters.searchInput}
+            status={filters.status}
+            hasActiveFilters={filters.hasActiveFilters}
+            isUpdating={
+              categoriesQuery.isFetching && !categoriesQuery.isPending
+            }
+            canReorder={response.summary.total > 1}
+            onSearchChange={filters.setSearchInput}
+            onStatusChange={filters.setStatus}
+            onReset={filters.resetFilters}
+            onStartReorder={handleStartReorder}
+          />
+
+          <AdminCategoriesTable
+            categories={response.data}
+            hasActiveFilters={filters.hasActiveFilters}
+          />
+        </>
+      )}
     </div>
   );
 }

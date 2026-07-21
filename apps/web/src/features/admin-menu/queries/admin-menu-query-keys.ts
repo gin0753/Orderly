@@ -1,9 +1,9 @@
+import type { AdminCategoriesQuery } from "../types/admin-category.types";
+import type { AdminProductsQuery } from "../types/admin-product.types";
 import {
   ADMIN_MENU_DEFAULT_PAGE,
   ADMIN_MENU_DEFAULT_PAGE_SIZE,
 } from "../types/admin-menu.types";
-import type { AdminCategoriesQuery } from "../types/admin-category.types";
-import type { AdminProductsQuery } from "../types/admin-product.types";
 
 export function normalizeAdminCategoriesQuery(
   query: AdminCategoriesQuery = {},

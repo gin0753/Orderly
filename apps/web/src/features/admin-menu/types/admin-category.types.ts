@@ -27,3 +27,7 @@ export interface AdminCategoriesResponse {
   data: AdminCategoryListItem[];
   summary: AdminCategoriesSummary;
 }
+
+export interface ReorderAdminCategoriesRequest {
+  categoryIds: string[];
+}

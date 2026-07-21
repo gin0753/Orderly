@@ -1,7 +1,9 @@
 import { apiFetch } from "@/lib/api-fetch";
+
 import type {
   AdminCategoriesQuery,
   AdminCategoriesResponse,
+  ReorderAdminCategoriesRequest,
 } from "../types/admin-category.types";
 import type {
   AdminProductDetail,
@@ -39,6 +41,17 @@ export function getAdminCategories(query: AdminCategoriesQuery = {}) {
       auth: "required",
     },
   );
+}
+
+export function reorderAdminCategories(request: ReorderAdminCategoriesRequest) {
+  return apiFetch<AdminCategoriesResponse>("/admin/menu/categories/reorder", {
+    method: "PATCH",
+    auth: "required",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
 }
 
 export function getAdminProducts(query: AdminProductsQuery = {}) {

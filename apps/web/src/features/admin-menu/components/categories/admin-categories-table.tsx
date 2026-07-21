@@ -1,36 +1,11 @@
 import { SkeletonLine } from "@/components/ui/skeleton/skeleton-parts";
 
 import type { AdminCategoryListItem } from "../../types/admin-category.types";
+import { AdminCategoryStatusBadge } from "./admin-category-status-badge";
 
 interface AdminCategoriesTableProps {
   categories: AdminCategoryListItem[];
   hasActiveFilters: boolean;
-}
-
-interface CategoryStatusBadgeProps {
-  isActive: boolean;
-}
-
-function CategoryStatusBadge({ isActive }: CategoryStatusBadgeProps) {
-  return (
-    <span
-      className={[
-        "inline-flex rounded-full px-2 py-0.5",
-        "text-xs font-medium",
-        isActive
-          ? [
-              "bg-[var(--color-success-surface)]",
-              "text-[var(--color-success-strong)]",
-            ].join(" ")
-          : [
-              "bg-[var(--color-danger-surface)]",
-              "text-[var(--color-danger-strong)]",
-            ].join(" "),
-      ].join(" ")}
-    >
-      {isActive ? "Active" : "Inactive"}
-    </span>
-  );
 }
 
 export function AdminCategoriesTable({
@@ -144,7 +119,7 @@ export function AdminCategoriesTable({
                   </td>
 
                   <td className="px-4 py-3">
-                    <CategoryStatusBadge isActive={category.isActive} />
+                    <AdminCategoryStatusBadge isActive={category.isActive} />
                   </td>
 
                   <td className="px-4 py-3 text-sm text-[var(--color-text-strong)]">

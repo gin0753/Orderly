@@ -10,9 +10,11 @@ interface AdminCategoriesToolbarProps {
   status: AdminCategoryStatusFilter | undefined;
   hasActiveFilters: boolean;
   isUpdating: boolean;
+  canReorder: boolean;
   onSearchChange: (value: string) => void;
   onStatusChange: (status: AdminCategoryStatusFilter | undefined) => void;
   onReset: () => void;
+  onStartReorder: () => void;
 }
 
 export function AdminCategoriesToolbar({
@@ -20,9 +22,11 @@ export function AdminCategoriesToolbar({
   status,
   hasActiveFilters,
   isUpdating,
+  canReorder,
   onSearchChange,
   onStatusChange,
   onReset,
+  onStartReorder,
 }: AdminCategoriesToolbarProps) {
   function handleStatusChange(event: ChangeEvent<HTMLSelectElement>) {
     const value = event.target.value;
@@ -83,7 +87,7 @@ export function AdminCategoriesToolbar({
         </div>
       </div>
 
-      <div className="flex min-h-10 items-center justify-between gap-3 lg:justify-end">
+      <div className="flex min-h-10 flex-wrap items-center justify-between gap-3 lg:justify-end">
         <span
           aria-live="polite"
           className="text-xs text-[var(--color-text-muted)]"
@@ -92,10 +96,26 @@ export function AdminCategoriesToolbar({
         </span>
 
         {hasActiveFilters ? (
-          <Button type="button" variant="secondary" size="sm" onClick={onReset}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={isUpdating}
+            onClick={onReset}
+          >
             Clear filters
           </Button>
         ) : null}
+
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={!canReorder || isUpdating}
+          onClick={onStartReorder}
+        >
+          Reorder categories
+        </Button>
       </div>
     </div>
   );
