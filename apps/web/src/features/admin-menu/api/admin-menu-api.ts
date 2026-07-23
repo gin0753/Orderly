@@ -3,15 +3,18 @@ import { apiFetch } from "@/lib/api-fetch";
 import type {
   AdminCategoriesQuery,
   AdminCategoriesResponse,
+  AdminCategoryListItem,
+  CreateAdminCategoryRequest,
+  QueryParameterValue,
   ReorderAdminCategoriesRequest,
+  UpdateAdminCategoryAvailabilityParameters,
+  UpdateAdminCategoryParameters,
 } from "../types/admin-category.types";
 import type {
   AdminProductDetail,
   AdminProductsQuery,
   AdminProductsResponse,
 } from "../types/admin-product.types";
-
-type QueryParameterValue = string | number | null | undefined;
 
 function buildQueryString(parameters: Record<string, QueryParameterValue>) {
   const searchParams = new URLSearchParams();
@@ -72,6 +75,61 @@ export function getAdminProduct(productId: string) {
   return apiFetch<AdminProductDetail>(
     `/admin/menu/products/${encodeURIComponent(productId)}`,
     {
+      auth: "required",
+    },
+  );
+}
+
+export function createAdminCategory(request: CreateAdminCategoryRequest) {
+  return apiFetch<AdminCategoryListItem>("/admin/menu/categories", {
+    method: "POST",
+    auth: "required",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+}
+
+export function updateAdminCategory({
+  categoryId,
+  request,
+}: UpdateAdminCategoryParameters) {
+  return apiFetch<AdminCategoryListItem>(
+    `/admin/menu/categories/${encodeURIComponent(categoryId)}`,
+    {
+      method: "PATCH",
+      auth: "required",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    },
+  );
+}
+
+export function updateAdminCategoryAvailability({
+  categoryId,
+  request,
+}: UpdateAdminCategoryAvailabilityParameters) {
+  return apiFetch<AdminCategoryListItem>(
+    `/admin/menu/categories/${encodeURIComponent(categoryId)}/availability`,
+    {
+      method: "PATCH",
+      auth: "required",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    },
+  );
+}
+
+export function archiveAdminCategory(categoryId: string) {
+  return apiFetch<AdminCategoryListItem>(
+    `/admin/menu/categories/${encodeURIComponent(categoryId)}/archive`,
+    {
+      method: "PATCH",
       auth: "required",
     },
   );

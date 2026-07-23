@@ -15,6 +15,7 @@ interface AdminCategoriesToolbarProps {
   onStatusChange: (status: AdminCategoryStatusFilter | undefined) => void;
   onReset: () => void;
   onStartReorder: () => void;
+  onCreateCategory: () => void;
 }
 
 export function AdminCategoriesToolbar({
@@ -27,6 +28,7 @@ export function AdminCategoriesToolbar({
   onStatusChange,
   onReset,
   onStartReorder,
+  onCreateCategory,
 }: AdminCategoriesToolbarProps) {
   function handleStatusChange(event: ChangeEvent<HTMLSelectElement>) {
     const value = event.target.value;
@@ -115,6 +117,15 @@ export function AdminCategoriesToolbar({
           onClick={onStartReorder}
         >
           Reorder categories
+        </Button>
+
+        <Button
+          type="button"
+          size="sm"
+          disabled={isUpdating}
+          onClick={onCreateCategory}
+        >
+          Add category
         </Button>
       </div>
     </div>

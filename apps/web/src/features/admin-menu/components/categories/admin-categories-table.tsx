@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { SkeletonLine } from "@/components/ui/skeleton/skeleton-parts";
 
 import type { AdminCategoryListItem } from "../../types/admin-category.types";
@@ -6,11 +7,19 @@ import { AdminCategoryStatusBadge } from "./admin-category-status-badge";
 interface AdminCategoriesTableProps {
   categories: AdminCategoryListItem[];
   hasActiveFilters: boolean;
+  pendingCategoryId?: string;
+  onEdit: (category: AdminCategoryListItem) => void;
+  onToggleStatus: (category: AdminCategoryListItem) => void;
+  onArchive: (category: AdminCategoryListItem) => void;
 }
 
 export function AdminCategoriesTable({
   categories,
   hasActiveFilters,
+  pendingCategoryId,
+  onEdit,
+  onToggleStatus,
+  onArchive,
 }: AdminCategoriesTableProps) {
   return (
     <div
@@ -21,16 +30,15 @@ export function AdminCategoriesTable({
       ].join(" ")}
     >
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] table-fixed border-collapse">
+        <table className="w-full min-w-[960px] table-fixed border-collapse">
           <thead className="bg-[var(--color-surface-muted)]">
             <tr className="border-b border-[var(--color-border)]">
               <th
                 scope="col"
                 className={[
-                  "w-[36%] px-4 py-3",
+                  "w-[22%] px-4 py-3",
                   "text-left text-xs font-semibold",
                   "text-[var(--color-text-secondary)]",
-                  "lg:w-[22%]",
                 ].join(" ")}
               >
                 Name
@@ -39,7 +47,7 @@ export function AdminCategoriesTable({
               <th
                 scope="col"
                 className={[
-                  "hidden w-[38%] px-4 py-3",
+                  "hidden w-[28%] px-4 py-3",
                   "text-left text-xs font-semibold",
                   "text-[var(--color-text-secondary)]",
                   "lg:table-cell",
@@ -51,10 +59,9 @@ export function AdminCategoriesTable({
               <th
                 scope="col"
                 className={[
-                  "w-[18%] px-4 py-3",
+                  "w-[11%] px-4 py-3",
                   "text-left text-xs font-semibold",
                   "text-[var(--color-text-secondary)]",
-                  "lg:w-[12%]",
                 ].join(" ")}
               >
                 Products
@@ -63,10 +70,9 @@ export function AdminCategoriesTable({
               <th
                 scope="col"
                 className={[
-                  "w-[26%] px-4 py-3",
+                  "w-[13%] px-4 py-3",
                   "text-left text-xs font-semibold",
                   "text-[var(--color-text-secondary)]",
-                  "lg:w-[16%]",
                 ].join(" ")}
               >
                 Status
@@ -75,61 +81,124 @@ export function AdminCategoriesTable({
               <th
                 scope="col"
                 className={[
-                  "w-[20%] px-4 py-3",
+                  "w-[8%] px-4 py-3",
                   "text-left text-xs font-semibold",
                   "text-[var(--color-text-secondary)]",
-                  "lg:w-[12%]",
                 ].join(" ")}
               >
                 Order
+              </th>
+
+              <th
+                scope="col"
+                className={[
+                  "w-[26%] px-4 py-3",
+                  "text-right text-xs font-semibold",
+                  "text-[var(--color-text-secondary)]",
+                  "lg:w-[18%]",
+                ].join(" ")}
+              >
+                Actions
               </th>
             </tr>
           </thead>
 
           <tbody>
             {categories.length > 0 ? (
-              categories.map((category) => (
-                <tr
-                  key={category.id}
-                  className={[
-                    "border-b border-[var(--color-border-soft)]",
-                    "transition-colors",
-                    "last:border-b-0",
-                    "hover:bg-[var(--color-surface-hover)]",
-                  ].join(" ")}
-                >
-                  <td className="px-4 py-3">
-                    <p className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
-                      {category.name}
-                    </p>
+              categories.map((category) => {
+                const isPending = pendingCategoryId === category.id;
 
-                    <p className="mt-0.5 truncate text-xs text-[var(--color-text-muted)]">
-                      {category.slug}
-                    </p>
-                  </td>
+                return (
+                  <tr
+                    key={category.id}
+                    aria-busy={isPending}
+                    className={[
+                      "border-b border-[var(--color-border-soft)]",
+                      "transition-colors",
+                      "last:border-b-0",
+                      "hover:bg-[var(--color-surface-hover)]",
+                    ].join(" ")}
+                  >
+                    <td className="px-4 py-3">
+                      <p className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
+                        {category.name}
+                      </p>
 
-                  <td className="hidden px-4 py-3 lg:table-cell">
-                    <p className="truncate text-sm text-[var(--color-text-secondary)]">
-                      {category.description ?? "—"}
-                    </p>
-                  </td>
+                      <p className="mt-0.5 truncate text-xs text-[var(--color-text-muted)]">
+                        {category.slug}
+                      </p>
+                    </td>
 
-                  <td className="px-4 py-3 text-sm text-[var(--color-text-strong)]">
-                    {category.productCount}
-                  </td>
+                    <td className="hidden px-4 py-3 lg:table-cell">
+                      <p className="truncate text-sm text-[var(--color-text-secondary)]">
+                        {category.description ?? "—"}
+                      </p>
+                    </td>
 
-                  <td className="px-4 py-3">
-                    <AdminCategoryStatusBadge isActive={category.isActive} />
-                  </td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-strong)]">
+                      {category.productCount}
+                    </td>
 
-                  <td className="px-4 py-3 text-sm text-[var(--color-text-strong)]">
-                    {category.sortOrder}
-                  </td>
-                </tr>
-              ))
+                    <td className="px-4 py-3">
+                      <AdminCategoryStatusBadge isActive={category.isActive} />
+                    </td>
+
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-strong)]">
+                      {category.sortOrder}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <div
+                        className={[
+                          "grid items-center justify-end gap-2",
+                          "grid-cols-[72px_112px_96px]",
+                        ].join(" ")}
+                      >
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          disabled={isPending}
+                          onClick={() => onEdit(category)}
+                        >
+                          Edit
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          disabled={isPending}
+                          onClick={() => onToggleStatus(category)}
+                        >
+                          {category.isActive ? "Deactivate" : "Activate"}
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          disabled={isPending}
+                          onClick={() => onArchive(category)}
+                          className={[
+                            "border-[var(--color-danger-border)]",
+                            "bg-[var(--color-danger-surface)]",
+                            "text-[var(--color-danger-strong)]",
+                            "hover:border-[var(--color-danger)]",
+                            "hover:bg-[var(--color-danger-surface)]",
+                            "hover:text-[var(--color-danger-strong)]",
+                          ].join(" ")}
+                        >
+                          Archive
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan={5} className="px-6 py-16 text-center">
+                <td colSpan={6} className="px-6 py-16 text-center">
                   <p className="text-sm font-semibold text-[var(--color-text-primary)]">
                     {hasActiveFilters
                       ? "No categories match your filters"
@@ -156,7 +225,7 @@ export function AdminCategoriesTableSkeleton() {
     <div
       aria-label="Loading categories"
       className={[
-        "overflow-hidden rounded-xl",
+        "overflow-hidden rounded-lg",
         "border border-[var(--color-border)]",
         "bg-[var(--color-surface)]",
       ].join(" ")}
@@ -169,9 +238,13 @@ export function AdminCategoriesTableSkeleton() {
         {Array.from({ length: 5 }).map((_, rowIndex) => (
           <div
             key={rowIndex}
-            className="grid min-w-[720px] grid-cols-[1.4fr_2fr_0.7fr_0.8fr_0.5fr] gap-6 px-4 py-5"
+            className={[
+              "grid min-w-[960px]",
+              "grid-cols-[1.2fr_1.6fr_0.6fr_0.75fr_0.45fr_1.35fr]",
+              "gap-6 px-4 py-5",
+            ].join(" ")}
           >
-            {Array.from({ length: 5 }).map((_, cellIndex) => (
+            {Array.from({ length: 6 }).map((_, cellIndex) => (
               <SkeletonLine key={cellIndex} className="h-4 w-full rounded" />
             ))}
           </div>

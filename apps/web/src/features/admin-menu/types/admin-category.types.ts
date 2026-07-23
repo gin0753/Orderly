@@ -1,3 +1,5 @@
+export type QueryParameterValue = string | number | null | undefined;
+
 export type AdminCategoryStatusFilter = "active" | "inactive";
 
 export interface AdminCategoriesQuery {
@@ -30,4 +32,33 @@ export interface AdminCategoriesResponse {
 
 export interface ReorderAdminCategoriesRequest {
   categoryIds: string[];
+}
+
+export interface ReorderAdminCategoriesRequest {
+  categoryIds: string[];
+}
+
+export interface CreateAdminCategoryRequest {
+  name: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface UpdateAdminCategoryRequest {
+  name?: string;
+  description?: string | null;
+}
+
+export interface UpdateAdminCategoryAvailabilityRequest {
+  isActive: boolean;
+}
+
+export interface UpdateAdminCategoryParameters {
+  categoryId: string;
+  request: UpdateAdminCategoryRequest;
+}
+
+export interface UpdateAdminCategoryAvailabilityParameters {
+  categoryId: string;
+  request: UpdateAdminCategoryAvailabilityRequest;
 }
