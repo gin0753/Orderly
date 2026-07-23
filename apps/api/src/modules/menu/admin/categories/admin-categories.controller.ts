@@ -53,6 +53,14 @@ export class AdminCategoriesController {
     return this.adminCategoriesService.archive(categoryId);
   }
 
+  @Patch(':categoryId/restore')
+  restore(
+    @Param('categoryId', ParseUUIDPipe)
+    categoryId: string,
+  ) {
+    return this.adminCategoriesService.restore(categoryId);
+  }
+
   @Patch(':categoryId')
   update(
     @Param('categoryId', ParseUUIDPipe) categoryId: string,

@@ -25,6 +25,8 @@ export class AdminCategoriesService {
   async findAll(query: GetAdminCategoriesQueryDto = {}) {
     const search = query.search?.trim();
 
+    const isArchived = query.status === AdminCategoryStatus.ARCHIVED;
+
     const isActive =
       query.status === AdminCategoryStatus.ACTIVE
         ? true
@@ -33,7 +35,11 @@ export class AdminCategoriesService {
           : undefined;
 
     const where: Prisma.CategoryWhereInput = {
-      archivedAt: null,
+      archivedAt: isArchived
+        ? {
+            not: null,
+          }
+        : null,
 
       ...(search
         ? {
@@ -61,7 +67,7 @@ export class AdminCategoriesService {
         : {}),
     };
 
-    const [categories, total, active, inactive] =
+    const [categories, total, active, inactive, archived] =
       await this.prisma.$transaction([
         this.prisma.category.findMany({
           where,
@@ -105,6 +111,14 @@ export class AdminCategoriesService {
             isActive: false,
           },
         }),
+
+        this.prisma.category.count({
+          where: {
+            archivedAt: {
+              not: null,
+            },
+          },
+        }),
       ]);
 
     return {
@@ -115,6 +129,7 @@ export class AdminCategoriesService {
         total,
         active,
         inactive,
+        archived,
       },
     };
   }
@@ -268,6 +283,49 @@ export class AdminCategoriesService {
       id: category.id,
       archived: true,
     };
+  }
+
+  async restore(categoryId: string) {
+    const category = await this.prisma.category.findUnique({
+      where: {
+        id: categoryId,
+      },
+      select: {
+        id: true,
+        archivedAt: true,
+      },
+    });
+
+    if (!category) {
+      throw new NotFoundException(`Category ${categoryId} was not found.`);
+    }
+
+    if (!category.archivedAt) {
+      throw new ConflictException(`Category ${categoryId} is not archived.`);
+    }
+
+    const restoredCategory = await this.prisma.category.update({
+      where: {
+        id: category.id,
+      },
+      data: {
+        archivedAt: null,
+        isActive: false,
+      },
+      include: {
+        _count: {
+          select: {
+            products: {
+              where: {
+                archivedAt: null,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return mapAdminCategory(restoredCategory, restoredCategory._count.products);
   }
 
   private async getActiveManagementCategory(categoryId: string) {

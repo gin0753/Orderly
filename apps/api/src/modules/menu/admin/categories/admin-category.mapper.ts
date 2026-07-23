@@ -22,6 +22,7 @@ export function mapAdminCategory(
     sortOrder: category.sortOrder,
     isActive: category.isActive,
     productCount,
+    archivedAt: category.archivedAt?.toISOString() ?? null,
     createdAt: category.createdAt.toISOString(),
     updatedAt: category.updatedAt.toISOString(),
   };
