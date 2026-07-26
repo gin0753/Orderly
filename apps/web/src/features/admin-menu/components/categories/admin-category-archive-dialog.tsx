@@ -87,14 +87,20 @@ export function AdminCategoryArchiveDialog({
           Archive “{categoryName}”?
         </h2>
 
-        <p
+        <div
           id={descriptionId}
-          className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]"
+          className="mt-2 space-y-3 text-sm leading-6 text-[var(--color-text-secondary)]"
         >
-          This category will be removed from normal menu management views.
-          Existing product associations will remain subject to the backend
-          archive rules.
-        </p>
+          <p>
+            This category will be removed from removed from the main category
+            list and hidden from customers.
+          </p>
+
+          <p>
+            Its products and existing associations will remain saved. You can
+            restore the category later; restored categories return as inactive.
+          </p>
+        </div>
 
         {errorMessage ? (
           <div

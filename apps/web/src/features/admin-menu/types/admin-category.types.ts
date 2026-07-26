@@ -1,6 +1,6 @@
 export type QueryParameterValue = string | number | null | undefined;
 
-export type AdminCategoryStatusFilter = "active" | "inactive";
+export type AdminCategoryStatusFilter = "active" | "inactive" | "archived";
 
 export interface AdminCategoriesQuery {
   search?: string;
@@ -15,6 +15,7 @@ export interface AdminCategoryListItem {
   sortOrder: number;
   isActive: boolean;
   productCount: number;
+  archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -23,15 +24,12 @@ export interface AdminCategoriesSummary {
   total: number;
   active: number;
   inactive: number;
+  archived: number;
 }
 
 export interface AdminCategoriesResponse {
   data: AdminCategoryListItem[];
   summary: AdminCategoriesSummary;
-}
-
-export interface ReorderAdminCategoriesRequest {
-  categoryIds: string[];
 }
 
 export interface ReorderAdminCategoriesRequest {
@@ -61,4 +59,9 @@ export interface UpdateAdminCategoryParameters {
 export interface UpdateAdminCategoryAvailabilityParameters {
   categoryId: string;
   request: UpdateAdminCategoryAvailabilityRequest;
+}
+
+export interface ArchiveAdminCategoryResponse {
+  id: string;
+  archived: true;
 }

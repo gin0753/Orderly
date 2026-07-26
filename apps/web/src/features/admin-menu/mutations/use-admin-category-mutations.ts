@@ -1,18 +1,21 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  type QueryClient,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import {
   archiveAdminCategory,
   createAdminCategory,
+  restoreAdminCategory,
   updateAdminCategory,
   updateAdminCategoryAvailability,
 } from "../api/admin-menu-api";
 import { adminMenuQueryKeys } from "../queries/admin-menu-query-keys";
 
-async function invalidateCategoryDependencies(
-  queryClient: ReturnType<typeof useQueryClient>,
-) {
+async function invalidateCategoryDependencies(queryClient: QueryClient) {
   await Promise.all([
     queryClient.invalidateQueries({
       queryKey: adminMenuQueryKeys.categories(),
@@ -66,6 +69,18 @@ export function useArchiveAdminCategory() {
 
   return useMutation({
     mutationFn: archiveAdminCategory,
+
+    onSuccess: async () => {
+      await invalidateCategoryDependencies(queryClient);
+    },
+  });
+}
+
+export function useRestoreAdminCategory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: restoreAdminCategory,
 
     onSuccess: async () => {
       await invalidateCategoryDependencies(queryClient);

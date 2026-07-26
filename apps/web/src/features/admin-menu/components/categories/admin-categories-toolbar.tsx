@@ -34,7 +34,9 @@ export function AdminCategoriesToolbar({
     const value = event.target.value;
 
     onStatusChange(
-      value === "active" || value === "inactive" ? value : undefined,
+      value === "active" || value === "inactive" || value === "archived"
+        ? value
+        : undefined,
     );
   }
 
@@ -85,6 +87,7 @@ export function AdminCategoriesToolbar({
             <option value="">All statuses</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
+            <option value="archived">Archived</option>
           </select>
         </div>
       </div>
@@ -109,15 +112,17 @@ export function AdminCategoriesToolbar({
           </Button>
         ) : null}
 
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          disabled={!canReorder || isUpdating}
-          onClick={onStartReorder}
-        >
-          Reorder categories
-        </Button>
+        {status !== "archived" ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={!canReorder || isUpdating}
+            onClick={onStartReorder}
+          >
+            Reorder categories
+          </Button>
+        ) : null}
 
         <Button
           type="button"

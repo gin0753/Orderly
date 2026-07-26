@@ -1,10 +1,10 @@
 import { Card } from "@/components/ui/card";
-
-import type { AdminCategoriesSummary } from "../../types/admin-category.types";
 import {
   SkeletonCard,
   SkeletonLine,
 } from "@/components/ui/skeleton/skeleton-parts";
+
+import type { AdminCategoriesSummary } from "../../types/admin-category.types";
 
 interface AdminCategoriesSummaryProps {
   summary: AdminCategoriesSummary;
@@ -14,7 +14,7 @@ const SUMMARY_ITEMS = [
   {
     key: "total",
     label: "Categories",
-    description: "All menu categories",
+    description: "All active and inactive categories",
   },
   {
     key: "active",
@@ -26,6 +26,11 @@ const SUMMARY_ITEMS = [
     label: "Inactive",
     description: "Hidden from customers",
   },
+  {
+    key: "archived",
+    label: "Archived",
+    description: "Removed from normal management",
+  },
 ] as const;
 
 export function AdminCategoriesSummary({
@@ -34,7 +39,7 @@ export function AdminCategoriesSummary({
   return (
     <section
       aria-label="Category summary"
-      className="grid gap-3 md:grid-cols-3"
+      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
     >
       {SUMMARY_ITEMS.map((item) => (
         <Card
@@ -66,10 +71,10 @@ export function AdminCategoriesSummarySkeleton() {
   return (
     <section
       aria-label="Loading category summary"
-      className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
     >
-      {Array.from({ length: 3 }).map((_, index) => (
-        <SkeletonCard key={index} className="p-5">
+      {Array.from({ length: SUMMARY_ITEMS.length }).map((_, index) => (
+        <SkeletonCard key={index} className="p-4">
           <SkeletonLine className="h-4 w-24" />
           <SkeletonLine className="mt-3 h-8 w-14" />
           <SkeletonLine className="mt-2 h-3 w-32" />

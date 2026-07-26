@@ -4,6 +4,7 @@ import type {
   AdminCategoriesQuery,
   AdminCategoriesResponse,
   AdminCategoryListItem,
+  ArchiveAdminCategoryResponse,
   CreateAdminCategoryRequest,
   QueryParameterValue,
   ReorderAdminCategoriesRequest,
@@ -126,8 +127,18 @@ export function updateAdminCategoryAvailability({
 }
 
 export function archiveAdminCategory(categoryId: string) {
-  return apiFetch<AdminCategoryListItem>(
+  return apiFetch<ArchiveAdminCategoryResponse>(
     `/admin/menu/categories/${encodeURIComponent(categoryId)}/archive`,
+    {
+      method: "PATCH",
+      auth: "required",
+    },
+  );
+}
+
+export function restoreAdminCategory(categoryId: string) {
+  return apiFetch<AdminCategoryListItem>(
+    `/admin/menu/categories/${encodeURIComponent(categoryId)}/restore`,
     {
       method: "PATCH",
       auth: "required",

@@ -11,6 +11,7 @@ interface AdminCategoriesTableProps {
   onEdit: (category: AdminCategoryListItem) => void;
   onToggleStatus: (category: AdminCategoryListItem) => void;
   onArchive: (category: AdminCategoryListItem) => void;
+  onRestore: (category: AdminCategoryListItem) => void;
 }
 
 export function AdminCategoriesTable({
@@ -20,6 +21,7 @@ export function AdminCategoriesTable({
   onEdit,
   onToggleStatus,
   onArchive,
+  onRestore,
 }: AdminCategoriesTableProps) {
   return (
     <div
@@ -106,6 +108,7 @@ export function AdminCategoriesTable({
           <tbody>
             {categories.length > 0 ? (
               categories.map((category) => {
+                const isArchived = category.archivedAt !== null;
                 const isPending = pendingCategoryId === category.id;
 
                 return (
@@ -140,58 +143,76 @@ export function AdminCategoriesTable({
                     </td>
 
                     <td className="px-4 py-3">
-                      <AdminCategoryStatusBadge isActive={category.isActive} />
+                      <AdminCategoryStatusBadge
+                        isActive={category.isActive}
+                        isArchived={isArchived}
+                      />
                     </td>
 
                     <td className="px-4 py-3 text-sm text-[var(--color-text-strong)]">
-                      {category.sortOrder}
+                      {isArchived ? "—" : category.sortOrder}
                     </td>
 
                     <td className="px-4 py-3">
-                      <div
-                        className={[
-                          "grid items-center justify-end gap-2",
-                          "grid-cols-[72px_112px_96px]",
-                        ].join(" ")}
-                      >
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          disabled={isPending}
-                          onClick={() => onEdit(category)}
-                        >
-                          Edit
-                        </Button>
-
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          disabled={isPending}
-                          onClick={() => onToggleStatus(category)}
-                        >
-                          {category.isActive ? "Deactivate" : "Activate"}
-                        </Button>
-
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          disabled={isPending}
-                          onClick={() => onArchive(category)}
+                      {isArchived ? (
+                        <div className="flex justify-end">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="min-w-24"
+                            disabled={isPending}
+                            onClick={() => onRestore(category)}
+                          >
+                            {isPending ? "Restoring…" : "Restore"}
+                          </Button>
+                        </div>
+                      ) : (
+                        <div
                           className={[
-                            "border-[var(--color-danger-border)]",
-                            "bg-[var(--color-danger-surface)]",
-                            "text-[var(--color-danger-strong)]",
-                            "hover:border-[var(--color-danger)]",
-                            "hover:bg-[var(--color-danger-surface)]",
-                            "hover:text-[var(--color-danger-strong)]",
+                            "grid items-center justify-end gap-2",
+                            "grid-cols-[72px_112px_96px]",
                           ].join(" ")}
                         >
-                          Archive
-                        </Button>
-                      </div>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            disabled={isPending}
+                            onClick={() => onEdit(category)}
+                          >
+                            Edit
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            disabled={isPending}
+                            onClick={() => onToggleStatus(category)}
+                          >
+                            {category.isActive ? "Deactivate" : "Activate"}
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            disabled={isPending}
+                            onClick={() => onArchive(category)}
+                            className={[
+                              "border-[var(--color-danger-border)]",
+                              "bg-[var(--color-danger-surface)]",
+                              "text-[var(--color-danger-strong)]",
+                              "hover:border-[var(--color-danger)]",
+                              "hover:bg-[var(--color-danger-surface)]",
+                              "hover:text-[var(--color-danger-strong)]",
+                            ].join(" ")}
+                          >
+                            Archive
+                          </Button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );

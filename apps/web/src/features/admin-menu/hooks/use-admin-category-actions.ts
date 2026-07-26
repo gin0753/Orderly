@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 
+import type { AdminCategoryFormValues } from "../components/categories/form/admin-category-form.types";
 import {
   useArchiveAdminCategory,
   useCreateAdminCategory,
+  useRestoreAdminCategory,
   useUpdateAdminCategory,
   useUpdateAdminCategoryAvailability,
 } from "../mutations/use-admin-category-mutations";
 import type { AdminCategoryListItem } from "../types/admin-category.types";
-import type { AdminCategoryFormValues } from "../components/categories/form/admin-category-form.types";
 
 export type AdminCategoryFormState =
   | {
@@ -42,24 +43,31 @@ export function useAdminCategoryActions() {
 
   const archiveCategoryMutation = useArchiveAdminCategory();
 
+  const restoreCategoryMutation = useRestoreAdminCategory();
+
   const categoryFormIsSubmitting =
     createCategoryMutation.isPending || updateCategoryMutation.isPending;
 
   const isMutationPending =
     categoryFormIsSubmitting ||
     updateAvailabilityMutation.isPending ||
-    archiveCategoryMutation.isPending;
+    archiveCategoryMutation.isPending ||
+    restoreCategoryMutation.isPending;
 
   const pendingCategoryId = updateAvailabilityMutation.isPending
     ? updateAvailabilityMutation.variables?.categoryId
     : archiveCategoryMutation.isPending
       ? archiveCategoryMutation.variables
-      : undefined;
+      : restoreCategoryMutation.isPending
+        ? restoreCategoryMutation.variables
+        : undefined;
 
   const categoryFormErrorMessage =
     categoryForm?.mode === "create"
       ? getErrorMessage(createCategoryMutation.error)
-      : getErrorMessage(updateCategoryMutation.error);
+      : categoryForm?.mode === "edit"
+        ? getErrorMessage(updateCategoryMutation.error)
+        : null;
 
   const availabilityErrorMessage = getErrorMessage(
     updateAvailabilityMutation.error,
@@ -67,9 +75,17 @@ export function useAdminCategoryActions() {
 
   const archiveErrorMessage = getErrorMessage(archiveCategoryMutation.error);
 
+  const restoreErrorMessage = getErrorMessage(restoreCategoryMutation.error);
+
+  function resetRowActionMutations() {
+    updateAvailabilityMutation.reset();
+    archiveCategoryMutation.reset();
+    restoreCategoryMutation.reset();
+  }
+
   function clearFeedback() {
     setSuccessMessage(null);
-    updateAvailabilityMutation.reset();
+    resetRowActionMutations();
   }
 
   function showSuccessMessage(message: string) {
@@ -79,7 +95,7 @@ export function useAdminCategoryActions() {
   function openCreateCategory() {
     createCategoryMutation.reset();
     updateCategoryMutation.reset();
-    updateAvailabilityMutation.reset();
+    resetRowActionMutations();
 
     setSuccessMessage(null);
 
@@ -91,7 +107,7 @@ export function useAdminCategoryActions() {
   function openEditCategory(category: AdminCategoryListItem) {
     createCategoryMutation.reset();
     updateCategoryMutation.reset();
-    updateAvailabilityMutation.reset();
+    resetRowActionMutations();
 
     setSuccessMessage(null);
 
@@ -108,6 +124,7 @@ export function useAdminCategoryActions() {
 
     createCategoryMutation.reset();
     updateCategoryMutation.reset();
+
     setCategoryForm(null);
   }
 
@@ -147,7 +164,7 @@ export function useAdminCategoryActions() {
   }
 
   async function toggleCategoryAvailability(category: AdminCategoryListItem) {
-    updateAvailabilityMutation.reset();
+    resetRowActionMutations();
     setSuccessMessage(null);
 
     try {
@@ -164,15 +181,13 @@ export function useAdminCategoryActions() {
           : `“${category.name}” activated successfully.`,
       );
     } catch {
-      // The mutation error is exposed through
+      // Error is exposed through
       // availabilityErrorMessage.
     }
   }
 
   function openArchiveCategory(category: AdminCategoryListItem) {
-    archiveCategoryMutation.reset();
-    updateAvailabilityMutation.reset();
-
+    resetRowActionMutations();
     setSuccessMessage(null);
     setArchiveTarget(category);
   }
@@ -193,11 +208,31 @@ export function useAdminCategoryActions() {
 
     const categoryName = archiveTarget.name;
 
-    await archiveCategoryMutation.mutateAsync(archiveTarget.id);
+    try {
+      await archiveCategoryMutation.mutateAsync(archiveTarget.id);
 
-    setArchiveTarget(null);
+      setArchiveTarget(null);
 
-    setSuccessMessage(`“${categoryName}” archived successfully.`);
+      setSuccessMessage(`“${categoryName}” archived successfully.`);
+    } catch {
+      // Keep the dialog open.
+      // Error is exposed through
+      // archiveErrorMessage.
+    }
+  }
+
+  async function restoreCategory(category: AdminCategoryListItem) {
+    resetRowActionMutations();
+    setSuccessMessage(null);
+
+    try {
+      await restoreCategoryMutation.mutateAsync(category.id);
+
+      setSuccessMessage(`“${category.name}” was restored as inactive.`);
+    } catch {
+      // Error is exposed through
+      // restoreErrorMessage.
+    }
   }
 
   return {
@@ -216,6 +251,8 @@ export function useAdminCategoryActions() {
     archiveIsPending: archiveCategoryMutation.isPending,
     archiveErrorMessage,
 
+    restoreErrorMessage,
+
     clearFeedback,
     showSuccessMessage,
 
@@ -229,5 +266,7 @@ export function useAdminCategoryActions() {
     openArchiveCategory,
     closeArchiveDialog,
     confirmArchiveCategory,
+
+    restoreCategory,
   };
 }

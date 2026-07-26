@@ -14,7 +14,9 @@ type SearchParamValue = string | null | undefined;
 function parseStatus(
   value: string | null,
 ): AdminCategoryStatusFilter | undefined {
-  return value === "active" || value === "inactive" ? value : undefined;
+  return value === "active" || value === "inactive" || value === "archived"
+    ? value
+    : undefined;
 }
 
 export function useAdminCategoriesFilters() {

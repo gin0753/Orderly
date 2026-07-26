@@ -82,6 +82,18 @@ export function AdminCategoriesScreen() {
     return null;
   }
 
+  const rowActionError = actions.restoreErrorMessage
+    ? {
+        title: "Category could not be restored",
+        message: actions.restoreErrorMessage,
+      }
+    : actions.availabilityErrorMessage
+      ? {
+          title: "Category availability could not be updated",
+          message: actions.availabilityErrorMessage,
+        }
+      : null;
+
   const isPageBusy = categoriesQuery.isFetching || actions.isMutationPending;
 
   return (
@@ -103,7 +115,7 @@ export function AdminCategoriesScreen() {
         </div>
       ) : null}
 
-      {actions.availabilityErrorMessage ? (
+      {rowActionError ? (
         <div
           role="alert"
           className={[
@@ -113,11 +125,11 @@ export function AdminCategoriesScreen() {
           ].join(" ")}
         >
           <p className="text-sm font-medium text-[var(--color-danger-strong)]">
-            Category availability could not be updated
+            {rowActionError.title}
           </p>
 
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            {actions.availabilityErrorMessage}
+            {rowActionError.message}
           </p>
         </div>
       ) : null}
@@ -134,10 +146,8 @@ export function AdminCategoriesScreen() {
             searchValue={filters.searchInput}
             status={filters.status}
             hasActiveFilters={filters.hasActiveFilters}
-            isUpdating={
-              categoriesQuery.isFetching && !categoriesQuery.isPending
-            }
-            canReorder={response.summary.total > 1}
+            isUpdating={isPageBusy}
+            canReorder={!filters.hasActiveFilters && response.summary.total > 1}
             onSearchChange={filters.setSearchInput}
             onStatusChange={filters.setStatus}
             onReset={filters.resetFilters}
@@ -154,6 +164,9 @@ export function AdminCategoriesScreen() {
               void actions.toggleCategoryAvailability(category);
             }}
             onArchive={actions.openArchiveCategory}
+            onRestore={(category) => {
+              void actions.restoreCategory(category);
+            }}
           />
         </>
       )}
