@@ -16,7 +16,7 @@ export const OPTION_GROUP_TYPE = {
 export type OptionGroupType =
   (typeof OPTION_GROUP_TYPE)[keyof typeof OPTION_GROUP_TYPE];
 
-export type AdminProductAvailabilityFilter = "available" | "unavailable";
+export type AdminProductAvailabilityFilter = "AVAILABLE" | "UNAVAILABLE";
 
 export interface AdminProductsQuery {
   page?: number;
@@ -93,3 +93,10 @@ export type AdminProductsResponse = AdminMenuPaginatedResponse<
   AdminProductListItem,
   AdminProductsSummary
 >;
+
+export interface AdminProductCategoryFilterOption {
+  id: string;
+  name: string;
+  isActive: boolean;
+  sortOrder: number;
+}

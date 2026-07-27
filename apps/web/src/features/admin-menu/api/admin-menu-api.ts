@@ -12,6 +12,7 @@ import type {
   UpdateAdminCategoryParameters,
 } from "../types/admin-category.types";
 import type {
+  AdminProductCategoryFilterOption,
   AdminProductDetail,
   AdminProductsQuery,
   AdminProductsResponse,
@@ -45,6 +46,25 @@ export function getAdminCategories(query: AdminCategoriesQuery = {}) {
       auth: "required",
     },
   );
+}
+
+export async function getAdminProductCategoryOptions(): Promise<
+  AdminProductCategoryFilterOption[]
+> {
+  const response = await getAdminCategories();
+
+  return response.data
+    .map((category) => ({
+      id: category.id,
+      name: category.name,
+      isActive: category.isActive,
+      sortOrder: category.sortOrder,
+    }))
+    .sort(
+      (firstCategory, secondCategory) =>
+        firstCategory.sortOrder - secondCategory.sortOrder ||
+        firstCategory.name.localeCompare(secondCategory.name),
+    );
 }
 
 export function reorderAdminCategories(request: ReorderAdminCategoriesRequest) {

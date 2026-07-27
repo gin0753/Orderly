@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
@@ -9,7 +9,7 @@ import type { AdminCategoryStatusFilter } from "../types/admin-category.types";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
-type SearchParamValue = string | null | undefined;
+type SearchParameterValue = string | null | undefined;
 
 function parseStatus(
   value: string | null,
@@ -23,20 +23,29 @@ export function useAdminCategoriesFilters() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const searchInput = searchParams.get("search") ?? "";
+
+  const search = searchParams.get("search")?.trim() ?? "";
   const status = parseStatus(searchParams.get("status"));
-  const search = useDebouncedValue(searchInput.trim(), SEARCH_DEBOUNCE_MS);
+  const [searchInput, setSearchInputState] = useState(() => search);
+
+  const normalizedSearchInput = searchInput.trim();
+
+  const debouncedSearch = useDebouncedValue(
+    normalizedSearchInput,
+    SEARCH_DEBOUNCE_MS,
+  );
 
   const updateSearchParams = useCallback(
-    (updates: Record<string, SearchParamValue>) => {
+    (updates: Record<string, SearchParameterValue>) => {
       const nextSearchParams = new URLSearchParams(searchParams.toString());
 
       for (const [key, value] of Object.entries(updates)) {
         if (value === undefined || value === null || value === "") {
           nextSearchParams.delete(key);
-        } else {
-          nextSearchParams.set(key, value);
+          continue;
         }
+
+        nextSearchParams.set(key, value);
       }
 
       const queryString = nextSearchParams.toString();
@@ -48,14 +57,19 @@ export function useAdminCategoriesFilters() {
     [pathname, router, searchParams],
   );
 
-  const setSearchInput = useCallback(
-    (value: string) => {
-      updateSearchParams({
-        search: value || null,
-      });
-    },
-    [updateSearchParams],
-  );
+  useEffect(() => {
+    if (debouncedSearch === search) {
+      return;
+    }
+
+    updateSearchParams({
+      search: debouncedSearch || null,
+    });
+  }, [debouncedSearch, search, updateSearchParams]);
+
+  const setSearchInput = useCallback((value: string) => {
+    setSearchInputState(value);
+  }, []);
 
   const setStatus = useCallback(
     (nextStatus: AdminCategoryStatusFilter | undefined) => {
@@ -67,6 +81,8 @@ export function useAdminCategoriesFilters() {
   );
 
   const resetFilters = useCallback(() => {
+    setSearchInputState("");
+
     updateSearchParams({
       search: null,
       status: null,
@@ -77,7 +93,9 @@ export function useAdminCategoriesFilters() {
     search,
     searchInput,
     status,
-    hasActiveFilters: Boolean(searchInput.trim() || status),
+
+    hasActiveFilters: Boolean(normalizedSearchInput || status),
+
     setSearchInput,
     setStatus,
     resetFilters,

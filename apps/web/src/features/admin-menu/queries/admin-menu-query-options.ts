@@ -4,6 +4,7 @@ import {
   getAdminCategories,
   getAdminProduct,
   getAdminProducts,
+  getAdminProductCategoryOptions,
 } from "../api/admin-menu-api";
 import type { AdminCategoriesQuery } from "../types/admin-category.types";
 import type { AdminProductsQuery } from "../types/admin-product.types";
@@ -20,6 +21,13 @@ export const adminMenuQueryOptions = {
     return queryOptions({
       queryKey: adminMenuQueryKeys.categoryList(normalizedQuery),
       queryFn: () => getAdminCategories(normalizedQuery),
+    });
+  },
+
+  categoryOptions() {
+    return queryOptions({
+      queryKey: adminMenuQueryKeys.categoryOptions(),
+      queryFn: getAdminProductCategoryOptions,
     });
   },
 

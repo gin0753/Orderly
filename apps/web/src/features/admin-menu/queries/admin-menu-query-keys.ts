@@ -38,6 +38,9 @@ export const adminMenuQueryKeys = {
   categoryList: (query: ReturnType<typeof normalizeAdminCategoriesQuery>) =>
     [...adminMenuQueryKeys.categoryLists(), query] as const,
 
+  categoryOptions: () =>
+    [...adminMenuQueryKeys.categories(), "options"] as const,
+
   products: () => [...adminMenuQueryKeys.all, "products"] as const,
 
   productLists: () => [...adminMenuQueryKeys.products(), "list"] as const,

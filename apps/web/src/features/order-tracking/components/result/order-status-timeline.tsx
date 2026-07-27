@@ -1,7 +1,7 @@
 import { cn } from "@/lib/cn";
 
 import type { OrderStatus, OrderType } from "../../types/order-tracking.types";
-import { formatDateTime } from "../../utils/order-tracking-utils";
+import { formatDateTime } from "@/lib/format-date-time";
 
 type OrderStatusTimelineProps = {
   status: OrderStatus;

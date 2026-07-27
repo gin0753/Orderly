@@ -9,7 +9,6 @@ import type {
   OrderTrackingResponse,
 } from "../types/order-tracking.types";
 import { isTerminalOrderStatus } from "../utils/order-status-copy";
-import { normaliseOrderNumber } from "../utils/order-tracking-utils";
 
 type StoredTrackingLookup = {
   orderNumber: string;
@@ -17,6 +16,10 @@ type StoredTrackingLookup = {
   phone?: string;
   verifiedAt?: number;
 };
+
+function normaliseOrderNumber(value: string) {
+  return value.trim().replace(/^#/, "");
+}
 
 export function useOrderTracking(orderNumber: string) {
   const [order, setOrder] = useState<OrderTrackingResponse | null>(null);

@@ -11,6 +11,8 @@ export {
 
 export { adminMenuQueryOptions } from "./queries/admin-menu-query-options";
 
+export { AdminProductsScreen } from "./components/products/admin-products-screen";
+
 export {
   getAdminCategories,
   getAdminProduct,

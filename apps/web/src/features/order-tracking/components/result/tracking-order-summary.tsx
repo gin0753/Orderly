@@ -1,5 +1,5 @@
+import { formatMoneyFromCents } from "@/lib/format-money";
 import type { OrderTrackingResponse } from "../../types/order-tracking.types";
-import { formatMoneyFromCents } from "../../utils/order-tracking-utils";
 import Image from "next/image";
 
 type TrackingOrderSummaryProps = {

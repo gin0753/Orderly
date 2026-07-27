@@ -7,7 +7,6 @@ import { OrderlyLogo } from "@/components/brand/orderly-logo";
 import { Card } from "@/components/ui/card";
 
 import { useOrderTracking } from "../../hooks/use-order-tracking";
-import { formatMoneyFromCents } from "../../utils/order-tracking-utils";
 import { OrderStatusTimeline } from "./order-status-timeline";
 import { OrderTrackingDetails } from "./order-tracking-details";
 import { OrderTrackingErrorState } from "./order-tracking-error-state";
@@ -15,6 +14,7 @@ import { OrderTrackingHeader } from "./order-tracking-header";
 import { OrderTrackingLoadingState } from "./order-tracking-loading-state";
 import { OrderTrackingVerificationState } from "./order-tracking-verification-state";
 import { TrackingOrderSummary } from "./tracking-order-summary";
+import { formatMoneyFromCents } from "@/lib/format-money";
 
 type OrderTrackingResultProps = {
   orderNumber: string;
