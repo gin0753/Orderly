@@ -25,6 +25,7 @@ interface AdminProductsToolbarProps {
     availability: AdminProductAvailabilityFilter | undefined,
   ) => void;
   onReset: () => void;
+  onCreateProduct: () => void;
 }
 
 export function AdminProductsToolbar({
@@ -40,6 +41,7 @@ export function AdminProductsToolbar({
   onCategoryChange,
   onAvailabilityChange,
   onReset,
+  onCreateProduct,
 }: AdminProductsToolbarProps) {
   function handleCategoryChange(event: ChangeEvent<HTMLSelectElement>) {
     onCategoryChange(event.target.value || undefined);
@@ -174,6 +176,15 @@ export function AdminProductsToolbar({
             Clear filters
           </Button>
         ) : null}
+
+        <Button
+          type="button"
+          size="sm"
+          disabled={isUpdating}
+          onClick={onCreateProduct}
+        >
+          Add product
+        </Button>
       </div>
     </div>
   );

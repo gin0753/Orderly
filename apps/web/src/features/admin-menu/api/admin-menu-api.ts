@@ -16,6 +16,8 @@ import type {
   AdminProductDetail,
   AdminProductsQuery,
   AdminProductsResponse,
+  CreateAdminProductRequest,
+  UpdateAdminProductParameters,
 } from "../types/admin-product.types";
 
 function buildQueryString(parameters: Record<string, QueryParameterValue>) {
@@ -162,6 +164,34 @@ export function restoreAdminCategory(categoryId: string) {
     {
       method: "PATCH",
       auth: "required",
+    },
+  );
+}
+
+export function createAdminProduct(request: CreateAdminProductRequest) {
+  return apiFetch<AdminProductDetail>("/admin/menu/products", {
+    method: "POST",
+    auth: "required",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+}
+
+export function updateAdminProduct({
+  productId,
+  request,
+}: UpdateAdminProductParameters) {
+  return apiFetch<AdminProductDetail>(
+    `/admin/menu/products/${encodeURIComponent(productId)}`,
+    {
+      method: "PATCH",
+      auth: "required",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
     },
   );
 }

@@ -1,15 +1,18 @@
-import { formatMoneyFromCents } from "@/lib/format-money";
-import { formatDateTime } from "@/lib/format-date-time";
-import type { AdminProductListItem } from "../../types/admin-product.types";
-import { AdminProductThumbnail } from "./admin-product-thumbnail";
+import { Button } from "@/components/ui/button";
 import {
   SkeletonBlock,
   SkeletonLine,
 } from "@/components/ui/skeleton/skeleton-parts";
+import { formatDateTime } from "@/lib/format-date-time";
+import { formatMoneyFromCents } from "@/lib/format-money";
+
+import type { AdminProductListItem } from "../../types/admin-product.types";
+import { AdminProductThumbnail } from "./admin-product-thumbnail";
 
 interface AdminProductsTableProps {
   products: AdminProductListItem[];
   hasActiveFilters: boolean;
+  onEdit: (product: AdminProductListItem) => void;
 }
 
 interface ProductAvailabilityBadgeProps {
@@ -43,6 +46,7 @@ function ProductAvailabilityBadge({
 export function AdminProductsTable({
   products,
   hasActiveFilters,
+  onEdit,
 }: AdminProductsTableProps) {
   return (
     <div
@@ -53,7 +57,7 @@ export function AdminProductsTable({
       ].join(" ")}
     >
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[860px] border-collapse">
+        <table className="w-full min-w-[940px] border-collapse">
           <thead className="bg-[var(--color-surface-muted)]">
             <tr className="border-b border-[var(--color-border)]">
               <th
@@ -90,6 +94,13 @@ export function AdminProductsTable({
               >
                 Updated
               </th>
+
+              <th
+                scope="col"
+                className="px-4 py-3 text-right text-xs font-semibold text-[var(--color-text-secondary)]"
+              >
+                Actions
+              </th>
             </tr>
           </thead>
 
@@ -107,10 +118,7 @@ export function AdminProductsTable({
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <AdminProductThumbnail
-                        imageUrl={product.imageUrl}
-                        productName={product.name}
-                      />
+                      <AdminProductThumbnail imageUrl={product.imageUrl} />
 
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
@@ -157,11 +165,22 @@ export function AdminProductsTable({
                       {formatDateTime(product.updatedAt)}
                     </time>
                   </td>
+
+                  <td className="px-4 py-3 text-right">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => onEdit(product)}
+                    >
+                      Edit
+                    </Button>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="px-6 py-16 text-center">
+                <td colSpan={6} className="px-6 py-16 text-center">
                   <p className="text-sm font-semibold text-[var(--color-text-primary)]">
                     {hasActiveFilters
                       ? "No products match your filters"
@@ -187,13 +206,20 @@ export function AdminProductsTableSkeleton() {
   return (
     <div
       aria-label="Loading products"
+      aria-busy="true"
       className={[
         "overflow-hidden rounded-xl",
         "border border-[var(--color-border)]",
         "bg-[var(--color-surface)]",
       ].join(" ")}
     >
-      <div className="border-b border-[var(--color-border)] bg-[var(--color-surface-muted)] px-4 py-3">
+      <div
+        className={[
+          "border-b border-[var(--color-border)]",
+          "bg-[var(--color-surface-muted)]",
+          "px-4 py-3",
+        ].join(" ")}
+      >
         <SkeletonLine className="h-4 w-full rounded" />
       </div>
 
@@ -201,7 +227,11 @@ export function AdminProductsTableSkeleton() {
         {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={index}
-            className="grid min-w-[860px] grid-cols-[2fr_1fr_0.8fr_0.9fr_1.2fr] items-center gap-6 px-4 py-4"
+            className={[
+              "grid min-w-[940px]",
+              "grid-cols-[2fr_1fr_0.8fr_0.9fr_1.2fr_0.6fr]",
+              "items-center gap-6 px-4 py-4",
+            ].join(" ")}
           >
             <div className="flex items-center gap-3">
               <SkeletonBlock className="h-12 w-12 shrink-0 rounded-lg" />
@@ -216,6 +246,10 @@ export function AdminProductsTableSkeleton() {
             <SkeletonLine className="h-4 w-full rounded" />
             <SkeletonLine className="h-4 w-full rounded" />
             <SkeletonLine className="h-4 w-full rounded" />
+
+            <div className="flex justify-end">
+              <SkeletonBlock className="h-8 w-14 rounded-md" />
+            </div>
           </div>
         ))}
       </div>

@@ -100,3 +100,24 @@ export interface AdminProductCategoryFilterOption {
   isActive: boolean;
   sortOrder: number;
 }
+
+export interface CreateAdminProductRequest {
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  categoryId: string;
+  basePriceCents: number;
+}
+
+export interface UpdateAdminProductRequest {
+  name: string;
+  description: string | null;
+  imageUrl: string | null;
+  categoryId: string;
+  basePriceCents: number;
+}
+
+export interface UpdateAdminProductParameters {
+  productId: string;
+  request: UpdateAdminProductRequest;
+}

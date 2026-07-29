@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
@@ -36,6 +37,8 @@ export function AdminProductsScreen() {
     setPage,
     resetFilters,
   } = useAdminProductsFilters();
+
+  const router = useRouter();
 
   const productsQuery = useQuery(
     adminMenuQueryOptions.products({
@@ -117,11 +120,15 @@ export function AdminProductsScreen() {
         onCategoryChange={setCategoryId}
         onAvailabilityChange={setAvailability}
         onReset={resetFilters}
+        onCreateProduct={() => router.push("/admin/menu/products/new")}
       />
 
       <AdminProductsTable
         products={response.data}
         hasActiveFilters={hasActiveFilters}
+        onEdit={(product) =>
+          router.push(`/admin/menu/products/${product.id}/edit`)
+        }
       />
 
       <AdminProductsPagination
