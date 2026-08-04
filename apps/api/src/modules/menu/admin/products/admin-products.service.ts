@@ -540,26 +540,33 @@ export class AdminProductsService {
       );
     }
 
-    if (
-      group.kind === ProductOptionGroupKind.ADD_ON &&
-      group.type !== OptionGroupType.MULTIPLE
-    ) {
+    if (group.minSelect < 0) {
       throw new BadRequestException(
-        `${group.name} must use MULTIPLE selection because it is an add-on group.`,
+        `${group.name} must have minSelect greater than or equal to 0.`,
+      );
+    }
+
+    if (group.maxSelect < 1) {
+      throw new BadRequestException(
+        `${group.name} must have maxSelect greater than or equal to 1.`,
+      );
+    }
+
+    if (group.isRequired && group.minSelect < 1) {
+      throw new BadRequestException(
+        `${group.name} must have minSelect set to at least 1 because it is required.`,
       );
     }
 
     if (group.type === OptionGroupType.SINGLE && group.maxSelect !== 1) {
       throw new BadRequestException(
-        `${group.name} must have maxSelect set to 1.`,
+        `${group.name} must have maxSelect set to 1 because it uses SINGLE selection.`,
       );
     }
 
-    const minimumRequired = Math.max(group.minSelect, group.isRequired ? 1 : 0);
-
-    if (minimumRequired > group.maxSelect) {
+    if (group.minSelect > group.maxSelect) {
       throw new BadRequestException(
-        `${group.name} has invalid minimum and maximum selection values.`,
+        `${group.name} has minSelect greater than maxSelect.`,
       );
     }
 
@@ -577,13 +584,15 @@ export class AdminProductsService {
       (option) => option.isAvailable ?? true,
     );
 
-    if (isGroupActive && availableOptions.length < minimumRequired) {
+    if (isGroupActive && availableOptions.length < group.minSelect) {
       throw new BadRequestException(
         `${group.name} does not have enough available options to satisfy its minimum selection.`,
       );
     }
 
-    const defaultOptions = group.options.filter((option) => option.isDefault);
+    const defaultOptions = group.options.filter(
+      (option) => option.isDefault ?? false,
+    );
 
     if (group.type === OptionGroupType.MULTIPLE && defaultOptions.length > 0) {
       throw new BadRequestException(
@@ -594,17 +603,6 @@ export class AdminProductsService {
     if (group.type === OptionGroupType.SINGLE && defaultOptions.length > 1) {
       throw new BadRequestException(
         `${group.name} can only have one default option.`,
-      );
-    }
-
-    if (
-      isGroupActive &&
-      minimumRequired > 0 &&
-      group.type === OptionGroupType.SINGLE &&
-      defaultOptions.length !== 1
-    ) {
-      throw new BadRequestException(
-        `${group.name} requires exactly one default option.`,
       );
     }
 

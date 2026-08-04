@@ -2,6 +2,7 @@ import type { AdminMenuPaginatedResponse } from "./admin-menu.types";
 
 export const PRODUCT_OPTION_GROUP_KIND = {
   SIZE: "SIZE",
+  MODIFIER: "MODIFIER",
   ADD_ON: "ADD_ON",
 } as const;
 
@@ -101,12 +102,43 @@ export interface AdminProductCategoryFilterOption {
   sortOrder: number;
 }
 
+export interface CreateAdminProductOptionRequest {
+  name: string;
+  priceDeltaCents: number;
+  isAvailable: boolean;
+  isDefault: boolean;
+}
+
+export interface CreateAdminProductOptionGroupRequest {
+  name: string;
+  kind: ProductOptionGroupKind;
+  type: OptionGroupType;
+  isRequired: boolean;
+  minSelect: number;
+  maxSelect: number;
+  isActive: boolean;
+  options: CreateAdminProductOptionRequest[];
+}
+
+export interface UpdateAdminProductOptionRequest extends CreateAdminProductOptionRequest {
+  id?: string;
+}
+
+export interface UpdateAdminProductOptionGroupRequest extends Omit<
+  CreateAdminProductOptionGroupRequest,
+  "options"
+> {
+  id?: string;
+  options: UpdateAdminProductOptionRequest[];
+}
+
 export interface CreateAdminProductRequest {
   name: string;
   description?: string;
   imageUrl?: string;
   categoryId: string;
   basePriceCents: number;
+  optionGroups: CreateAdminProductOptionGroupRequest[];
 }
 
 export interface UpdateAdminProductRequest {
@@ -115,6 +147,7 @@ export interface UpdateAdminProductRequest {
   imageUrl: string | null;
   categoryId: string;
   basePriceCents: number;
+  optionGroups: UpdateAdminProductOptionGroupRequest[];
 }
 
 export interface UpdateAdminProductParameters {
