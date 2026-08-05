@@ -18,14 +18,13 @@ export function AdminProductFormActions({
   return (
     <footer
       className={[
-        "sticky bottom-4 z-10",
+        "mt-6 mb-8",
         "flex flex-col-reverse gap-3",
-        "rounded-xl px-5 py-4",
+        "rounded-xl",
         "border border-[var(--color-border)]",
-        "bg-[var(--color-surface-glass)]",
-        "backdrop-blur",
-        "sm:flex-row sm:items-center",
-        "sm:justify-end",
+        "bg-[var(--color-surface)]",
+        "px-5 py-4",
+        "sm:flex-row sm:items-center sm:justify-end",
       ].join(" ")}
     >
       <Button

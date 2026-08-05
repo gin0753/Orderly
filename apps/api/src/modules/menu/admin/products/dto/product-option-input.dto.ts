@@ -23,7 +23,6 @@ export class ProductOptionInputDto {
   name!: string;
 
   @IsInt()
-  @Min(0)
   @Max(10_000_000)
   priceDeltaCents!: number;
 

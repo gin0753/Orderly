@@ -8,6 +8,7 @@ import type { AdminProductFormValues } from "../../../../types/admin-product-for
 import {
   OPTION_GROUP_TYPE,
   PRODUCT_OPTION_GROUP_KIND,
+  type OptionGroupType,
   type ProductOptionGroupKind,
 } from "../../../../types/admin-product.types";
 import type { AdminProductOptionGroupController } from "./use-admin-product-option-group";
@@ -30,9 +31,13 @@ export function AdminProductOptionGroupSettings({
 
   const isSizeGroup = controller.kind === PRODUCT_OPTION_GROUP_KIND.SIZE;
 
+  const isSingleSelection =
+    controller.selectionType === OPTION_GROUP_TYPE.SINGLE;
+
   function handleKindChange(value: string) {
     if (
       value !== PRODUCT_OPTION_GROUP_KIND.SIZE &&
+      value !== PRODUCT_OPTION_GROUP_KIND.MODIFIER &&
       value !== PRODUCT_OPTION_GROUP_KIND.ADD_ON
     ) {
       return;
@@ -41,10 +46,26 @@ export function AdminProductOptionGroupSettings({
     controller.changeKind(value as ProductOptionGroupKind);
   }
 
+  function handleSelectionTypeChange(value: string) {
+    if (
+      value !== OPTION_GROUP_TYPE.SINGLE &&
+      value !== OPTION_GROUP_TYPE.MULTIPLE
+    ) {
+      return;
+    }
+
+    controller.changeSelectionType(value as OptionGroupType);
+  }
+
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div>
+      <div
+        className={[
+          "grid gap-4",
+          "[grid-template-columns:repeat(auto-fit,minmax(min(100%,10.5rem),1fr))]",
+        ].join(" ")}
+      >
+        <div className="min-w-0">
           <label
             htmlFor={`option-group-${groupIndex}-name`}
             className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]"
@@ -61,6 +82,7 @@ export function AdminProductOptionGroupSettings({
                 ? `option-group-${groupIndex}-name-error`
                 : undefined
             }
+            className="min-w-0"
             {...register(`optionGroups.${groupIndex}.name`, {
               validate: (value) =>
                 value.trim().length > 0 || "Group name is required.",
@@ -77,7 +99,7 @@ export function AdminProductOptionGroupSettings({
           ) : null}
         </div>
 
-        <div>
+        <div className="min-w-0">
           <label
             htmlFor={`option-group-${groupIndex}-kind`}
             className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]"
@@ -90,7 +112,7 @@ export function AdminProductOptionGroupSettings({
             value={controller.kind}
             onChange={(event) => handleKindChange(event.target.value)}
             className={[
-              "h-10 w-full rounded-md px-3",
+              "h-10 w-full min-w-0 rounded-md px-3",
               "border border-[var(--color-border)]",
               "bg-[var(--color-surface)]",
               "text-sm text-[var(--color-text-primary)]",
@@ -103,34 +125,64 @@ export function AdminProductOptionGroupSettings({
           >
             <option value={PRODUCT_OPTION_GROUP_KIND.SIZE}>Size</option>
 
+            <option value={PRODUCT_OPTION_GROUP_KIND.MODIFIER}>Modifier</option>
+
             <option value={PRODUCT_OPTION_GROUP_KIND.ADD_ON}>Add-on</option>
           </select>
         </div>
 
-        <div>
-          <span className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]">
+        <div className="min-w-0">
+          <label
+            htmlFor={`option-group-${groupIndex}-type`}
+            className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]"
+          >
             Selection
-          </span>
+          </label>
 
-          <div
+          <select
+            id={`option-group-${groupIndex}-type`}
+            value={controller.selectionType}
+            disabled={isSizeGroup}
+            onChange={(event) => handleSelectionTypeChange(event.target.value)}
             className={[
-              "flex h-10 items-center",
-              "rounded-md px-3",
+              "h-10 w-full min-w-0 rounded-md px-3",
               "border border-[var(--color-border)]",
-              "bg-[var(--color-surface-muted)]",
-              "text-sm text-[var(--color-text-secondary)]",
+              "text-sm",
+              "focus-visible:outline-none",
+              "focus-visible:ring-2",
+              "focus-visible:ring-[var(--color-ring)]",
+              isSizeGroup
+                ? [
+                    "cursor-not-allowed",
+                    "bg-[var(--color-surface-disabled)]",
+                    "text-[var(--color-text-muted)]",
+                  ].join(" ")
+                : [
+                    "bg-[var(--color-surface)]",
+                    "text-[var(--color-text-primary)]",
+                    "transition-colors",
+                    "hover:border-[var(--color-border-hover)]",
+                  ].join(" "),
             ].join(" ")}
           >
-            {controller.selectionType === OPTION_GROUP_TYPE.SINGLE
-              ? "Single selection"
-              : "Multiple selection"}
-          </div>
+            <option value={OPTION_GROUP_TYPE.SINGLE}>Single</option>
+
+            <option value={OPTION_GROUP_TYPE.MULTIPLE}>Multiple</option>
+          </select>
+
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+            {isSizeGroup
+              ? "Size groups always use single selection."
+              : isSingleSelection
+                ? "Customers may select one option."
+                : "Customers may select multiple options."}
+          </p>
         </div>
 
         <label
           className={[
-            "flex items-center gap-3 self-end",
-            "rounded-md px-3 py-2.5",
+            "flex min-h-10 min-w-0 items-center gap-3",
+            "self-end rounded-md px-3 py-2",
             "border border-[var(--color-border)]",
             "text-sm text-[var(--color-text-secondary)]",
           ].join(" ")}
@@ -139,14 +191,20 @@ export function AdminProductOptionGroupSettings({
             type="checkbox"
             checked={controller.isRequired}
             onChange={(event) => controller.setIsRequired(event.target.checked)}
-            className="h-4 w-4 accent-[var(--color-brand)]"
+            className="h-4 w-4 shrink-0 accent-[var(--color-brand)]"
           />
-          Required
+
+          <span className="min-w-0">Required</span>
         </label>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
+      <div
+        className={[
+          "grid gap-4",
+          "[grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr))]",
+        ].join(" ")}
+      >
+        <div className="min-w-0">
           <label
             htmlFor={`option-group-${groupIndex}-minimum`}
             className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]"
@@ -160,6 +218,7 @@ export function AdminProductOptionGroupSettings({
             min={0}
             step={1}
             aria-invalid={Boolean(groupErrors?.minSelect)}
+            className="min-w-0"
             {...register(`optionGroups.${groupIndex}.minSelect`, {
               valueAsNumber: true,
               required: "Minimum is required.",
@@ -177,7 +236,7 @@ export function AdminProductOptionGroupSettings({
           ) : null}
         </div>
 
-        <div>
+        <div className="min-w-0">
           <label
             htmlFor={`option-group-${groupIndex}-maximum`}
             className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]"
@@ -190,17 +249,18 @@ export function AdminProductOptionGroupSettings({
             type="number"
             min={1}
             step={1}
-            readOnly={isSizeGroup}
+            readOnly={isSingleSelection}
             aria-invalid={Boolean(groupErrors?.maxSelect)}
-            className={
-              isSizeGroup
+            className={[
+              "min-w-0",
+              isSingleSelection
                 ? [
                     "cursor-not-allowed",
                     "bg-[var(--color-surface-disabled)]",
                     "text-[var(--color-text-muted)]",
                   ].join(" ")
-                : undefined
-            }
+                : "",
+            ].join(" ")}
             {...register(`optionGroups.${groupIndex}.maxSelect`, {
               valueAsNumber: true,
               required: "Maximum is required.",
@@ -212,9 +272,9 @@ export function AdminProductOptionGroupSettings({
           />
 
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-            {isSizeGroup
-              ? "Size groups always allow exactly one selection."
-              : "Maximum add-ons a customer may select."}
+            {isSingleSelection
+              ? "Single-selection groups always have a maximum of 1."
+              : "Maximum number of options a customer may select."}
           </p>
 
           {groupErrors?.maxSelect?.message ? (

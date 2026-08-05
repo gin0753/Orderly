@@ -9,6 +9,7 @@ import {
 
 import type { AdminProductFormValues } from "../../../../types/admin-product-form.types";
 import type { AdminProductCategoryFilterOption } from "../../../../types/admin-product.types";
+import { AdminProductOptionsEditor } from "../admin-product-options-editor";
 import { AdminProductBasicFields } from "./admin-product-basic-fields";
 import { AdminProductEditorSidebar } from "./admin-product-editor-sidebar";
 import { AdminProductFormActions } from "./admin-product-form-actions";
@@ -57,25 +58,32 @@ export function AdminProductForm({
 
   return (
     <FormProvider {...formMethods}>
-      <form
-        noValidate
-        onSubmit={handleSubmit(submitHandler)}
-        className="space-y-6"
-      >
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(18rem,0.75fr)]">
-          <AdminProductBasicFields
-            categories={categories}
-            isSubmitting={isSubmitting}
-          />
+      <form noValidate onSubmit={handleSubmit(submitHandler)}>
+        <div className="space-y-6">
+          <div
+            className={[
+              "grid items-start gap-6",
+              "xl:grid-cols-[minmax(0,1.65fr)_minmax(18rem,0.75fr)]",
+            ].join(" ")}
+          >
+            <div className="min-w-0 space-y-6">
+              <AdminProductBasicFields
+                categories={categories}
+                isSubmitting={isSubmitting}
+              />
 
-          <AdminProductEditorSidebar
-            mode={mode}
-            productName={productName}
-            imageUrl={imageUrl}
-          />
+              <AdminProductOptionsEditor />
+            </div>
+
+            <AdminProductEditorSidebar
+              mode={mode}
+              productName={productName}
+              imageUrl={imageUrl}
+            />
+          </div>
+
+          <AdminProductFormError message={errorMessage} />
         </div>
-
-        <AdminProductFormError message={errorMessage} />
 
         <AdminProductFormActions
           mode={mode}

@@ -20,6 +20,7 @@ import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 
 import type { AdminProductFormValues } from "../../../types/admin-product-form.types";
+import { PRODUCT_OPTION_GROUP_KIND } from "../../../types/admin-product.types";
 import { createEmptyAdminProductOptionGroup } from "../../../utils/admin-product-form.utils";
 import { AdminProductOptionGroupCard } from "./option-groups/admin-product-option-group-card";
 
@@ -53,7 +54,7 @@ export function AdminProductOptionsEditor() {
   );
 
   const hasActiveSizeGroup = groups.some(
-    (group) => group.kind === "SIZE" && group.isActive,
+    (group) => group.kind === PRODUCT_OPTION_GROUP_KIND.SIZE && group.isActive,
   );
 
   function handleDragEnd(event: DragEndEvent) {
@@ -87,11 +88,9 @@ export function AdminProductOptionsEditor() {
     >
       <header
         className={[
-          "flex flex-col gap-4",
           "border-b border-[var(--color-border)]",
-          "px-6 py-5",
-          "lg:flex-row lg:items-center",
-          "lg:justify-between",
+          "px-5 py-5",
+          "sm:px-6",
         ].join(" ")}
       >
         <div>
@@ -104,15 +103,22 @@ export function AdminProductOptionsEditor() {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
           <Button
             type="button"
             variant="secondary"
             size="sm"
             disabled={hasActiveSizeGroup}
-            onClick={() => append(createEmptyAdminProductOptionGroup("SIZE"))}
+            className="shrink-0"
+            onClick={() =>
+              append(
+                createEmptyAdminProductOptionGroup(
+                  PRODUCT_OPTION_GROUP_KIND.SIZE,
+                ),
+              )
+            }
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus aria-hidden="true" className="mr-2 h-4 w-4" />
             Add size
           </Button>
 
@@ -120,11 +126,16 @@ export function AdminProductOptionsEditor() {
             type="button"
             variant="secondary"
             size="sm"
+            className="shrink-0"
             onClick={() =>
-              append(createEmptyAdminProductOptionGroup("MODIFIER"))
+              append(
+                createEmptyAdminProductOptionGroup(
+                  PRODUCT_OPTION_GROUP_KIND.MODIFIER,
+                ),
+              )
             }
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus aria-hidden="true" className="mr-2 h-4 w-4" />
             Add modifier
           </Button>
 
@@ -132,15 +143,22 @@ export function AdminProductOptionsEditor() {
             type="button"
             variant="secondary"
             size="sm"
-            onClick={() => append(createEmptyAdminProductOptionGroup("ADD_ON"))}
+            className="shrink-0"
+            onClick={() =>
+              append(
+                createEmptyAdminProductOptionGroup(
+                  PRODUCT_OPTION_GROUP_KIND.ADD_ON,
+                ),
+              )
+            }
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus aria-hidden="true" className="mr-2 h-4 w-4" />
             Add add-on
           </Button>
         </div>
       </header>
 
-      <div className="space-y-4 p-6">
+      <div className="space-y-4 p-5 sm:p-6">
         {editorError ? (
           <div
             role="alert"

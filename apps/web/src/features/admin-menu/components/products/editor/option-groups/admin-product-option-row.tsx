@@ -96,11 +96,10 @@ export function AdminProductOptionRow({
         transition,
       }}
       className={[
-        "grid gap-3 rounded-lg p-3",
+        "grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-3",
+        "rounded-lg p-3",
         "border border-[var(--color-border)]",
         "bg-[var(--color-surface)]",
-        "lg:grid-cols-[auto_minmax(10rem,1fr)_10rem_auto_auto_auto]",
-        "lg:items-start",
         isDragging ? "relative z-10 opacity-70" : "",
         isAvailable ? "" : "opacity-70",
       ].join(" ")}
@@ -127,126 +126,143 @@ export function AdminProductOptionRow({
         <GripVertical aria-hidden="true" className="h-4 w-4" />
       </button>
 
-      <div>
-        <label
-          htmlFor={`option-${groupIndex}-${optionIndex}-name`}
-          className="sr-only"
-        >
-          Option name
-        </label>
-
-        <Input
-          id={`option-${groupIndex}-${optionIndex}-name`}
-          placeholder="Option name"
-          aria-invalid={Boolean(optionErrors?.name)}
-          {...register(
-            `optionGroups.${groupIndex}.options.${optionIndex}.name`,
-            {
-              validate: (value) =>
-                value.trim().length > 0 || "Option name is required.",
-            },
-          )}
-        />
-
-        {optionErrors?.name?.message ? (
-          <p className="mt-1 text-xs text-[var(--color-danger-strong)]">
-            {optionErrors.name.message}
-          </p>
-        ) : null}
-      </div>
-
-      <div>
-        <label
-          htmlFor={`option-${groupIndex}-${optionIndex}-price`}
-          className="sr-only"
-        >
-          Price adjustment
-        </label>
-
-        <Input
-          id={`option-${groupIndex}-${optionIndex}-price`}
-          type="text"
-          inputMode="decimal"
-          placeholder="0.00"
-          aria-invalid={Boolean(optionErrors?.priceDelta)}
-          {...register(
-            `optionGroups.${groupIndex}.options.${optionIndex}.priceDelta`,
-            {
-              validate: (value) =>
-                parsePriceAdjustmentToCents(value) !== null ||
-                "Invalid price adjustment.",
-            },
-          )}
-        />
-
-        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-          AUD adjustment
-        </p>
-
-        {optionErrors?.priceDelta?.message ? (
-          <p className="mt-1 text-xs text-[var(--color-danger-strong)]">
-            {optionErrors.priceDelta.message}
-          </p>
-        ) : null}
-      </div>
-
-      <label className="flex items-center gap-2 pt-2 text-sm text-[var(--color-text-secondary)]">
-        <input
-          type="checkbox"
-          name={availableFieldName}
-          checked={isAvailable}
-          onBlur={onAvailableBlur}
-          onChange={(event) => {
-            const nextIsAvailable = event.target.checked;
-
-            onAvailableChange(nextIsAvailable);
-
-            if (!nextIsAvailable) {
-              onDefaultChange(false);
-            }
+      <div className="min-w-0 space-y-3">
+        <div
+          className="grid min-w-0 gap-3"
+          style={{
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(min(100%, 10rem), 1fr))",
           }}
-          className="h-4 w-4 accent-[var(--color-brand)]"
-        />
-        Available
-      </label>
-
-      <label
-        className={[
-          "flex items-center gap-2 pt-2 text-sm",
-          defaultDisabled
-            ? "text-[var(--color-text-disabled)]"
-            : "text-[var(--color-text-secondary)]",
-        ].join(" ")}
-      >
-        <input
-          type="checkbox"
-          name={defaultFieldName}
-          checked={Boolean(defaultValue)}
-          disabled={defaultDisabled}
-          onBlur={onDefaultBlur}
-          onChange={(event) => onSetDefault(optionIndex, event.target.checked)}
-          className="h-4 w-4 accent-[var(--color-brand)]"
-        />
-        Default
-      </label>
-
-      {canRemove ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label="Remove unsaved option"
-          className={[
-            "text-[var(--color-danger-strong)]",
-            "hover:bg-[var(--color-danger-surface)]",
-          ].join(" ")}
-          onClick={onRemove}
         >
-          <Trash2 aria-hidden="true" className="h-4 w-4" />
-        </Button>
-      ) : (
-        <div className="h-10 w-10" aria-hidden="true" />
-      )}
+          <div className="min-w-0">
+            <label
+              htmlFor={`option-${groupIndex}-${optionIndex}-name`}
+              className="sr-only"
+            >
+              Option name
+            </label>
+
+            <Input
+              id={`option-${groupIndex}-${optionIndex}-name`}
+              placeholder="Option name"
+              aria-invalid={Boolean(optionErrors?.name)}
+              className="min-w-0"
+              {...register(
+                `optionGroups.${groupIndex}.options.${optionIndex}.name`,
+                {
+                  validate: (value) =>
+                    value.trim().length > 0 || "Option name is required.",
+                },
+              )}
+            />
+
+            {optionErrors?.name?.message ? (
+              <p className="mt-1 text-xs text-[var(--color-danger-strong)]">
+                {optionErrors.name.message}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="min-w-0">
+            <label
+              htmlFor={`option-${groupIndex}-${optionIndex}-price`}
+              className="sr-only"
+            >
+              Price adjustment
+            </label>
+
+            <Input
+              id={`option-${groupIndex}-${optionIndex}-price`}
+              type="text"
+              inputMode="decimal"
+              placeholder="0.00"
+              aria-invalid={Boolean(optionErrors?.priceDelta)}
+              className="min-w-0"
+              {...register(
+                `optionGroups.${groupIndex}.options.${optionIndex}.priceDelta`,
+                {
+                  validate: (value) =>
+                    parsePriceAdjustmentToCents(value) !== null ||
+                    "Invalid price adjustment.",
+                },
+              )}
+            />
+
+            <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+              AUD adjustment
+            </p>
+
+            {optionErrors?.priceDelta?.message ? (
+              <p className="mt-1 text-xs text-[var(--color-danger-strong)]">
+                {optionErrors.priceDelta.message}
+              </p>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-3">
+          <label className="flex shrink-0 items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+            <input
+              type="checkbox"
+              name={availableFieldName}
+              checked={isAvailable}
+              onBlur={onAvailableBlur}
+              onChange={(event) => {
+                const nextIsAvailable = event.target.checked;
+
+                onAvailableChange(nextIsAvailable);
+
+                if (!nextIsAvailable) {
+                  onDefaultChange(false);
+                }
+              }}
+              className="h-4 w-4 shrink-0 accent-[var(--color-brand)]"
+            />
+            Available
+          </label>
+
+          <label
+            className={[
+              "flex shrink-0 items-center gap-2 text-sm",
+              defaultDisabled
+                ? "text-[var(--color-text-disabled)]"
+                : "text-[var(--color-text-secondary)]",
+            ].join(" ")}
+          >
+            <input
+              type="checkbox"
+              name={defaultFieldName}
+              checked={Boolean(defaultValue)}
+              disabled={defaultDisabled}
+              onBlur={onDefaultBlur}
+              onChange={(event) =>
+                onSetDefault(optionIndex, event.target.checked)
+              }
+              className="h-4 w-4 shrink-0 accent-[var(--color-brand)]"
+            />
+            Default
+          </label>
+
+          {canRemove ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Remove unsaved option"
+              className={[
+                "ml-auto shrink-0",
+                "text-[var(--color-danger-strong)]",
+                "hover:bg-[var(--color-danger-surface)]",
+              ].join(" ")}
+              onClick={onRemove}
+            >
+              <Trash2 aria-hidden="true" className="h-4 w-4" />
+            </Button>
+          ) : (
+            <div aria-hidden="true" className="ml-auto h-10 w-10 shrink-0" />
+          )}
+        </div>
+      </div>
     </div>
   );
 }
