@@ -16,6 +16,13 @@ export class MenuService {
       this.prisma.category.findMany({
         where: {
           isActive: true,
+          archivedAt: null,
+          products: {
+            some: {
+              isAvailable: true,
+              archivedAt: null,
+            },
+          },
         },
         orderBy: {
           sortOrder: 'asc',
@@ -24,12 +31,16 @@ export class MenuService {
           products: {
             where: {
               isAvailable: true,
+              archivedAt: null,
             },
             orderBy: {
               sortOrder: 'asc',
             },
             include: {
               optionGroups: {
+                where: {
+                  isActive: true,
+                },
                 orderBy: {
                   sortOrder: 'asc',
                 },
@@ -79,6 +90,7 @@ export class MenuService {
           optionGroups: product.optionGroups.map((group) => ({
             id: group.id,
             name: group.name,
+            kind: group.kind,
             type: group.type,
             isRequired: group.isRequired,
             minSelect: group.minSelect,
@@ -87,7 +99,9 @@ export class MenuService {
               id: option.id,
               name: option.name,
               priceDelta: option.priceDelta.toString(),
+              priceDeltaCents: moneyToCents(option.priceDelta),
               isAvailable: option.isAvailable,
+              isDefault: option.isDefault,
             })),
           })),
         })),

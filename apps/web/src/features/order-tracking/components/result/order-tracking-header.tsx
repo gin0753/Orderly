@@ -8,7 +8,7 @@ import {
   ORDER_STATUS_BADGE_CLASS_NAMES,
   ORDER_STATUS_LABELS,
 } from "../../utils/order-status-copy";
-import { formatDateTime } from "../../utils/order-tracking-utils";
+import { formatDateTime } from "@/lib/format-date-time";
 
 type OrderTrackingHeaderProps = {
   order: OrderTrackingResponse;

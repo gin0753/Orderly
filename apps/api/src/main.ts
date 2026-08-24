@@ -34,4 +34,4 @@ async function bootstrap() {
   console.log(`API running on http://localhost:${port}/api`);
 }
 
-bootstrap();
+void bootstrap();

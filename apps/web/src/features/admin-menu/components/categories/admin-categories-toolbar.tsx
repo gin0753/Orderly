@@ -1,0 +1,138 @@
+import type { ChangeEvent } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+import type { AdminCategoryStatusFilter } from "../../types/admin-category.types";
+
+interface AdminCategoriesToolbarProps {
+  searchValue: string;
+  status: AdminCategoryStatusFilter | undefined;
+  hasActiveFilters: boolean;
+  isUpdating: boolean;
+  canReorder: boolean;
+  onSearchChange: (value: string) => void;
+  onStatusChange: (status: AdminCategoryStatusFilter | undefined) => void;
+  onReset: () => void;
+  onStartReorder: () => void;
+  onCreateCategory: () => void;
+}
+
+export function AdminCategoriesToolbar({
+  searchValue,
+  status,
+  hasActiveFilters,
+  isUpdating,
+  canReorder,
+  onSearchChange,
+  onStatusChange,
+  onReset,
+  onStartReorder,
+  onCreateCategory,
+}: AdminCategoriesToolbarProps) {
+  function handleStatusChange(event: ChangeEvent<HTMLSelectElement>) {
+    const value = event.target.value;
+
+    onStatusChange(
+      value === "active" || value === "inactive" || value === "archived"
+        ? value
+        : undefined,
+    );
+  }
+
+  return (
+    <div
+      className={[
+        "flex flex-col gap-3",
+        "lg:flex-row lg:items-center lg:justify-between",
+      ].join(" ")}
+    >
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="w-full md:max-w-md">
+          <label htmlFor="category-search" className="sr-only">
+            Search categories
+          </label>
+
+          <Input
+            id="category-search"
+            type="search"
+            value={searchValue}
+            placeholder="Search categories..."
+            autoComplete="off"
+            onChange={(event) => onSearchChange(event.target.value)}
+          />
+        </div>
+
+        <div className="w-full md:w-48">
+          <label htmlFor="category-status" className="sr-only">
+            Filter categories by status
+          </label>
+
+          <select
+            id="category-status"
+            value={status ?? ""}
+            onChange={handleStatusChange}
+            className={[
+              "h-10 w-full rounded-md px-3 text-sm",
+              "border border-[var(--color-border)]",
+              "bg-[var(--color-surface)]",
+              "text-[var(--color-text-primary)]",
+              "transition-colors",
+              "hover:border-[var(--color-border-hover)]",
+              "focus-visible:outline-none",
+              "focus-visible:ring-2",
+              "focus-visible:ring-[var(--color-ring)]",
+            ].join(" ")}
+          >
+            <option value="">All statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="flex min-h-10 flex-wrap items-center justify-between gap-3 lg:justify-end">
+        <span
+          aria-live="polite"
+          className="text-xs text-[var(--color-text-muted)]"
+        >
+          {isUpdating ? "Updating…" : ""}
+        </span>
+
+        {hasActiveFilters ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={isUpdating}
+            onClick={onReset}
+          >
+            Clear filters
+          </Button>
+        ) : null}
+
+        {status !== "archived" ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={!canReorder || isUpdating}
+            onClick={onStartReorder}
+          >
+            Reorder categories
+          </Button>
+        ) : null}
+
+        <Button
+          type="button"
+          size="sm"
+          disabled={isUpdating}
+          onClick={onCreateCategory}
+        >
+          Add category
+        </Button>
+      </div>
+    </div>
+  );
+}

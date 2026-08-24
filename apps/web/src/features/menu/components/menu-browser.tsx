@@ -51,10 +51,20 @@ export function MenuBrowser({ categories }: MenuBrowserProps) {
   }
 
   function handleQuickAdd(product: MenuProduct) {
+    if (product.optionGroups.length > 0) {
+      handleProductSelect(product);
+      return;
+    }
+
     const cartItem = createCartItem({
-      product,
-      selectedSize: "medium",
-      selectedAddOns: [],
+      product: {
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        imageUrl: product.imageUrl,
+        priceCents: product.priceCents,
+      },
+      selectedOptions: [],
       quantity: 1,
     });
 

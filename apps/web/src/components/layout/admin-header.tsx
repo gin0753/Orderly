@@ -1,9 +1,10 @@
 import { Bell, Search } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { AdminSessionActions } from "@/features/auth/components/admin-session-actions";
 
 import { AppHeaderShell } from "./app-header-shell";
-import { Button } from "../ui/button";
+import { ADMIN_CONTAINER_CLASS_NAME } from "./constants/admin-layout.constants";
 
 const adminNavLinks = [
   { label: "Orders", href: "/admin/orders" },
@@ -43,6 +44,7 @@ export function AdminHeader() {
           <AdminSessionActions />
         </div>
       }
+      containerClassName={ADMIN_CONTAINER_CLASS_NAME}
     />
   );
 }

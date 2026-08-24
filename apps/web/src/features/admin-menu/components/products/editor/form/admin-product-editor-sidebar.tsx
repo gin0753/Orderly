@@ -1,0 +1,39 @@
+import { AdminProductImagePreview } from "./admin-product-image-preview";
+
+interface AdminProductEditorSidebarProps {
+  mode: "create" | "edit";
+  productName: string;
+  imageUrl: string;
+}
+
+export function AdminProductEditorSidebar({
+  mode,
+  productName,
+  imageUrl,
+}: AdminProductEditorSidebarProps) {
+  const isEditMode = mode === "edit";
+
+  return (
+    <aside className="min-w-0 space-y-6">
+      <AdminProductImagePreview imageUrl={imageUrl} productName={productName} />
+
+      <section
+        className={[
+          "rounded-xl p-5",
+          "border border-[var(--color-border)]",
+          "bg-[var(--color-surface)]",
+        ].join(" ")}
+      >
+        <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">
+          Publishing
+        </h2>
+
+        <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
+          {isEditMode
+            ? "Product availability is managed separately from its basic information."
+            : "New products are created as available by default. Availability can be changed from the product list."}
+        </p>
+      </section>
+    </aside>
+  );
+}

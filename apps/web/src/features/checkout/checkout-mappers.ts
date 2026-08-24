@@ -36,16 +36,10 @@ export function buildCreateOrderRequest({
 
     items: cartItems.map((item) => ({
       productId: item.product.id,
-      productName: item.product.name,
-      productImageUrl: item.product.imageUrl ?? undefined,
-      sizeName: item.selectedSize,
       quantity: item.quantity,
-      unitPriceCents: item.unitPriceCents,
-      lineTotalCents: item.unitPriceCents * item.quantity,
-      addOns: item.selectedAddOns.map((addOn) => ({
-        name: addOn.name,
-        priceCents: addOn.priceDeltaCents,
-      })),
+      selectedOptionIds: [
+        ...new Set(item.selectedOptions.map((option) => option.id)),
+      ],
     })),
   };
 }

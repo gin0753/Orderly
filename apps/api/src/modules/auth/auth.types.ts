@@ -1,6 +1,10 @@
 import type { AdminRole } from '@prisma/client';
 import type { Request } from 'express';
 
+export type CookieRequest = Omit<Request, 'cookies'> & {
+  cookies?: Record<string, string | undefined>;
+};
+
 export type AuthenticatedAdmin = {
   id: string;
   email: string;

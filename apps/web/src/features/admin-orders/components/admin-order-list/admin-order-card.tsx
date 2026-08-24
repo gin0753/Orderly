@@ -1,6 +1,7 @@
 import { ChevronRight, Package, Truck } from "lucide-react";
 
 import { formatMoneyFromCents } from "@/lib/format-money";
+import { formatDateTime } from "@/lib/format-date-time";
 import { AdminOrder } from "../../types";
 import { OrderStatusBadge } from "../order-status-badge";
 
@@ -9,15 +10,6 @@ type AdminOrderCardProps = {
   isSelected: boolean;
   onClick: () => void;
 };
-
-function formatOrderTime(date: string) {
-  return new Intl.DateTimeFormat("en-AU", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(date));
-}
 
 export function AdminOrderCard({
   order,
@@ -49,7 +41,7 @@ export function AdminOrderCard({
         <p className="mt-2 text-sm font-semibold">{order.customerName}</p>
 
         <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-[var(--color-text-secondary)]">
-          <span>{formatOrderTime(order.createdAt)}</span>
+          <span>{formatDateTime(order.createdAt)}</span>
 
           <span className="flex items-center gap-1">
             <FulfillmentIcon className="size-3.5" />

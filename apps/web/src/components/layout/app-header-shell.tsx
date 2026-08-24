@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { OrderlyLogo } from "@/components/brand/orderly-logo";
+import { cn } from "@/lib/cn";
 
 export type AppHeaderNavLink = {
   label: string;
@@ -15,6 +16,7 @@ type AppHeaderShellProps = {
   logoHref: string;
   navLinks: AppHeaderNavLink[];
   rightSlot: ReactNode;
+  containerClassName?: string;
 };
 
 function isNavLinkActive(pathname: string, href: string) {
@@ -38,12 +40,18 @@ export function AppHeaderShell({
   logoHref,
   navLinks,
   rightSlot,
+  containerClassName,
 }: AppHeaderShellProps) {
   const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-surface-glass)] backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div
+        className={cn(
+          "flex h-16 items-center justify-between",
+          containerClassName ?? "mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8",
+        )}
+      >
         <Link href={logoHref} className="flex items-center gap-2">
           <OrderlyLogo size="md" />
         </Link>
