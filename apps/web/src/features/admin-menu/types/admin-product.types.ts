@@ -154,3 +154,13 @@ export interface UpdateAdminProductParameters {
   productId: string;
   request: UpdateAdminProductRequest;
 }
+
+export interface AdminContentSuggestionRequest {
+  name: string;
+  categoryName: string;
+  description?: string;
+}
+
+export interface AdminContentSuggestionResponse {
+  description: string;
+}

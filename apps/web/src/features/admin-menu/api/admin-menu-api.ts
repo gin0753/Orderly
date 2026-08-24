@@ -12,6 +12,8 @@ import type {
   UpdateAdminCategoryParameters,
 } from "../types/admin-category.types";
 import type {
+  AdminContentSuggestionRequest,
+  AdminContentSuggestionResponse,
   AdminProductCategoryFilterOption,
   AdminProductDetail,
   AdminProductsQuery,
@@ -19,6 +21,22 @@ import type {
   CreateAdminProductRequest,
   UpdateAdminProductParameters,
 } from "../types/admin-product.types";
+
+export function createAdminContentSuggestion(
+  request: AdminContentSuggestionRequest,
+) {
+  return apiFetch<AdminContentSuggestionResponse>(
+    "/admin/menu/ai/content-suggestion",
+    {
+      method: "POST",
+      auth: "required",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    },
+  );
+}
 
 function buildQueryString(parameters: Record<string, QueryParameterValue>) {
   const searchParams = new URLSearchParams();

@@ -86,6 +86,16 @@ describe('App API (e2e)', () => {
         .expect(401);
     });
 
+    it('blocks unauthenticated AI menu content suggestions', async () => {
+      await request(httpServer)
+        .post('/api/admin/menu/ai/content-suggestion')
+        .send({
+          name: 'Margherita Pizza',
+          categoryName: 'Pizza',
+        })
+        .expect(401);
+    });
+
     it('blocks access to the current-admin endpoint without a session', async () => {
       await request(httpServer).get('/api/auth/me').expect(401);
     });

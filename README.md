@@ -2,7 +2,7 @@
 
 A production-grade online ordering platform built with Next.js, NestJS, PostgreSQL, Prisma and Docker.
 
-Orderly demonstrates a complete customer ordering flow and authenticated admin workflows for order management and menu management, including cart state, checkout, relational order modelling, protected admin APIs, server-side filtering and pagination, nested product configuration, drag-and-drop ordering, availability controls, and backend-enforced business rules.
+Orderly demonstrates a complete customer ordering flow and authenticated admin workflows for order management and menu management, including cart state, checkout, relational order modelling, protected admin APIs, server-side filtering and pagination, nested product configuration, drag-and-drop ordering, availability controls, backend-enforced business rules, and an optional AI-assisted menu content workflow.
 
 ## Tech Stack
 
@@ -12,6 +12,7 @@ Orderly demonstrates a complete customer ordering flow and authenticated admin w
 - Forms: React Hook Form
 - Backend: NestJS, TypeScript
 - Database: PostgreSQL, Prisma
+- AI: OpenAI Responses API with Structured Outputs
 - Tooling: pnpm workspace, Docker Compose
 
 ## Features
@@ -76,6 +77,18 @@ PENDING → ACCEPTED → PREPARING → READY → COMPLETED
 - TanStack Query caching and targeted cache invalidation
 - Loading, empty, error and mutation feedback states
 
+### AI Menu Content Assistant
+
+- AI-assisted product description generation and improvement in the admin product editor
+- OpenAI Structured Outputs with strict response-schema validation
+- Human review with explicit Apply / Discard / Regenerate workflow before persistence
+- AI suggestions update form state only and never write directly to the database
+- Product-context snapshotting prevents stale suggestions from being applied to changed form data
+- Authenticated and rate-limited admin endpoint
+- Bounded provider output with application-side content validation
+- Sanitized handling for provider, timeout and missing-configuration failures
+- Optional deployment feature controlled independently from the OpenAI API credential
+
 ## API
 
 ### Public
@@ -131,6 +144,8 @@ POST   /api/admin/menu/products
 PUT    /api/admin/menu/products/:id
 PATCH  /api/admin/menu/products/:id/availability
 DELETE /api/admin/menu/products/:id
+
+POST   /api/admin/menu/ai/content-suggestion
 ```
 
 Category reorder requests submit the complete category order:
@@ -142,6 +157,8 @@ Category reorder requests submit the complete category order:
 ```
 
 Product create/update requests can include nested option groups and options. Their array order defines customer-facing display order.
+
+AI-generated content is returned as a draft suggestion only. Persistence continues through the existing product create/update APIs after explicit admin approval.
 
 ## Architecture
 
@@ -164,6 +181,22 @@ TanStack Query
 
 React Hook Form
   └─ complex product editor state
+```
+
+The AI content workflow is isolated from product persistence:
+
+```txt
+Admin Product Form
+  ↓
+AI Suggestion Endpoint
+  ↓
+OpenAI Structured Output
+  ↓
+Validated Draft Suggestion
+  ↓
+Admin Apply / Discard
+  ↓
+Existing Product Create / Update API
 ```
 
 ## Project Structure
@@ -197,14 +230,26 @@ Configure `apps/api/.env` with:
 ```env
 DATABASE_URL=
 WEB_ORIGIN=http://localhost:3000
+
 JWT_ACCESS_SECRET=
 JWT_REFRESH_SECRET=
 JWT_ACCESS_TTL=15m
 JWT_REFRESH_TTL=7d
 JWT_REFRESH_TTL_DAYS=7
+
 ADMIN_SEED_EMAIL=
 ADMIN_SEED_PASSWORD=
+
+OPENAI_API_KEY=
 ```
+
+Enable the optional AI assistant in the frontend environment:
+
+```env
+NEXT_PUBLIC_AI_ASSISTANT_ENABLED=true
+```
+
+The AI assistant can remain disabled in deployments that do not provision an OpenAI API credential.
 
 Create the initial admin account:
 
@@ -254,6 +299,9 @@ http://localhost:3000/admin/login
 - Archived categories and products use domain-level archive workflows instead of destructive UI deletion.
 - Product availability is modelled separately from archival state.
 - Frontend validation improves editing UX while NestJS DTO and service validation remain the source of truth for domain integrity.
+- AI-generated menu content is treated as untrusted draft output: responses use strict structured-output validation, require explicit human approval, and never persist directly from the AI endpoint.
+- External AI provider failures are isolated from core menu-management workflows so product editing and persistence remain available when AI generation is unavailable.
+- The AI assistant is an optional deployment capability controlled independently from server-side provider credentials, allowing public deployments to omit paid AI access without changing the underlying implementation.
 - Reusable UI primitives and CSS design tokens keep admin and customer interfaces visually consistent.
 - Docker Compose provides reproducible local PostgreSQL setup.
 
@@ -273,7 +321,7 @@ http://localhost:3000/admin/login
 - [x] Admin product management
 - [x] Nested option-group and option management
 - [x] Product availability and archive workflows
-- [ ] Admin AI menu content assistant
+- [x] Admin AI menu content assistant
 - [ ] Testing and quality pass
 - [ ] CI pipeline
 - [ ] Deployment
@@ -281,7 +329,6 @@ http://localhost:3000/admin/login
 
 ## Next Steps
 
-- Add an admin AI-assisted menu content workflow with human review before publishing
 - Add end-to-end coverage for the checkout → admin workflow
 - Complete responsive, accessibility and regression quality passes
 - Add CI for lint, typecheck, tests and builds
