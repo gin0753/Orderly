@@ -6,11 +6,11 @@ import type { Request } from 'express';
 
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AUTH_COOKIE_NAMES } from '../auth.constants';
-import type { AccessTokenPayload, AuthenticatedAdmin } from '../auth.types';
-
-type CookieRequest = Request & {
-  cookies?: Record<string, string | undefined>;
-};
+import type {
+  AccessTokenPayload,
+  AuthenticatedAdmin,
+  CookieRequest,
+} from '../auth.types';
 
 @Injectable()
 export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {

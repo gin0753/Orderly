@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AdminRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import type { CookieOptions, Request, Response } from 'express';
+import type { CookieOptions, Response } from 'express';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { AUTH_COOKIE_NAMES, BCRYPT_SALT_ROUNDS } from './auth.constants';
@@ -12,6 +12,7 @@ import type {
   AuthenticatedAdmin,
   AuthResponse,
   AuthTokens,
+  CookieRequest,
   RefreshTokenPayload,
 } from './auth.types';
 import { LoginDto } from './dto/login.dto';
@@ -185,7 +186,7 @@ export class AuthService {
     );
   }
 
-  getRefreshTokenFromRequest(request: Request): string | undefined {
+  getRefreshTokenFromRequest(request: CookieRequest): string | undefined {
     return request.cookies?.[AUTH_COOKIE_NAMES.refreshToken];
   }
 

@@ -102,7 +102,10 @@ export function AdminCategorySortableRow({
         </div>
       </div>
 
-      <AdminCategoryStatusBadge isActive={category.isActive} />
+      <AdminCategoryStatusBadge
+        isActive={category.isActive}
+        isArchived={false}
+      />
     </li>
   );
 }

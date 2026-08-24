@@ -58,7 +58,7 @@ describe('AdminJwtStrategy', () => {
         id: 'session-1',
         adminUserId: 'admin-1',
         expiresAt: {
-          gt: expect.any(Date),
+          gt: expect.any(Date) as Date,
         },
         adminUser: {
           is: {

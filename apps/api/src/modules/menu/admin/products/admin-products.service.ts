@@ -21,7 +21,7 @@ import {
   AdminProductsQueryDto,
 } from './dto/admin-products-query.dto';
 import { CreateProductDto } from './dto/create-product.dto';
-import { ProductOptionGroupInputDto } from './dto/product-option-input.dto';
+import { ProductOptionInputDto } from './dto/product-option-input.dto';
 import { UpdateProductAvailabilityDto } from './dto/update-product-availability.dto';
 import {
   UpdateProductOptionGroupInputDto,
@@ -39,9 +39,20 @@ type ProductForNestedUpdate = Prisma.ProductGetPayload<{
   };
 }>;
 
-type ProductOptionGroupValidationInput =
-  | ProductOptionGroupInputDto
-  | UpdateProductOptionGroupInputDto;
+type ProductOptionValidationInput =
+  | ProductOptionInputDto
+  | UpdateProductOptionInputDto;
+
+type ProductOptionGroupValidationInput = {
+  name: string;
+  kind: ProductOptionGroupKind;
+  type: OptionGroupType;
+  isRequired: boolean;
+  minSelect: number;
+  maxSelect: number;
+  isActive?: boolean;
+  options: ProductOptionValidationInput[];
+};
 
 @Injectable()
 export class AdminProductsService {
