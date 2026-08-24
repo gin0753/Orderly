@@ -2,12 +2,14 @@
 
 A production-grade online ordering platform built with Next.js, NestJS, PostgreSQL, Prisma and Docker.
 
-Orderly demonstrates a complete customer ordering flow and an authenticated admin order-management workflow, including cart state, checkout, relational order modelling, protected admin APIs, server-side filtering, pagination, and order lifecycle rules.
+Orderly demonstrates a complete customer ordering flow and authenticated admin workflows for order management and menu management, including cart state, checkout, relational order modelling, protected admin APIs, server-side filtering and pagination, nested product configuration, drag-and-drop ordering, availability controls, and backend-enforced business rules.
 
 ## Tech Stack
 
 - Frontend: Next.js, React, TypeScript, Tailwind CSS
-- State Management: Redux Toolkit
+- Server State: TanStack Query
+- Client State: Redux Toolkit
+- Forms: React Hook Form
 - Backend: NestJS, TypeScript
 - Database: PostgreSQL, Prisma
 - Tooling: pnpm workspace, Docker Compose
@@ -17,7 +19,7 @@ Orderly demonstrates a complete customer ordering flow and an authenticated admi
 ### Customer Ordering
 
 - Responsive menu with API-driven products and categories
-- Product modal with size, add-ons and quantity selection
+- Product customisation with sizes, modifiers and add-ons
 - Redux Toolkit cart with localStorage persistence
 - Cart drawer, mobile cart bar and order summary
 - Guest checkout with pickup/delivery, customer details, address and notes
@@ -56,6 +58,24 @@ PENDING → ACCEPTED → PREPARING → READY → COMPLETED
 - Pickup / delivery details and order summary
 - Manual refresh and lightweight auto-refresh for status updates
 
+### Admin Menu Management
+
+- Protected category and product management
+- Category create, edit, activate/deactivate and archive workflows
+- Complete-order drag-and-drop category reordering
+- Product search, category filtering, availability filtering and pagination
+- Product create and edit routes
+- Nested product option-group editor using React Hook Form
+- Support for `SIZE`, `MODIFIER` and `ADD_ON` option groups
+- Support for `SINGLE` and `MULTIPLE` selection rules
+- Required, minimum and maximum selection constraints
+- Option availability and default-selection controls
+- Drag-and-drop ordering for option groups and options
+- Product availability quick actions
+- Product archive workflow with confirmation
+- TanStack Query caching and targeted cache invalidation
+- Loading, empty, error and mutation feedback states
+
 ## API
 
 ### Public
@@ -69,7 +89,7 @@ POST   /api/auth/refresh
 POST   /api/auth/logout
 ```
 
-### Admin Only
+### Admin Orders
 
 ```txt
 GET    /api/auth/me
@@ -96,6 +116,33 @@ COMPLETE
 CANCEL
 ```
 
+### Admin Menu
+
+```txt
+GET    /api/admin/menu/categories
+POST   /api/admin/menu/categories
+PATCH  /api/admin/menu/categories/:id
+DELETE /api/admin/menu/categories/:id
+PATCH  /api/admin/menu/categories/reorder
+
+GET    /api/admin/menu/products
+GET    /api/admin/menu/products/:id
+POST   /api/admin/menu/products
+PUT    /api/admin/menu/products/:id
+PATCH  /api/admin/menu/products/:id/availability
+DELETE /api/admin/menu/products/:id
+```
+
+Category reorder requests submit the complete category order:
+
+```json
+{
+  "categoryIds": ["category-uuid-1", "category-uuid-2", "category-uuid-3"]
+}
+```
+
+Product create/update requests can include nested option groups and options. Their array order defines customer-facing display order.
+
 ## Architecture
 
 ```txt
@@ -104,6 +151,19 @@ Next.js Frontend
 NestJS REST API
   ↓ Prisma
 PostgreSQL
+```
+
+Frontend state is split by responsibility:
+
+```txt
+Redux Toolkit
+  └─ client-owned cart state
+
+TanStack Query
+  └─ server-owned admin data
+
+React Hook Form
+  └─ complex product editor state
 ```
 
 ## Project Structure
@@ -137,14 +197,11 @@ Configure `apps/api/.env` with:
 ```env
 DATABASE_URL=
 WEB_ORIGIN=http://localhost:3000
-
 JWT_ACCESS_SECRET=
 JWT_REFRESH_SECRET=
-
 JWT_ACCESS_TTL=15m
 JWT_REFRESH_TTL=7d
 JWT_REFRESH_TTL_DAYS=7
-
 ADMIN_SEED_EMAIL=
 ADMIN_SEED_PASSWORD=
 ```
@@ -183,15 +240,21 @@ http://localhost:3000/admin/login
 ## Key Engineering Decisions
 
 - Separate Next.js frontend and NestJS REST API.
-- Feature-based frontend modules for menu, cart, checkout, admin orders and auth.
-- Redux Toolkit for scalable client-side state.
+- Feature-based frontend modules for menu, cart, checkout, admin orders, authentication and admin menu management.
+- Redux Toolkit manages client-owned cart state while TanStack Query manages server-owned admin state.
+- React Hook Form manages complex nested product-editor state.
 - HttpOnly cookies keep access and refresh tokens unavailable to browser JavaScript.
 - Refresh token rotation and database-backed sessions support logout and session revocation.
 - Nest guards enforce admin access at the API boundary.
-- Backend price recalculation and order snapshots preserve historical accuracy.
-- Server-side admin search, filters and pagination avoid loading every order.
-- Action-based order APIs express business intent while the backend controls valid transitions.
-- Reusable UI primitives such as Button, Card and Input.
+- Backend price recalculation and order snapshots preserve historical order accuracy.
+- Server-side admin search, filtering and pagination avoid loading complete datasets into the browser.
+- Action-based order APIs express business intent while the backend controls valid order transitions.
+- Category reordering submits a complete ordered ID list so ordering is validated and persisted atomically by the backend.
+- Product option-group and option order is represented by array order at the API boundary rather than exposing persistence-specific sort values to the frontend.
+- Archived categories and products use domain-level archive workflows instead of destructive UI deletion.
+- Product availability is modelled separately from archival state.
+- Frontend validation improves editing UX while NestJS DTO and service validation remain the source of truth for domain integrity.
+- Reusable UI primitives and CSS design tokens keep admin and customer interfaces visually consistent.
 - Docker Compose provides reproducible local PostgreSQL setup.
 
 ## Current Progress
@@ -204,14 +267,23 @@ http://localhost:3000/admin/login
 - [x] Action-based order workflow with tests
 - [x] Admin authentication and protected routes
 - [x] Auth unit tests and protected API boundary tests
-- [ ] Customer order status tracking
-- [ ] Product and category management
-- [ ] Customer accounts and saved addresses
-- [ ] Customer social login
+- [x] Guest order tracking
+- [x] Admin category management
+- [x] Category drag-and-drop ordering
+- [x] Admin product management
+- [x] Nested option-group and option management
+- [x] Product availability and archive workflows
+- [ ] Admin AI menu content assistant
+- [ ] Testing and quality pass
+- [ ] CI pipeline
+- [ ] Deployment
+- [ ] Portfolio packaging
 
 ## Next Steps
 
-- Add customer order status tracking
-- Add product and category management
-- Add customer accounts with guest-order linking
-- Add optional customer Google sign-in while preserving guest checkout
+- Add an admin AI-assisted menu content workflow with human review before publishing
+- Add end-to-end coverage for the checkout → admin workflow
+- Complete responsive, accessibility and regression quality passes
+- Add CI for lint, typecheck, tests and builds
+- Deploy the frontend, API and PostgreSQL-backed environment
+- Package architecture diagrams, screenshots and technical decisions for the portfolio
