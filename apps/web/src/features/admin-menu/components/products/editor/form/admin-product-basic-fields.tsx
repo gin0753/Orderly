@@ -3,6 +3,7 @@
 import { useFormContext } from "react-hook-form";
 
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 import type { AdminProductFormValues } from "../../../../types/admin-product-form.types";
 import type { AdminProductCategoryFilterOption } from "../../../../types/admin-product.types";
@@ -10,6 +11,7 @@ import {
   parsePriceToCents,
   validateAdminProductImageUrl,
 } from "../../../../utils/admin-product-form.utils";
+import { AdminProductDescriptionAssistant } from "./admin-product-description-assistant";
 
 interface AdminProductBasicFieldsProps {
   categories: AdminProductCategoryFilterOption[];
@@ -115,28 +117,36 @@ export function AdminProductBasicFields({
             Description
           </label>
 
-          <textarea
+          <Textarea
             id="product-description"
             rows={5}
+            maxLength={500}
             placeholder="Describe this product."
             disabled={isSubmitting}
-            className={[
-              "w-full resize-y rounded-md px-3 py-2",
-              "border border-[var(--color-border)]",
-              "bg-[var(--color-surface)]",
-              "text-sm text-[var(--color-text-primary)]",
-              "placeholder:text-[var(--color-text-subtle)]",
-              "transition-colors",
-              "hover:border-[var(--color-border-hover)]",
-              "focus-visible:outline-none",
-              "focus-visible:ring-2",
-              "focus-visible:ring-[var(--color-ring)]",
-              "disabled:cursor-not-allowed",
-              "disabled:bg-[var(--color-surface-disabled)]",
-              "disabled:text-[var(--color-text-muted)]",
-            ].join(" ")}
-            {...register("description")}
+            aria-invalid={Boolean(errors.description)}
+            aria-describedby={
+              errors.description ? "product-description-error" : undefined
+            }
+            className="resize-y"
+            {...register("description", {
+              maxLength: {
+                value: 500,
+                message: "Description must be 500 characters or fewer.",
+              },
+            })}
           />
+
+          <AdminProductFieldError
+            id="product-description-error"
+            message={errors.description?.message}
+          />
+
+          {process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === "true" ? (
+            <AdminProductDescriptionAssistant
+              categories={categories}
+              isSubmitting={isSubmitting}
+            />
+          ) : null}
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
