@@ -218,6 +218,26 @@ Start PostgreSQL:
 pnpm db:up
 ```
 
+### API tests
+
+Fast API unit tests do not require PostgreSQL:
+
+```bash
+pnpm --filter api test:unit
+```
+
+Database-backed API E2E tests use the separate `orderly_test` database. Set
+`TEST_DATABASE_URL` to the value shown in `.env.example`, then run:
+
+```bash
+pnpm --filter api test:db:prepare
+pnpm --filter api test:e2e
+```
+
+`test:e2e` safely resets `orderly_test` and applies the real Prisma migrations
+before running. It refuses missing URLs, the development URL, and database names
+other than `orderly_test`. The normal development database is never reset.
+
 Run migrations and seed menu data:
 
 ```bash
