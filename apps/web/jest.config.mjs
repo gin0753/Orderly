@@ -7,6 +7,7 @@ export default createJestConfig({
   roots: ["<rootDir>/test"],
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   testEnvironment: "node",
+  testPathIgnorePatterns: ["<rootDir>/test/browser/"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },

@@ -34,7 +34,7 @@ export function AdminOrderCard({
     >
       <div>
         <div className="flex items-center gap-3">
-          <p className="font-bold">#{order.id.slice(0, 8)}</p>
+          <p className="font-bold">#{order.orderNumber}</p>
           <OrderStatusBadge status={order.status} />
         </div>
 

@@ -238,6 +238,34 @@ pnpm --filter api test:e2e
 before running. It refuses missing URLs, the development URL, and database names
 other than `orderly_test`. The normal development database is never reset.
 
+### Frontend and browser tests
+
+Frontend Jest tests cover authentication refresh behavior, the AI description
+assistant, checkout mapping and persisted-cart sanitation:
+
+```bash
+pnpm test:web
+```
+
+The Playwright Chromium suite covers the critical customer checkout, admin order
+acceptance and guest tracking journey, plus protected-route and mobile smokes:
+
+```bash
+pnpm exec playwright install chromium
+pnpm test:browser
+```
+
+Start Docker PostgreSQL first with `pnpm db:up`. The browser command safely resets
+and seeds only `orderly_test`, then manages its own API and web development servers.
+It uses `TEST_DATABASE_URL` when provided, otherwise the documented local Docker
+test URL. It never uses the development seed or resets `orderly_db`.
+
+For a complete local Stage 10 pass after installing Chromium:
+
+```bash
+pnpm test:quality
+```
+
 Run migrations and seed menu data:
 
 ```bash
@@ -342,7 +370,7 @@ http://localhost:3000/admin/login
 - [x] Nested option-group and option management
 - [x] Product availability and archive workflows
 - [x] Admin AI menu content assistant
-- [ ] Testing and quality pass
+- [x] Testing and quality pass
 - [ ] CI pipeline
 - [ ] Deployment
 - [ ] Portfolio packaging

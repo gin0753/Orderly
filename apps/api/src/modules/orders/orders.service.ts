@@ -469,6 +469,11 @@ export class OrdersService {
     const searchConditions: Prisma.OrderWhereInput[] = search
       ? [
           {
+            orderNumber: {
+              contains: search.replace(/^#/, ''),
+            },
+          },
+          {
             customerName: {
               contains: search,
               mode: Prisma.QueryMode.insensitive,

@@ -98,6 +98,19 @@ describe('Admin orders API (e2e)', () => {
       orderType: OrderType.DELIVERY,
     });
     expect(body.meta.total).toBe(1);
+
+    const orderNumberResponse = await fixture.agent
+      .get('/api/orders')
+      .query({ search: `#${fixture.orders[1].orderNumber}` })
+      .expect(200);
+    const orderNumberBody =
+      orderNumberResponse.body as unknown as OrdersListBody;
+
+    expect(orderNumberBody.data).toHaveLength(1);
+    expect(orderNumberBody.data[0]).toMatchObject({
+      id: fixture.orders[1].orderId,
+      orderNumber: fixture.orders[1].orderNumber,
+    });
   });
 
   it('paginates without repeating records', async () => {
