@@ -7,7 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc --project test/tsconfig.json --noEmit",
+    "typecheck:test": "tsc --project test/tsconfig.json --noEmit",
+    "test": "jest --config ./jest.config.mjs",
+    "test:e2e": "node ./test/browser/scripts/run-playwright.mjs",
+    "test:e2e:run": "playwright test --config ./playwright.config.ts",
+    "test:quality": "pnpm test -- --runInBand && pnpm typecheck && pnpm lint && pnpm build"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -25,13 +30,20 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.6",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "eslint-module-utils": "^2.13.0",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

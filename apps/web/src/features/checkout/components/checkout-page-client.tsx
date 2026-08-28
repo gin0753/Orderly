@@ -161,6 +161,7 @@ export function CheckoutPageClient() {
     <main className="min-h-screen bg-[var(--color-background)] px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-10">
       <div className="mx-auto max-w-7xl">
         <header className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 shadow-sm sm:px-8">
+          <h1 className="sr-only">Checkout</h1>
           <div className="flex items-center justify-between gap-4">
             <Link
               href="/"

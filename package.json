@@ -13,7 +13,12 @@
     "db:seed": "pnpm --filter api exec prisma db seed",
     "db:reset": "pnpm --filter api exec prisma migrate reset",
     "lint": "pnpm -r lint",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "test:api:unit": "pnpm --filter api test:unit",
+    "test:api:e2e": "pnpm --filter api test:e2e",
+    "test:web": "pnpm --filter web test",
+    "test:browser": "pnpm --filter web test:e2e",
+    "test:quality": "pnpm --filter api test:quality && pnpm --filter web test:quality && pnpm test:browser"
   },
   "packageManager": "pnpm@10.14.0"
 }

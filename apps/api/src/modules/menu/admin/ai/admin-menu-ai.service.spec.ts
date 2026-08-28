@@ -16,12 +16,48 @@ type ConfigServiceMock = {
 };
 
 type ResponsesCreateMock = jest.Mock<
-  Promise<{
-    status: 'completed' | 'failed' | 'incomplete';
-    output_text: string;
-  }>,
+  Promise<ProviderResponse>,
   [request: unknown]
 >;
+
+type ProviderResponse = {
+  id: string;
+  object: 'response';
+  created_at: number;
+  model: string;
+  status: string;
+  output: unknown[];
+  output_text: string;
+  error: null;
+  incomplete_details: null;
+  usage: {
+    input_tokens: number;
+    output_tokens: number;
+    total_tokens: number;
+  };
+};
+
+function createProviderResponse(
+  overrides: Partial<ProviderResponse> = {},
+): ProviderResponse {
+  return {
+    id: 'resp_test_123',
+    object: 'response',
+    created_at: 1_780_000_000,
+    model: 'test-model',
+    status: 'completed',
+    output: [],
+    output_text: '',
+    error: null,
+    incomplete_details: null,
+    usage: {
+      input_tokens: 42,
+      output_tokens: 18,
+      total_tokens: 60,
+    },
+    ...overrides,
+  };
+}
 
 const openAiMock = OpenAI as unknown as jest.Mock;
 
@@ -44,13 +80,7 @@ describe('AdminMenuAiService', () => {
         return values[key];
       }),
     };
-    responsesCreate = jest.fn<
-      Promise<{
-        status: 'completed' | 'failed' | 'incomplete';
-        output_text: string;
-      }>,
-      [request: unknown]
-    >();
+    responsesCreate = jest.fn<Promise<ProviderResponse>, [request: unknown]>();
     openAiMock.mockImplementation(() => ({
       responses: {
         create: responsesCreate,
@@ -75,12 +105,13 @@ describe('AdminMenuAiService', () => {
   });
 
   it('generates a description when the current description is empty', async () => {
-    responsesCreate.mockResolvedValue({
-      status: 'completed',
-      output_text: JSON.stringify({
-        description: '  A bright, satisfying restaurant favourite.  ',
+    responsesCreate.mockResolvedValue(
+      createProviderResponse({
+        output_text: JSON.stringify({
+          description: '  A bright, satisfying restaurant favourite.  ',
+        }),
       }),
-    });
+    );
 
     await expect(
       service.createContentSuggestion({
@@ -130,10 +161,13 @@ describe('AdminMenuAiService', () => {
   });
 
   it('asks the model to improve an existing description', async () => {
-    responsesCreate.mockResolvedValue({
-      status: 'completed',
-      output_text: JSON.stringify({ description: 'An improved description.' }),
-    });
+    responsesCreate.mockResolvedValue(
+      createProviderResponse({
+        output_text: JSON.stringify({
+          description: 'An improved description.',
+        }),
+      }),
+    );
 
     await service.createContentSuggestion({
       name: 'Margherita Pizza',
@@ -159,10 +193,9 @@ describe('AdminMenuAiService', () => {
     ['empty description', JSON.stringify({ description: '   ' })],
     ['oversized description', JSON.stringify({ description: 'a'.repeat(501) })],
   ])('rejects %s from the provider', async (_caseName, outputText) => {
-    responsesCreate.mockResolvedValue({
-      status: 'completed',
-      output_text: outputText,
-    });
+    responsesCreate.mockResolvedValue(
+      createProviderResponse({ output_text: outputText }),
+    );
 
     await expect(
       service.createContentSuggestion({
@@ -180,7 +213,9 @@ describe('AdminMenuAiService', () => {
   ] as const)(
     'rejects a %s provider response without parsing its output',
     async (status, outputText) => {
-      responsesCreate.mockResolvedValue({ status, output_text: outputText });
+      responsesCreate.mockResolvedValue(
+        createProviderResponse({ status, output_text: outputText }),
+      );
 
       await expect(
         service.createContentSuggestion({
@@ -195,6 +230,27 @@ describe('AdminMenuAiService', () => {
       });
     },
   );
+
+  it('rejects any unknown non-completed provider status', async () => {
+    responsesCreate.mockResolvedValue(
+      createProviderResponse({
+        status: 'future_non_completed_status',
+        output_text: JSON.stringify({ description: 'Otherwise valid copy.' }),
+      }),
+    );
+
+    await expect(
+      service.createContentSuggestion({
+        name: 'Margherita Pizza',
+        categoryName: 'Pizza',
+      }),
+    ).rejects.toMatchObject({
+      status: HttpStatus.BAD_GATEWAY,
+      response: {
+        message: 'AI content suggestion could not be generated.',
+      },
+    });
+  });
 
   it('fails safely when provider configuration is missing', async () => {
     configService.get.mockReturnValue(undefined);

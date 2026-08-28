@@ -61,7 +61,7 @@ export function AdminOrderDetail({
       <CardHeader className="flex flex-row items-start justify-between gap-4 p-5">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-lg font-bold">Order #{order.id.slice(0, 8)}</h2>
+            <h2 className="text-lg font-bold">Order #{order.orderNumber}</h2>
             <OrderStatusBadge status={order.status} />
           </div>
 

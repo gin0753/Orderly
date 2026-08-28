@@ -1,12 +1,10 @@
 /// <reference types="jest" />
 
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import cookieParser from 'cookie-parser';
+import { INestApplication } from '@nestjs/common';
 import type { Server } from 'node:http';
 import request from 'supertest';
 
-import { AppModule } from '../src/app.module';
+import { createTestApp } from './support/create-test-app';
 
 function normalizeStringHeader(value: unknown): string[] {
   if (typeof value === 'string') {
@@ -25,24 +23,7 @@ describe('App API (e2e)', () => {
   let httpServer: Server;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-
-    app.use(cookieParser());
-
-    app.setGlobalPrefix('api');
-
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-      }),
-    );
-
-    await app.init();
+    app = await createTestApp();
 
     httpServer = app.getHttpServer() as Server;
   });

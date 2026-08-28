@@ -44,6 +44,7 @@ export type AdminOrderItemOption = {
 
 export type AdminOrder = {
   id: string;
+  orderNumber: string;
   customerName: string;
   customerPhone: string;
   customerEmail?: string | null;
