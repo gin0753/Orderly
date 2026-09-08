@@ -2,9 +2,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const EXPECTED_TEST_DATABASE_NAME = 'orderly_test';
+const ENV_PATH = path.resolve(__dirname, '../.env');
 
 function getSafeTestDatabaseUrl(environment = process.env) {
-  const rawTestUrl = environment.TEST_DATABASE_URL?.trim();
+  const rawTestUrl =
+    environment.TEST_DATABASE_URL?.trim() ?? readEnvValue('TEST_DATABASE_URL');
 
   if (!rawTestUrl) {
     throw new Error(
@@ -28,12 +30,14 @@ function getSafeTestDatabaseUrl(environment = process.env) {
 
   if (databaseName !== EXPECTED_TEST_DATABASE_NAME) {
     throw new Error(
-      `TEST_DATABASE_URL must target the dedicated ${EXPECTED_TEST_DATABASE_NAME} database; received ${databaseName || '<missing>'}.`,
+      `TEST_DATABASE_URL must target the dedicated ${EXPECTED_TEST_DATABASE_NAME} database; received ${
+        databaseName || '<missing>'
+      }.`,
     );
   }
 
   const developmentUrl =
-    environment.DATABASE_URL?.trim() ?? readDevelopmentDatabaseUrl();
+    environment.DATABASE_URL?.trim() ?? readEnvValue('DATABASE_URL');
 
   if (
     developmentUrl &&
@@ -44,19 +48,28 @@ function getSafeTestDatabaseUrl(environment = process.env) {
     );
   }
 
-  return { databaseName, url: rawTestUrl, parsedUrl: testUrl };
+  return {
+    databaseName,
+    url: rawTestUrl,
+    parsedUrl: testUrl,
+  };
 }
 
-function readDevelopmentDatabaseUrl() {
-  const envPath = path.resolve(__dirname, '../.env');
-
-  if (!fs.existsSync(envPath)) {
+function readEnvValue(name) {
+  if (!fs.existsSync(ENV_PATH)) {
     return undefined;
   }
 
+  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
   const match = fs
-    .readFileSync(envPath, 'utf8')
-    .match(/^\s*DATABASE_URL\s*=\s*["']?([^\r\n"']+)["']?\s*$/m);
+    .readFileSync(ENV_PATH, 'utf8')
+    .match(
+      new RegExp(
+        `^\\s*${escapedName}\\s*=\\s*["']?([^\\r\\n"']+)["']?\\s*$`,
+        'm',
+      ),
+    );
 
   return match?.[1]?.trim();
 }
@@ -64,7 +77,9 @@ function readDevelopmentDatabaseUrl() {
 function normalizeDatabaseUrl(value) {
   try {
     const url = new URL(value);
+
     url.searchParams.sort();
+
     return url.toString();
   } catch {
     return value;
