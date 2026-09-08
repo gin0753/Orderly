@@ -1,8 +1,8 @@
 # Orderly
 
-A production-grade online ordering platform built with Next.js, NestJS, PostgreSQL, Prisma and Docker.
+A production-grade full-stack ordering platform built with Next.js, NestJS, PostgreSQL, Prisma and Docker.
 
-Orderly demonstrates a complete customer ordering flow and authenticated admin workflows for order management and menu management, including cart state, checkout, relational order modelling, protected admin APIs, server-side filtering and pagination, nested product configuration, drag-and-drop ordering, availability controls, backend-enforced business rules, and an optional AI-assisted menu content workflow.
+Orderly demonstrates a complete customer-to-admin lifecycle: menu customisation, guest checkout, authenticated order management, status progression and customer tracking. Server-authoritative business rules protect pricing and order integrity, while rotating HttpOnly-cookie sessions secure admin workflows. Deterministic integration tests run against isolated PostgreSQL, and Playwright verifies the critical journey in a real browser.
 
 ## Tech Stack
 
@@ -13,6 +13,7 @@ Orderly demonstrates a complete customer ordering flow and authenticated admin w
 - Backend: NestJS, TypeScript
 - Database: PostgreSQL, Prisma
 - AI: OpenAI Responses API with Structured Outputs
+- Testing: Jest, React Testing Library, Supertest, Playwright
 - Tooling: pnpm workspace, Docker Compose
 
 ## Features
@@ -29,7 +30,8 @@ Orderly demonstrates a complete customer ordering flow and authenticated admin w
 ### Admin Orders
 
 - Protected admin orders dashboard
-- Server-side search, status/type filters and pagination
+- Server-side public order-number search, status/type filters and pagination
+- Consistent customer-facing order numbers across checkout, admin and tracking
 - Order summary metrics, list and detail panel
 - Loading, empty, error and refresh states
 - Action-based order workflow:
@@ -199,6 +201,26 @@ Admin Apply / Discard
 Existing Product Create / Update API
 ```
 
+Admin authentication uses rotating, server-backed sessions:
+
+```txt
+Admin Login
+  → Access + Refresh HttpOnly Cookies
+  → AdminSession
+  → Refresh Rotation
+  → Replay Detection / Session Revocation
+```
+
+## Testing & Quality
+
+Testing is layered around production-critical behavior rather than coverage targets:
+
+- **API:** Jest unit/service tests plus Supertest integration tests against real, isolated PostgreSQL cover checkout rules, server-authoritative validation, authentication, refresh rotation, replay detection, session revocation, and admin order/menu workflows.
+- **Frontend:** Jest and React Testing Library protect authenticated refresh single-flight behavior, AI suggestion stale-context handling, checkout payload mapping and persisted-cart sanitation.
+- **Browser:** Playwright verifies customer checkout → admin acceptance → guest tracking, protected-route redirects, mobile responsiveness, semantic keyboard-accessible interactions and unexpected browser error detection.
+
+Database-backed tests use guarded `orderly_test` resets with real migrations. Safety checks prevent them from resetting the normal development database.
+
 ## Project Structure
 
 ```txt
@@ -352,33 +374,22 @@ http://localhost:3000/admin/login
 - The AI assistant is an optional deployment capability controlled independently from server-side provider credentials, allowing public deployments to omit paid AI access without changing the underlying implementation.
 - Reusable UI primitives and CSS design tokens keep admin and customer interfaces visually consistent.
 - Docker Compose provides reproducible local PostgreSQL setup.
+- Tests prioritize business and security invariants instead of coverage percentage.
+- Database integration tests use isolated PostgreSQL with real migrations and destructive-operation guards.
+- Playwright protects one critical full-stack workflow instead of duplicating every backend rule in browser tests.
 
-## Current Progress
+## Project Status
 
-- [x] Customer menu, product customisation and cart
-- [x] Guest checkout and order submission
-- [x] Prisma order modelling and order snapshots
-- [x] Admin orders dashboard
-- [x] Search, filtering and pagination
-- [x] Action-based order workflow with tests
-- [x] Admin authentication and protected routes
-- [x] Auth unit tests and protected API boundary tests
-- [x] Guest order tracking
-- [x] Admin category management
-- [x] Category drag-and-drop ordering
-- [x] Admin product management
-- [x] Nested option-group and option management
-- [x] Product availability and archive workflows
-- [x] Admin AI menu content assistant
-- [x] Testing and quality pass
-- [ ] CI pipeline
-- [ ] Deployment
-- [ ] Portfolio packaging
+Core application development and Stage 10 testing/quality work are complete. Remaining work is focused on delivery and presentation:
+
+- CI pipeline
+- Deployment
+- Architecture diagrams and screenshots
+- Portfolio and interview packaging
 
 ## Next Steps
 
-- Add end-to-end coverage for the checkout → admin workflow
-- Complete responsive, accessibility and regression quality passes
-- Add CI for lint, typecheck, tests and builds
+- Add CI for lint, typechecking, tests and production builds
 - Deploy the frontend, API and PostgreSQL-backed environment
-- Package architecture diagrams, screenshots and technical decisions for the portfolio
+- Produce architecture diagrams and portfolio screenshots
+- Package the project’s technical decisions and tradeoffs for portfolio and interview use
