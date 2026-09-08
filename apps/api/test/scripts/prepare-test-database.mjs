@@ -17,6 +17,42 @@ if (!['localhost', '127.0.0.1', '::1'].includes(parsedUrl.hostname)) {
 run('docker', ['compose', 'up', '-d', 'db']);
 
 const postgresUser = decodeURIComponent(parsedUrl.username);
+
+const maxAttempts = 30;
+
+for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+  const readiness = spawnSync(
+    'docker',
+    [
+      'compose',
+      'exec',
+      '-T',
+      'db',
+      'pg_isready',
+      '-U',
+      postgresUser,
+      '-d',
+      'postgres',
+    ],
+    {
+      cwd: new URL('../../../../', import.meta.url),
+      encoding: 'utf8',
+    },
+  );
+
+  if (!readiness.error && readiness.status === 0) {
+    break;
+  }
+
+  if (attempt === maxAttempts) {
+    throw new Error(
+      'PostgreSQL did not become ready within the expected time.',
+    );
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+}
+
 const lookup = spawnSync(
   'docker',
   [
@@ -43,7 +79,9 @@ if (lookup.error) {
 }
 
 if (lookup.status !== 0) {
-  process.stderr.write(lookup.stderr ?? 'Unable to inspect the test database.\n');
+  process.stderr.write(
+    lookup.stderr ?? 'Unable to inspect the test database.\n',
+  );
   throw new Error('Could not connect to the local PostgreSQL container.');
 }
 
