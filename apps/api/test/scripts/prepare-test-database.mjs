@@ -20,6 +20,8 @@ const postgresUser = decodeURIComponent(parsedUrl.username);
 
 const maxAttempts = 30;
 
+// The official Postgres image uses a temporary socket-only server during
+// first-time initialization. Probe TCP so we wait for the final server.
 for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
   const readiness = spawnSync(
     'docker',
@@ -29,6 +31,8 @@ for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       '-T',
       'db',
       'pg_isready',
+      '-h',
+      '127.0.0.1',
       '-U',
       postgresUser,
       '-d',
@@ -61,6 +65,8 @@ const lookup = spawnSync(
     '-T',
     'db',
     'psql',
+    '-h',
+    '127.0.0.1',
     '-U',
     postgresUser,
     '-d',
@@ -92,6 +98,8 @@ if (lookup.stdout.trim() !== '1') {
     '-T',
     'db',
     'createdb',
+    '-h',
+    '127.0.0.1',
     '-U',
     postgresUser,
     databaseName,
