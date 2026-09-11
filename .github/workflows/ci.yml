@@ -17,23 +17,23 @@ jobs:
     timeout-minutes: 30
 
     env:
-    CI: "true"
+      CI: "true"
 
-    DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public
-    DIRECT_DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public
-    TEST_DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test
+      DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public
+      DIRECT_DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public
+      TEST_DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test
 
-    WEB_ORIGIN: http://localhost:3000
-    API_PORT: "4000"
+      WEB_ORIGIN: http://localhost:3000
+      API_PORT: "4000"
 
-    JWT_ACCESS_SECRET: ci-access-secret-that-is-long-enough-for-tests
-    JWT_REFRESH_SECRET: ci-refresh-secret-that-is-long-enough-for-tests
-    JWT_ACCESS_TTL: 15m
-    JWT_REFRESH_TTL: 7d
-    JWT_REFRESH_TTL_DAYS: "7"
+      JWT_ACCESS_SECRET: ci-access-secret-that-is-long-enough-for-tests
+      JWT_REFRESH_SECRET: ci-refresh-secret-that-is-long-enough-for-tests
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL: 7d
+      JWT_REFRESH_TTL_DAYS: "7"
 
-    ADMIN_SEED_EMAIL: admin@orderly.local
-    ADMIN_SEED_PASSWORD: ci-admin-password-for-tests-only
+      ADMIN_SEED_EMAIL: admin@orderly.local
+      ADMIN_SEED_PASSWORD: ci-admin-password-for-tests-only
 
     steps:
       - name: Checkout repository
