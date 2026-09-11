@@ -7,12 +7,16 @@ const ADMIN_PASSWORD = "BrowserPassword123!";
 
 test.describe.configure({ mode: "serial" });
 
-test("customer checkout to admin acceptance to guest tracking", async ({ page }) => {
+test("customer checkout to admin acceptance to guest tracking", async ({
+  page,
+}) => {
   test.setTimeout(90_000);
   const runtimeErrors = captureUnexpectedRuntimeErrors(page);
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Golden Path Pizza" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Golden Path Pizza" }),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "View Golden Path Pizza" }).click();
   const productDialog = page.getByRole("dialog", { name: "Golden Path Pizza" });
@@ -36,9 +40,7 @@ test("customer checkout to admin acceptance to guest tracking", async ({ page })
   await expect(
     page.getByRole("heading", { name: "Thanks, your order is in." }),
   ).toBeVisible();
-  const orderNumberText = await page
-    .getByText(/^#\d+$/)
-    .textContent();
+  const orderNumberText = await page.getByText(/^#\d+$/).textContent();
   const orderNumber = orderNumberText?.replace("#", "");
   expect(orderNumber).toMatch(/^\d+$/);
 
@@ -66,16 +68,37 @@ test("customer checkout to admin acceptance to guest tracking", async ({ page })
   const detailCard = orderDetailHeading.locator(
     "xpath=ancestor::div[contains(@class, 'overflow-hidden')][1]",
   );
-  await expect(detailCard.getByText(CUSTOMER_NAME, { exact: true })).toBeVisible();
+  await expect(
+    detailCard.getByText(CUSTOMER_NAME, { exact: true }),
+  ).toBeVisible();
   await expect(
     detailCard.getByText("Golden Path Pizza", { exact: true }),
   ).toBeVisible();
-  await expect(detailCard.getByText("Delivery", { exact: true }).first()).toBeVisible();
-  await expect(detailCard.getByRole("button", { name: "Accept order" })).toBeVisible();
-  await detailCard.getByRole("button", { name: "Accept order" }).click();
   await expect(
-    detailCard.getByRole("button", { name: "Start preparing" }),
+    detailCard.getByText("Delivery", { exact: true }).first(),
   ).toBeVisible();
+  const acceptButton = detailCard.getByRole("button", {
+    name: "Accept order",
+  });
+
+  await expect(acceptButton).toBeVisible();
+
+  const acceptResponsePromise = page.waitForResponse((response) => {
+    const request = response.request();
+    const pathname = new URL(response.url()).pathname;
+
+    return (
+      request.method() === "PATCH" &&
+      pathname.includes("/api/admin/orders/") &&
+      pathname.endsWith("/status")
+    );
+  });
+
+  await acceptButton.click();
+
+  const acceptResponse = await acceptResponsePromise;
+
+  expect(acceptResponse.ok()).toBe(true);
 
   await page.goto("/track-order");
   await page.getByLabel("Order number").fill(orderNumber ?? "");
@@ -101,7 +124,9 @@ test("protected admin route redirects unauthenticated users to login", async ({
 }) => {
   await page.goto("/admin/menu/products");
 
-  await expect(page).toHaveURL(/\/admin\/login\?next=%2Fadmin%2Fmenu%2Fproducts$/);
+  await expect(page).toHaveURL(
+    /\/admin\/login\?next=%2Fadmin%2Fmenu%2Fproducts$/,
+  );
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
 });
 
@@ -113,7 +138,9 @@ test.describe("mobile customer smoke", () => {
   }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "View Golden Path Pizza" }).click();
-    await expect(page.getByRole("dialog", { name: "Golden Path Pizza" })).toBeVisible();
+    await expect(
+      page.getByRole("dialog", { name: "Golden Path Pizza" }),
+    ).toBeVisible();
 
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toBeHidden();
@@ -122,7 +149,9 @@ test.describe("mobile customer smoke", () => {
     const dialog = page.getByRole("dialog", { name: "Golden Path Pizza" });
     await dialog.getByRole("radio", { name: "Large" }).click();
     await dialog.getByRole("button", { name: /^Add to cart/ }).click();
-    await expect(page.getByRole("heading", { name: "Your Cart" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Your Cart" }),
+    ).toBeVisible();
 
     await page.getByRole("button", { name: "Close cart", exact: true }).click();
     await expect(page.getByRole("button", { name: /View cart/ })).toBeVisible();
@@ -131,7 +160,9 @@ test.describe("mobile customer smoke", () => {
 
     await expect(page.getByRole("heading", { name: "Checkout" })).toBeVisible();
     await expect(page.getByLabel("Full name")).toBeVisible();
-    await expect(page.getByRole("button", { name: /Place Order/ })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /Place Order/ }),
+    ).toBeVisible();
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,
