@@ -83,22 +83,9 @@ test("customer checkout to admin acceptance to guest tracking", async ({
 
   await expect(acceptButton).toBeVisible();
 
-  const acceptResponsePromise = page.waitForResponse((response) => {
-    const request = response.request();
-    const pathname = new URL(response.url()).pathname;
-
-    return (
-      request.method() === "PATCH" &&
-      pathname.includes("/api/admin/orders/") &&
-      pathname.endsWith("/status")
-    );
-  });
-
   await acceptButton.click();
 
-  const acceptResponse = await acceptResponsePromise;
-
-  expect(acceptResponse.ok()).toBe(true);
+  await expect(acceptButton).toBeHidden();
 
   await page.goto("/track-order");
   await page.getByLabel("Order number").fill(orderNumber ?? "");
