@@ -29,7 +29,8 @@
     "test:e2e:run": "jest --config ./test/jest-e2e.json --runInBand",
     "test:e2e": "pnpm run test:db:reset && pnpm run test:e2e:run",
     "test:quality": "pnpm run test:unit --runInBand && pnpm run test:e2e && pnpm run typecheck && pnpm run lint",
-    "seed:admin": "tsx prisma/seed-admin.ts"
+    "seed:admin": "tsx prisma/seed-admin.ts",
+    "seed:demo": "tsx prisma/seed-demo.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
