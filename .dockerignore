@@ -1,0 +1,16 @@
+.git
+.github
+**/node_modules
+.pnpm-store
+**/dist
+**/build
+**/.next
+**/coverage
+**/playwright-report
+**/test-results
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*.log

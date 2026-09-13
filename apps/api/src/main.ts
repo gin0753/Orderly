@@ -27,7 +27,10 @@ async function bootstrap() {
     }),
   );
 
-  const port = configService.get<number>('API_PORT') ?? 4000;
+  const port =
+    configService.get<number>('PORT') ??
+    configService.get<number>('API_PORT') ??
+    4000;
 
   await app.listen(port);
 

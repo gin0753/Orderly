@@ -17,6 +17,46 @@ if (!['localhost', '127.0.0.1', '::1'].includes(parsedUrl.hostname)) {
 run('docker', ['compose', 'up', '-d', 'db']);
 
 const postgresUser = decodeURIComponent(parsedUrl.username);
+
+const maxAttempts = 30;
+
+// The official Postgres image uses a temporary socket-only server during
+// first-time initialization. Probe TCP so we wait for the final server.
+for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+  const readiness = spawnSync(
+    'docker',
+    [
+      'compose',
+      'exec',
+      '-T',
+      'db',
+      'pg_isready',
+      '-h',
+      '127.0.0.1',
+      '-U',
+      postgresUser,
+      '-d',
+      'postgres',
+    ],
+    {
+      cwd: new URL('../../../../', import.meta.url),
+      encoding: 'utf8',
+    },
+  );
+
+  if (!readiness.error && readiness.status === 0) {
+    break;
+  }
+
+  if (attempt === maxAttempts) {
+    throw new Error(
+      'PostgreSQL did not become ready within the expected time.',
+    );
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+}
+
 const lookup = spawnSync(
   'docker',
   [
@@ -25,6 +65,8 @@ const lookup = spawnSync(
     '-T',
     'db',
     'psql',
+    '-h',
+    '127.0.0.1',
     '-U',
     postgresUser,
     '-d',
@@ -43,7 +85,9 @@ if (lookup.error) {
 }
 
 if (lookup.status !== 0) {
-  process.stderr.write(lookup.stderr ?? 'Unable to inspect the test database.\n');
+  process.stderr.write(
+    lookup.stderr ?? 'Unable to inspect the test database.\n',
+  );
   throw new Error('Could not connect to the local PostgreSQL container.');
 }
 
@@ -54,6 +98,8 @@ if (lookup.stdout.trim() !== '1') {
     '-T',
     'db',
     'createdb',
+    '-h',
+    '127.0.0.1',
     '-U',
     postgresUser,
     databaseName,
