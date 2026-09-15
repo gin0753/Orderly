@@ -16,40 +16,43 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: orderly_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d orderly_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     env:
-      CI: true
-      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orderly_test
+      CI: "true"
+
+      DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public
+      DIRECT_DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public
+      TEST_DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test
+
+      WEB_ORIGIN: http://localhost:3000
+      API_PORT: "4000"
+
+      JWT_ACCESS_SECRET: ci-access-secret-that-is-long-enough-for-tests
+      JWT_REFRESH_SECRET: ci-refresh-secret-that-is-long-enough-for-tests
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL: 7d
+      JWT_REFRESH_TTL_DAYS: "7"
+
+      ADMIN_SEED_EMAIL: admin@orderly.local
+      ADMIN_SEED_PASSWORD: ci-admin-password-for-tests-only
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Enable Corepack
         run: corepack enable
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
 
       - name: Install Playwright Chromium
         run: pnpm --filter web exec playwright install --with-deps chromium
