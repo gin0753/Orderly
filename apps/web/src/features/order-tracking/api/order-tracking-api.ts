@@ -1,10 +1,8 @@
+import { API_BASE_URL } from "@/lib/api-base-url";
 import type {
   GuestOrderLookupRequest,
   OrderTrackingResponse,
 } from "../types/order-tracking.types";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api";
 
 type ApiErrorResponse = {
   message?: string | string[];

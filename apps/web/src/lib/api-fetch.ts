@@ -1,6 +1,4 @@
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api"
-).replace(/\/$/, "");
+import { API_BASE_URL } from "./api-base-url";
 
 export type ApiAuthMode = "none" | "required";
 

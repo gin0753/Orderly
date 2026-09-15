@@ -29,10 +29,12 @@ function deferred<T>() {
 }
 
 describe("apiFetch authentication behavior", () => {
+  const originalEnv = process.env;
   let api: ApiFetchModule;
   let fetchMock: jest.MockedFunction<typeof fetch>;
 
   beforeEach(async () => {
+    process.env = { ...originalEnv, NODE_ENV: "test", NEXT_PUBLIC_API_BASE_URL: "http://localhost:4000/api" };
     jest.resetModules();
     global.Headers = class {
       private readonly values = new Map<string, string>();
@@ -54,6 +56,43 @@ describe("apiFetch authentication behavior", () => {
     fetchMock = jest.fn();
     global.fetch = fetchMock;
     api = await import("@/lib/api-fetch");
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  it("uses the same-origin production base for guest order lookup", async () => {
+    process.env = { ...process.env, NODE_ENV: "production" };
+    jest.resetModules();
+    const { lookupGuestOrder } = await import("@/features/order-tracking/api/order-tracking-api");
+    fetchMock.mockResolvedValueOnce(jsonResponse({}));
+
+    await lookupGuestOrder({ orderNumber: "ORD-123", phone: "0400000000" });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/orders/guest/lookup",
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
+  it("uses same-origin production URLs for authenticated requests and refresh despite a stale API environment variable", async () => {
+    process.env = { ...process.env, NODE_ENV: "production", NEXT_PUBLIC_API_BASE_URL: "https://orderly-production-1ac4.up.railway.app/api" };
+    jest.resetModules();
+    api = await import("@/lib/api-fetch");
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse({}, 401))
+      .mockResolvedValueOnce(emptyResponse())
+      .mockResolvedValueOnce(jsonResponse({ id: "order-1" }));
+
+    await api.apiFetch("/admin/orders", { auth: "required" });
+
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      "/api/admin/orders", "/api/auth/refresh", "/api/admin/orders",
+    ]);
+    for (const [, options] of fetchMock.mock.calls) {
+      expect(options?.credentials).toBe("include");
+    }
   });
 
   it("includes cookie credentials and returns a successful request without refreshing", async () => {

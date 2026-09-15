@@ -31,6 +31,23 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
+Production builds use `/api` for all browser API requests, including admin auth
+and guest order tracking. The rewrite in `next.config.ts` proxies `/api/:path*`
+to `https://orderly-production-1ac4.up.railway.app/api/:path*`, preserving one
+`/api` prefix. Authenticated requests continue to include cookie credentials.
+
+Set Vercel's `NEXT_PUBLIC_API_BASE_URL` to `/api` (or remove it); production
+builds enforce `/api` even if an old Railway URL remains configured. A new build
+and deployment are needed to apply these code changes. No Railway settings need
+to change for this frontend routing change.
+
+Server-rendered menu requests use the absolute Railway API URL because server
+`fetch` requires an absolute URL. Browser requests use the same-origin proxy.
+
+For `pnpm dev`, keep `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api` in
+`.env.local`; this is also the development fallback when the variable is absent.
+Local production builds (`pnpm build` / `pnpm start`) use the Railway proxy.
+
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
