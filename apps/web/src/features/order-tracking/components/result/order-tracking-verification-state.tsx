@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-export function OrderTrackingVerificationState() {
+export function OrderTrackingVerificationState({
+  orderNumber,
+}: {
+  orderNumber: string;
+}) {
   const router = useRouter();
 
   return (
@@ -28,7 +32,9 @@ export function OrderTrackingVerificationState() {
           <Button
             type="button"
             className="mt-6 w-full"
-            onClick={() => router.push("/track-order")}
+            onClick={() =>
+              router.push(`/track-order?orderNumber=${encodeURIComponent(orderNumber)}`)
+            }
           >
             Track order
           </Button>

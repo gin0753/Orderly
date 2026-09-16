@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { OrderlyLogo } from "@/components/brand/orderly-logo";
 import { cn } from "@/lib/cn";
+import { MobileNavigation } from "./mobile-navigation";
 
 export type AppHeaderNavLink = {
   label: string;
@@ -17,6 +18,11 @@ type AppHeaderShellProps = {
   navLinks: AppHeaderNavLink[];
   rightSlot: ReactNode;
   containerClassName?: string;
+  mobileRightSlot?: ReactNode;
+  mobileFooter?: ReactNode;
+  mobileLabel?: string;
+  mobileIdentitySuffix?: string;
+  onBeforeMobileOpen?: () => void;
 };
 
 function isNavLinkActive(pathname: string, href: string) {
@@ -41,6 +47,11 @@ export function AppHeaderShell({
   navLinks,
   rightSlot,
   containerClassName,
+  mobileRightSlot,
+  mobileFooter,
+  mobileLabel = "Navigation",
+  mobileIdentitySuffix,
+  onBeforeMobileOpen,
 }: AppHeaderShellProps) {
   const pathname = usePathname();
 
@@ -48,15 +59,24 @@ export function AppHeaderShell({
     <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-surface-glass)] backdrop-blur">
       <div
         className={cn(
-          "flex h-16 items-center justify-between",
+          "grid h-16 grid-cols-[1fr_auto_1fr] items-center md:flex md:justify-between",
           containerClassName ?? "mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8",
         )}
       >
-        <Link href={logoHref} className="flex items-center gap-2">
+        <div className="justify-self-start md:hidden">
+          <MobileNavigation links={navLinks} label={mobileLabel}
+            identitySuffix={mobileIdentitySuffix} footer={mobileFooter}
+            onBeforeOpen={onBeforeMobileOpen} />
+        </div>
+        <Link href={logoHref} className="flex min-h-12 items-center gap-2">
           <OrderlyLogo size="md" />
+          {mobileIdentitySuffix ? <span className="text-sm font-semibold md:hidden">{mobileIdentitySuffix}</span> : null}
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav
+          aria-label="Primary navigation"
+          className="hidden items-center gap-8 md:flex"
+        >
           {navLinks.map((link) => {
             const isActive = isNavLinkActive(pathname, link.href);
 
@@ -64,6 +84,9 @@ export function AppHeaderShell({
               <Link
                 key={link.href}
                 href={link.href}
+                aria-current={
+                  isActive ? (pathname === link.href ? "page" : "location") : undefined
+                }
                 className={getNavLinkClassName(isActive)}
               >
                 {link.label}
@@ -72,7 +95,12 @@ export function AppHeaderShell({
           })}
         </nav>
 
-        {rightSlot}
+        {mobileRightSlot ? (
+          <>
+            <div className="justify-self-end md:hidden">{mobileRightSlot}</div>
+            <div className="hidden md:block">{rightSlot}</div>
+          </>
+        ) : <div className="justify-self-end">{rightSlot}</div>}
       </div>
     </header>
   );

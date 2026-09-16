@@ -12,7 +12,7 @@ import {
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Button } from "@/components/ui/button";
 
-export function AdminSessionActions() {
+export function AdminSessionActions({ variant = "menu" }: { variant?: "menu" | "button" }) {
   const dispatch = useAppDispatch();
   const router = useRouter();
 
@@ -50,6 +50,15 @@ export function AdminSessionActions() {
       setIsOpen(false);
       router.replace("/admin/login");
     }
+  }
+
+  if (variant === "button") {
+    return (
+      <Button variant="ghost" className="min-h-12 w-full px-2 text-sm"
+        disabled={isLoggingOut} onClick={handleLogout}>
+        {isLoggingOut ? "Signing out..." : "Sign out"}
+      </Button>
+    );
   }
 
   return (

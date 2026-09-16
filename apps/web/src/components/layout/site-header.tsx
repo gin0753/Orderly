@@ -2,6 +2,7 @@
 
 import {
   openCart,
+  closeCart,
   selectCartItemCount,
   selectCartSubtotalCents,
 } from "@/features/cart/cart-slice";
@@ -12,10 +13,7 @@ import { Button } from "../ui/button";
 
 const navLinks = [
   { label: "Menu", href: "/" },
-  { label: "Deals", href: "/deals" },
-  { label: "Orders", href: "/orders" },
-  { label: "Catering", href: "/catering" },
-  { label: "About", href: "/about" },
+  { label: "Orders", href: "/track-order" },
 ];
 
 export function SiteHeader() {
@@ -28,11 +26,13 @@ export function SiteHeader() {
     <AppHeaderShell
       logoHref="/"
       navLinks={navLinks}
+      mobileLabel="Customer navigation"
+      onBeforeMobileOpen={() => dispatch(closeCart())}
       rightSlot={
         <Button
           type="button"
           onClick={() => dispatch(openCart())}
-          className="relative flex cursor-pointer items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)] shadow-sm transition hover:border-neutral-300 hover:bg-[var(--color-surface-muted)]"
+          className="relative flex h-12 min-w-12 cursor-pointer items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)] shadow-sm transition hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-muted)] md:h-10"
           aria-label="Open cart"
         >
           <span className="relative flex h-5 w-5 items-center justify-center">
@@ -65,7 +65,7 @@ export function SiteHeader() {
             ) : null}
           </span>
 
-          <span className="hidden sm:inline">
+          <span className="hidden md:inline">
             {cartItemCount > 0
               ? formatMoneyFromCents(cartSubtotalCents)
               : "Cart"}

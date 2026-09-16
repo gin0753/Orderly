@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { useAppDispatch } from "@/store/hooks";
+import { openCart } from "@/features/cart/cart-slice";
 import Image from "next/image";
 import { formatMoneyFromCents } from "@/lib/format-money";
 import type { CartItem } from "@/features/cart/cart-types";
@@ -28,10 +29,11 @@ export function CheckoutOrderSummary({
   subtotalCents,
   fulfillmentType,
   validationErrors = [],
-  onSubmitLabel = "Continue to Review",
+  onSubmitLabel = "Place Order",
   disabled = false,
   onSubmit,
 }: CheckoutOrderSummaryProps) {
+  const dispatch = useAppDispatch();
   const deliveryFeeCents = getDeliveryFeeCents(subtotalCents, fulfillmentType);
   const totalCents = getCheckoutTotalCents({
     subtotalCents,
@@ -57,12 +59,14 @@ export function CheckoutOrderSummary({
           </p>
         </div>
 
-        <Link
-          href="/"
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => dispatch(openCart())}
           className="text-sm font-semibold text-[var(--color-brand-text)] hover:text-[var(--color-brand-text-hover)]"
         >
           Edit cart
-        </Link>
+        </Button>
       </div>
 
       <div className="mt-6 divide-y divide-[var(--color-border)]">

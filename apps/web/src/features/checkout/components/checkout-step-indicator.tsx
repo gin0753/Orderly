@@ -1,7 +1,6 @@
 const steps = [
   { number: 1, label: "Details" },
-  { number: 2, label: "Review" },
-  { number: 3, label: "Confirmed" },
+  { number: 2, label: "Confirmed" },
 ];
 
 export function CheckoutStepIndicator() {
