@@ -2,6 +2,8 @@
 
 import { useFormContext } from "react-hook-form";
 
+import { PRODUCT_IMAGE_PATH_MESSAGE } from "@/lib/product-image-path";
+
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -271,7 +273,7 @@ export function AdminProductBasicFields({
             id="product-image-url"
             type="text"
             autoComplete="off"
-            placeholder="https://example.com/product.jpg"
+            placeholder="/images/menu/margherita-pizza-v1.webp"
             disabled={isSubmitting}
             aria-invalid={Boolean(errors.imageUrl)}
             aria-describedby={
@@ -282,7 +284,7 @@ export function AdminProductBasicFields({
             {...register("imageUrl", {
               validate: (value) =>
                 validateAdminProductImageUrl(value) ||
-                "Enter a valid product image URL.",
+                PRODUCT_IMAGE_PATH_MESSAGE,
             })}
           />
 
@@ -290,7 +292,7 @@ export function AdminProductBasicFields({
             id="product-image-url-help"
             className="mt-2 text-xs text-[var(--color-text-muted)]"
           >
-            Use an allowed remote image URL or a local application image path.
+            Use a versioned /images/menu/name-v1.webp path, or leave blank.
           </p>
 
           <AdminProductFieldError

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   clearCart,
@@ -22,6 +23,7 @@ import { CartItemRow } from "./cart-item-row";
 
 export function CartDrawer() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const isOpen = useAppSelector(selectIsCartOpen);
   const items = useAppSelector(selectCartItems);
@@ -67,7 +69,12 @@ export function CartDrawer() {
         />
 
         {isEmpty ? (
-          <CartEmptyState onBrowseMenu={() => dispatch(closeCart())} />
+          <CartEmptyState
+            onBrowseMenu={() => {
+              dispatch(closeCart());
+              router.push("/");
+            }}
+          />
         ) : (
           <>
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">

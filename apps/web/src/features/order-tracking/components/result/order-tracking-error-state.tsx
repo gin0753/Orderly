@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 type OrderTrackingErrorStateProps = {
+  orderNumber: string;
   error?: string | null;
   onRetry: () => void;
 };
 
 export function OrderTrackingErrorState({
+  orderNumber,
   error,
   onRetry,
 }: OrderTrackingErrorStateProps) {
@@ -40,7 +42,9 @@ export function OrderTrackingErrorState({
             <Button
               type="button"
               className="border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
-              onClick={() => router.push("/track-order")}
+              onClick={() =>
+                router.push(`/track-order?orderNumber=${encodeURIComponent(orderNumber)}`)
+              }
             >
               Re-enter details
             </Button>

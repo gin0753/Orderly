@@ -564,15 +564,19 @@ pnpm test:quality
 
 ```
 
-Run migrations and seed menu data:
+Run migrations and seed menu data (disposable local databases only):
 
 ```bash
 
 pnpm db:migrate
 
-pnpm db:seed
+ALLOW_DESTRUCTIVE_SEED=true pnpm db:seed
 
 ```
+
+`db:seed` deletes existing data. It requires explicit opt-in and a loopback PostgreSQL host with database `orderly_db` or `orderly_test` (public schema); deployed/production environments are rejected. In PowerShell, set `$env:ALLOW_DESTRUCTIVE_SEED="true"` for the command and remove it afterward. `seed:demo` remains non-destructive and refuses existing menu data. Both seeds use the approved Orderly Kitchen catalog.
+
+Menu images live in `apps/web/public/images/menu/`. Admin accepts versioned paths such as `/images/menu/margherita-pizza-v1.webp`. Keep published versions for historical order snapshots; add a new version when replacing an image. Existing deployed catalog records require a separate Admin update preserving their IDs; seeds are not an upgrade path.
 
 Configure `apps/api/.env` with:
 

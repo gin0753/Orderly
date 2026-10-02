@@ -1,3 +1,7 @@
+import {
+  PRODUCT_IMAGE_PATH,
+  PRODUCT_IMAGE_PATH_MESSAGE,
+} from './product-image-path';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -9,6 +13,7 @@ import {
   IsUUID,
   Max,
   MaxLength,
+  Matches,
   Min,
   MinLength,
   ValidateNested,
@@ -30,6 +35,7 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   @MaxLength(2048)
+  @Matches(PRODUCT_IMAGE_PATH, { message: PRODUCT_IMAGE_PATH_MESSAGE })
   imageUrl?: string | null;
 
   @IsUUID()

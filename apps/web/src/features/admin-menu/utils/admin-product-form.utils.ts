@@ -1,3 +1,4 @@
+import { isProductImagePath } from "@/lib/product-image-path";
 import {
   OPTION_GROUP_TYPE,
   PRODUCT_OPTION_GROUP_KIND,
@@ -474,22 +475,6 @@ export function getAdminProductOptionGroupsValidationError(
   return null;
 }
 
-export function validateAdminProductImageUrl(value: string) {
-  const normalizedValue = value.trim();
-
-  if (!normalizedValue) {
-    return true;
-  }
-
-  if (normalizedValue.startsWith("/")) {
-    return true;
-  }
-
-  try {
-    const url = new URL(normalizedValue);
-
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
+export function validateAdminProductImageUrl(value?: string | null) {
+  return value == null || value.trim() === "" || isProductImagePath(value);
 }

@@ -10,6 +10,7 @@ import {
   selectAuthStatus,
 } from "@/features/auth/store/auth-slice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { getSafeAdminNextPath } from "@/features/auth/lib/get-safe-admin-next-path";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -34,7 +35,9 @@ export function AdminRouteGuard({ children }: AdminRouteGuardProps) {
 
     hasStartedRedirect.current = true;
 
-    const nextPath = pathname || "/admin/orders";
+    const nextPath = getSafeAdminNextPath(
+      `${pathname || "/admin/orders"}${window.location.search}`,
+    );
 
     router.replace(`/admin/login?next=${encodeURIComponent(nextPath)}`);
   }, [authStatus, pathname, router]);

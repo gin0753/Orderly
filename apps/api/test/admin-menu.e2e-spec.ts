@@ -51,7 +51,7 @@ describe('Admin menu API (e2e)', () => {
     await clearFixtures(prisma);
   });
 
-  it('creates a nested product attached to the intended category and public menu', async () => {
+  it('creates a nested public product and validates image paths without corrupting rejected updates', async () => {
     const agent = await createAuthenticatedAgent(prisma, httpServer);
     const category = await createCategory(agent, '  Signature   Pizza  ');
     expect(category).toMatchObject({
@@ -106,6 +106,44 @@ describe('Admin menu API (e2e)', () => {
         products: [expect.objectContaining({ id: body.id })],
       }),
     ]);
+
+    const imageUrl = '/images/menu/margherita-pizza-v1.webp';
+    const payload = { ...createNestedProductRequest(category.id), imageUrl };
+    const id = body.id;
+    await agent
+      .patch(`/api/admin/menu/products/${id}`)
+      .send({ imageUrl })
+      .expect(200);
+    for (const invalid of [
+      'https://example.com/item.webp',
+      '//example.com/item.webp',
+      '/images/menu/../item-v1.webp',
+      '/images/menu/item.jpg',
+      '/images/menu/item.webp',
+    ]) {
+      await agent
+        .post('/api/admin/menu/products')
+        .send({ ...payload, imageUrl: invalid })
+        .expect(400);
+      await agent
+        .patch(`/api/admin/menu/products/${id}`)
+        .send({ imageUrl: invalid })
+        .expect(400);
+    }
+    expect(
+      (await prisma.product.findUniqueOrThrow({ where: { id } })).imageUrl,
+    ).toBe(imageUrl);
+    await agent
+      .patch(`/api/admin/menu/products/${id}`)
+      .send({ imageUrl: '/images/menu/pepperoni-pizza-v1.webp' })
+      .expect(200);
+    await agent
+      .patch(`/api/admin/menu/products/${id}`)
+      .send({ imageUrl: null })
+      .expect(200);
+    expect(
+      (await prisma.product.findUniqueOrThrow({ where: { id } })).imageUrl,
+    ).toBeNull();
   });
 
   it('rejects an internally inconsistent SINGLE option group', async () => {

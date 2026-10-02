@@ -1,25 +1,29 @@
 export const DEFAULT_ADMIN_NEXT_PATH = "/admin/orders";
 
+const RETURN_URL_BASE = "https://orderly.invalid";
+const PROTECTED_ADMIN_PATH =
+  /^\/admin\/(?:orders|menu(?:\/(?:categories|products(?:\/(?:new|[a-zA-Z0-9_-]+\/edit))?))?)$/;
+
 export function getSafeAdminNextPath(nextPath: string | null): string {
-  if (!nextPath) {
-    return DEFAULT_ADMIN_NEXT_PATH;
-  }
-
-  const isAdminRoute = nextPath === "/admin" || nextPath.startsWith("/admin/");
-
-  const isLoginRoute =
-    nextPath === "/admin/login" || nextPath.startsWith("/admin/login?");
-
-  const isExternalProtocolRelativePath = nextPath.startsWith("//");
-
   if (
-    !nextPath.startsWith("/") ||
-    !isAdminRoute ||
-    isLoginRoute ||
-    isExternalProtocolRelativePath
+    !nextPath?.startsWith("/") ||
+    nextPath.startsWith("//") ||
+    /[\\\s]/.test(nextPath)
   ) {
     return DEFAULT_ADMIN_NEXT_PATH;
   }
 
-  return nextPath;
+  try {
+    const url = new URL(nextPath, RETURN_URL_BASE);
+    const pathname = url.pathname.replace(/\/$/, "");
+
+    if (url.origin !== RETURN_URL_BASE || !PROTECTED_ADMIN_PATH.test(pathname)) {
+      return DEFAULT_ADMIN_NEXT_PATH;
+    }
+
+    // Keep filter queries, but discard fragments and normalize trailing slashes.
+    return `${pathname}${url.search}`;
+  } catch {
+    return DEFAULT_ADMIN_NEXT_PATH;
+  }
 }

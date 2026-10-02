@@ -1,5 +1,6 @@
-import Link from "next/link";
-import Image from "next/image";
+import { useAppDispatch } from "@/store/hooks";
+import { openCart } from "@/features/cart/cart-slice";
+import { ProductImage } from "@/components/ui/product-image";
 import { formatMoneyFromCents } from "@/lib/format-money";
 import type { CartItem } from "@/features/cart/cart-types";
 import { getCartItemOptionSummary } from "@/features/cart/cart-utils";
@@ -28,10 +29,11 @@ export function CheckoutOrderSummary({
   subtotalCents,
   fulfillmentType,
   validationErrors = [],
-  onSubmitLabel = "Continue to Review",
+  onSubmitLabel = "Place Order",
   disabled = false,
   onSubmit,
 }: CheckoutOrderSummaryProps) {
+  const dispatch = useAppDispatch();
   const deliveryFeeCents = getDeliveryFeeCents(subtotalCents, fulfillmentType);
   const totalCents = getCheckoutTotalCents({
     subtotalCents,
@@ -57,12 +59,14 @@ export function CheckoutOrderSummary({
           </p>
         </div>
 
-        <Link
-          href="/"
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => dispatch(openCart())}
           className="text-sm font-semibold text-[var(--color-brand-text)] hover:text-[var(--color-brand-text-hover)]"
         >
           Edit cart
-        </Link>
+        </Button>
       </div>
 
       <div className="mt-6 divide-y divide-[var(--color-border)]">
@@ -74,15 +78,11 @@ export function CheckoutOrderSummary({
           return (
             <div key={item.key} className="flex gap-4 py-4 first:pt-0">
               <div className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--color-surface-hover)]">
-                {item.product.imageUrl ? (
-                  <Image
-                    src={item.product.imageUrl}
-                    alt={item.product.name}
-                    fill
-                    sizes="80px"
-                    className="object-cover"
-                  />
-                ) : null}
+                <ProductImage
+                  src={item.product.imageUrl}
+                  alt={item.product.name}
+                  sizes="80px"
+                />
               </div>
 
               <div className="min-w-0 flex-1">

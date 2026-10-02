@@ -1,6 +1,3 @@
-import Link from "next/link";
-
-import { OrderlyLogo } from "@/components/brand/orderly-logo";
 import { Card } from "@/components/ui/card";
 import { OrderLookupForm } from "@/features/order-tracking/components/lookup/order-lookup-form";
 
@@ -43,23 +40,6 @@ export default async function TrackOrderPage({
   return (
     <main className="min-h-screen bg-[var(--color-page-background)] px-4 py-6 text-[var(--color-text-primary)] md:px-8 md:py-10">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-8 flex items-center justify-between">
-          <Link
-            href="/"
-            aria-label="Go to Orderly home"
-            className="inline-flex transition-opacity hover:opacity-80"
-          >
-            <OrderlyLogo size="md" />
-          </Link>
-
-          <Link
-            href="/"
-            className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition hover:border-[var(--color-border-hover)] hover:text-[var(--color-text-primary)]"
-          >
-            Back to menu
-          </Link>
-        </header>
-
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <Card className="overflow-hidden border-[var(--color-border)] bg-[var(--color-surface)] p-0">
             <div className="grid lg:grid-cols-[minmax(0,1fr)_380px]">
@@ -113,16 +93,6 @@ export default async function TrackOrderPage({
                   </div>
 
                   <OrderLookupForm initialOrderNumber={initialOrderNumber} />
-
-                  <p className="mt-5 text-center text-sm text-[var(--color-text-muted)]">
-                    Having trouble?{" "}
-                    <Link
-                      href="/"
-                      className="font-medium text-[var(--color-brand-text)] transition hover:text-[var(--color-brand-text-hover)]"
-                    >
-                      Contact support
-                    </Link>
-                  </p>
                 </div>
               </div>
             </div>
