@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProductImage } from "@/components/ui/product-image";
 import { useEffect } from "react";
 import { X } from "lucide-react";
 
@@ -88,20 +88,13 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
         className="animate-orderly-slide-up relative z-10 flex h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl bg-[var(--color-surface)] shadow-2xl md:grid md:h-[calc(100vh-3rem)] md:max-h-[760px] md:grid-cols-[0.95fr_1.05fr] md:rounded-3xl"
       >
         <div className="relative h-56 overflow-hidden bg-[var(--color-surface-muted)] md:h-full">
-          {product.imageUrl ? (
-            <Image
-              src={product.imageUrl}
-              alt={product.name}
-              fill
-              sizes="(min-width: 768px) 50vw, 100vw"
-              className="object-cover"
-              priority
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-sm text-[var(--color-text-subtle)]">
-              No image
-            </div>
-          )}
+          <ProductImage
+            src={product.imageUrl}
+            alt={product.name}
+            sizes="(min-width: 928px) 426px, (min-width: 768px) calc((100vw - 32px) * 0.475), calc(100vw - 32px)"
+            className="object-contain"
+            priority
+          />
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col md:h-full">

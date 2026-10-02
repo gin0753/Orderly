@@ -1,6 +1,6 @@
 import { useAppDispatch } from "@/store/hooks";
 import { openCart } from "@/features/cart/cart-slice";
-import Image from "next/image";
+import { ProductImage } from "@/components/ui/product-image";
 import { formatMoneyFromCents } from "@/lib/format-money";
 import type { CartItem } from "@/features/cart/cart-types";
 import { getCartItemOptionSummary } from "@/features/cart/cart-utils";
@@ -78,15 +78,11 @@ export function CheckoutOrderSummary({
           return (
             <div key={item.key} className="flex gap-4 py-4 first:pt-0">
               <div className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--color-surface-hover)]">
-                {item.product.imageUrl ? (
-                  <Image
-                    src={item.product.imageUrl}
-                    alt={item.product.name}
-                    fill
-                    sizes="80px"
-                    className="object-cover"
-                  />
-                ) : null}
+                <ProductImage
+                  src={item.product.imageUrl}
+                  alt={item.product.name}
+                  sizes="80px"
+                />
               </div>
 
               <div className="min-w-0 flex-1">

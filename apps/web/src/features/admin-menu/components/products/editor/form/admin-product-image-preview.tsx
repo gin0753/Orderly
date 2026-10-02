@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProductImage } from "@/components/ui/product-image";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -10,43 +10,18 @@ interface AdminProductImagePreviewProps {
   productName: string;
 }
 
-function ImagePlaceholder() {
-  return (
-    <div
-      className={[
-        "flex h-full w-full min-h-48 flex-col",
-        "items-center justify-center gap-2",
-        "bg-[var(--color-surface-muted)]",
-        "text-[var(--color-text-subtle)]",
-      ].join(" ")}
-    >
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        className="h-8 w-8"
-      >
-        <rect x="3" y="4" width="18" height="16" rx="2" />
-
-        <circle cx="8.5" cy="9" r="1.5" />
-
-        <path d="m5 17 4.5-4.5 3 3 2-2L19 17" />
-      </svg>
-
-      <span className="text-sm">No image preview</span>
-    </div>
-  );
+export function AdminProductImagePreview(props: AdminProductImagePreviewProps) {
+  return <ImagePreviewContent key={props.imageUrl.trim()} {...props} />;
 }
 
-export function AdminProductImagePreview({
+function ImagePreviewContent({
   imageUrl,
   productName,
 }: AdminProductImagePreviewProps) {
   const normalizedImageUrl = imageUrl.trim();
   const normalizedProductName = productName.trim();
 
+  const [retry, setRetry] = useState(0);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
 
   const didCurrentImageFail =
@@ -62,6 +37,7 @@ export function AdminProductImagePreview({
 
   function handleRetry() {
     setFailedImageUrl(null);
+    setRetry((value) => value + 1);
   }
 
   return (
@@ -87,23 +63,13 @@ export function AdminProductImagePreview({
       </header>
 
       <div className="relative aspect-[4/3] overflow-hidden">
-        {!normalizedImageUrl || didCurrentImageFail ? (
-          <ImagePlaceholder />
-        ) : (
-          <Image
-            key={normalizedImageUrl}
-            src={normalizedImageUrl}
-            alt={imageAlt}
-            fill
-            sizes={[
-              "(min-width: 1280px) 30vw",
-              "(min-width: 768px) 50vw",
-              "100vw",
-            ].join(", ")}
-            className="object-cover"
-            onError={handleImageError}
-          />
-        )}
+        <ProductImage
+          key={retry}
+          src={normalizedImageUrl}
+          alt={imageAlt}
+          sizes="(min-width: 1280px) 373px, (min-width: 1024px) calc(100vw - 66px), (min-width: 640px) calc(100vw - 50px), calc(100vw - 34px)"
+          onError={handleImageError}
+        />
       </div>
 
       {didCurrentImageFail ? (
@@ -124,8 +90,8 @@ export function AdminProductImagePreview({
             </p>
 
             <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-              Check the image URL and ensure its host is allowed by the
-              application.
+              Check that the versioned image path matches an installed menu
+              asset.
             </p>
           </div>
 

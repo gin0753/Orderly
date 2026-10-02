@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProductImage } from "@/components/ui/product-image";
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,19 +32,11 @@ export function ProductCard({
           aria-label={`View ${product.name}`}
         >
           <div className="relative aspect-[4/3] overflow-hidden bg-[var(--color-surface-muted)]">
-            {product.imageUrl ? (
-              <Image
-                src={product.imageUrl}
-                alt={product.name}
-                fill
-                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                className="object-cover transition duration-300 group-hover:scale-105"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-sm text-[var(--color-text-muted)]">
-                No image
-              </div>
-            )}
+            <ProductImage
+              src={product.imageUrl}
+              alt={product.name}
+              sizes="(min-width: 1152px) 255px, (min-width: 1024px) calc((100vw - 132px) / 4), (min-width: 640px) calc((100vw - 72px) / 2), calc(100vw - 34px)"
+            />
           </div>
 
           <div className="space-y-2 p-4 pb-3">

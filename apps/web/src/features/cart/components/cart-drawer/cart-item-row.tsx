@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { ProductImage } from "@/components/ui/product-image";
 import { Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,19 +25,11 @@ export function CartItemRow({
   return (
     <Card className="grid grid-cols-[72px_1fr] gap-4 border-[var(--color-border-soft)] p-3 shadow-none transition hover:border-[var(--color-border)]">
       <div className="relative h-[72px] w-[72px] overflow-hidden rounded-xl bg-[var(--color-surface-muted)]">
-        {item.product.imageUrl ? (
-          <Image
-            src={item.product.imageUrl}
-            alt={item.product.name}
-            fill
-            sizes="72px"
-            className="object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-[var(--color-text-subtle)]">
-            No image
-          </div>
-        )}
+        <ProductImage
+          src={item.product.imageUrl}
+          alt={item.product.name}
+          sizes="72px"
+        />
       </div>
 
       <div className="min-w-0">

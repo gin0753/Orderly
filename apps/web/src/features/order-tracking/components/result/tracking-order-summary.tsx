@@ -1,6 +1,6 @@
 import { formatMoneyFromCents } from "@/lib/format-money";
 import type { OrderTrackingResponse } from "../../types/order-tracking.types";
-import Image from "next/image";
+import { ProductImage } from "@/components/ui/product-image";
 
 type TrackingOrderSummaryProps = {
   order: OrderTrackingResponse;
@@ -41,19 +41,11 @@ export function TrackingOrderSummary({ order }: TrackingOrderSummaryProps) {
             return (
               <div key={item.id} className="flex gap-4 py-4 first:pt-0">
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[var(--color-surface-muted)]">
-                  {item.imageUrl ? (
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.name}
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-[var(--color-text-subtle)]">
-                      Item
-                    </div>
-                  )}
+                  <ProductImage
+                    src={item.imageUrl}
+                    alt={item.name}
+                    sizes="64px"
+                  />
                 </div>
 
                 <div className="min-w-0 flex-1">
