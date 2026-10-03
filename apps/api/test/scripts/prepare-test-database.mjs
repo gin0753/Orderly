@@ -4,19 +4,15 @@ import { createRequire } from 'node:module';
 import { run } from './process-utils.mjs';
 
 const require = createRequire(import.meta.url);
-const { getSafeTestDatabaseUrl } = require('../test-database-url.cjs');
+const { assertDestructiveTestDatabaseAllowed } = require('../test-database-url.cjs');
 
-const { databaseName, parsedUrl } = getSafeTestDatabaseUrl();
-
-if (!['localhost', '127.0.0.1', '::1'].includes(parsedUrl.hostname)) {
-  throw new Error(
-    'Automatic test database creation is restricted to the local Docker PostgreSQL service.',
-  );
-}
+const target = assertDestructiveTestDatabaseAllowed(process.env);
+const databaseUrl = new URL(target.databaseUrl);
+const databaseName = target.databaseName;
 
 run('docker', ['compose', 'up', '-d', 'db']);
 
-const postgresUser = decodeURIComponent(parsedUrl.username);
+const postgresUser = decodeURIComponent(databaseUrl.username);
 
 const maxAttempts = 30;
 

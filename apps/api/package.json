@@ -27,7 +27,8 @@
     "test:db:prepare": "node ./test/scripts/prepare-test-database.mjs",
     "test:db:reset": "node ./test/scripts/reset-test-database.mjs",
     "test:e2e:run": "jest --config ./test/jest-e2e.json --runInBand",
-    "test:e2e": "pnpm run test:db:reset && pnpm run test:e2e:run",
+    "test:e2e": "node ./test/scripts/run-api-e2e.mjs",
+    "test:e2e:server": "node ./dist/src/main.js",
     "test:quality": "pnpm run test:unit --runInBand && pnpm run test:e2e && pnpm run typecheck && pnpm run lint",
     "seed:admin": "tsx prisma/seed-admin.ts",
     "seed:demo": "tsx prisma/seed-demo.ts"

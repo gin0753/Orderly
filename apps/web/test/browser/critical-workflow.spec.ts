@@ -158,6 +158,68 @@ test.describe("mobile customer smoke", () => {
   });
 });
 
+test("homepage ordering entry point remains usable at 320px", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  const runtimeErrors = captureUnexpectedRuntimeErrors(page);
+
+  await page.goto("/");
+
+  const browseMenu = page.getByRole("link", { name: "Browse menu" });
+  const trackOrder = page.getByRole("link", { name: "Track order" });
+  const categories = page.locator("#menu");
+
+  await expect(page.getByText("Orderly Browser Test")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "View Golden Path Pizza" }),
+  ).toBeVisible();
+  await expect(browseMenu).toBeVisible();
+  await expect(trackOrder).toHaveAttribute("href", "/track-order");
+  await expect(categories).toBeVisible();
+
+  for (const action of [browseMenu, trackOrder]) {
+    const box = await action.boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+  }
+
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  expect((await categories.boundingBox())?.y).toBeLessThan(720);
+
+  await browseMenu.click();
+  await expect(page).toHaveURL(/#menu$/);
+  await expect
+    .poll(async () => (await categories.boundingBox())?.y)
+    .toBeGreaterThanOrEqual(63);
+
+  const pizzaButton = categories.getByRole("button", { name: /Pizza/ });
+  await pizzaButton.click();
+  await expect(pizzaButton).toHaveAttribute("aria-pressed", "true");
+
+  const categoryBox = await categories.boundingBox();
+  const selectedCategoryHeading = page
+    .locator('section[id^="menu-section-"] h2')
+    .first();
+  await expect(selectedCategoryHeading).toHaveText(/Pizza/);
+  const pizzaHeadingBox = await selectedCategoryHeading.boundingBox();
+  expect(pizzaHeadingBox?.y).toBeGreaterThanOrEqual(
+    (categoryBox?.y ?? 0) + (categoryBox?.height ?? 0),
+  );
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await expect
+    .poll(async () => (await categories.boundingBox())?.y)
+    .toBeGreaterThanOrEqual(63);
+
+  await trackOrder.click();
+  await expect(page).toHaveURL(/\/track-order$/);
+  expect(runtimeErrors).toEqual([]);
+});
+
 function captureUnexpectedRuntimeErrors(page: Page) {
   const errors: string[] = [];
 

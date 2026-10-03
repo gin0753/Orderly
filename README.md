@@ -508,21 +508,21 @@ pnpm --filter api test:unit
 
 Database-backed API E2E tests use the separate `orderly_test` database. Set
 
-`TEST_DATABASE_URL` to the value shown in `.env.example`, then run:
+`TEST_DATABASE_URL` to the value shown in `.env.example`, including
+`?schema=public`, then run:
 
 ```bash
-
-pnpm --filter api test:db:prepare
 
 pnpm --filter api test:e2e
 
 ```
 
-`test:e2e` safely resets `orderly_test` and applies the real Prisma migrations
-
-before running. It refuses missing URLs, the development URL, and database names
-
-other than `orderly_test`. The normal development database is never reset.
+`test:e2e` supplies the verified test URL as both Prisma connection variables,
+then safely resets `orderly_test` and applies the real Prisma migrations. It
+refuses non-test environments, missing or malformed URLs, non-loopback hosts,
+database names other than `orderly_test`, mismatched Prisma targets, and query
+parameters other than `schema=public`. The normal development database is never
+reset.
 
 ### Frontend and browser tests
 
@@ -548,13 +548,11 @@ pnpm test:browser
 
 ```
 
-Start Docker PostgreSQL first with `pnpm db:up`. The browser command safely resets
-
-and seeds only `orderly_test`, then manages its own API and web development servers.
-
-It uses `TEST_DATABASE_URL` when provided, otherwise the documented local Docker
-
-test URL. It never uses the development seed or resets `orderly_db`.
+Configure `TEST_DATABASE_URL` with the documented local Docker test URL before
+running the browser command. The command supplies that verified URL as both Prisma
+connection variables, safely resets and seeds only `orderly_test`, builds the API,
+then manages its own API and web development servers. It never uses the development
+seed or resets `orderly_db`.
 
 For a complete local Stage 10 pass after installing Chromium:
 

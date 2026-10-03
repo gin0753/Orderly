@@ -16,18 +16,6 @@ type MenuBrowserProps = {
   categories: MenuCategory[];
 };
 
-function getCategoryEmoji(categoryName: string) {
-  const normalizedName = categoryName.toLowerCase();
-
-  if (normalizedName.includes("pizza")) return "🍕";
-  if (normalizedName.includes("burger")) return "🍔";
-  if (normalizedName.includes("side")) return "🍟";
-  if (normalizedName.includes("drink")) return "🥤";
-  if (normalizedName.includes("dessert")) return "🍰";
-
-  return "";
-}
-
 export function MenuBrowser({ categories }: MenuBrowserProps) {
   const dispatch = useAppDispatch();
 
@@ -72,6 +60,17 @@ export function MenuBrowser({ categories }: MenuBrowserProps) {
     dispatch(openCart());
   }
 
+  function handleCategoryChange(categoryId: string) {
+    setActiveCategoryId(categoryId);
+
+    window.requestAnimationFrame(() => {
+      const targetId =
+        categoryId === "all" ? "menu" : `menu-section-${categoryId}`;
+
+      document.getElementById(targetId)?.scrollIntoView({ block: "start" });
+    });
+  }
+
   if (categories.length === 0) {
     return <EmptyMenuState />;
   }
@@ -81,15 +80,15 @@ export function MenuBrowser({ categories }: MenuBrowserProps) {
       <CategoryTabs
         categories={categories}
         activeCategoryId={activeCategoryId}
-        onCategoryChange={setActiveCategoryId}
+        onCategoryChange={handleCategoryChange}
       />
 
       <div className="pb-28 md:pb-0">
         {visibleCategories.map((category) => (
           <MenuSection
             key={category.id}
+            sectionId={`menu-section-${category.id}`}
             title={category.name}
-            emoji={getCategoryEmoji(category.name)}
             itemCount={category.products.length}
             products={category.products}
             onProductSelect={handleProductSelect}

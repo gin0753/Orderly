@@ -1,9 +1,10 @@
-const { getSafeTestDatabaseUrl } = require('./test-database-url.cjs');
+const { assertDestructiveTestDatabaseAllowed } = require('./test-database-url.cjs');
 
-const { url } = getSafeTestDatabaseUrl(process.env);
+const target = assertDestructiveTestDatabaseAllowed(process.env);
 
-process.env.DATABASE_URL = url;
-process.env.NODE_ENV = 'test';
+process.env.DATABASE_URL = target.databaseUrl;
+process.env.DIRECT_DATABASE_URL =
+  target.directDatabaseUrl ?? target.databaseUrl;
 process.env.JWT_ACCESS_SECRET ??= 'orderly-e2e-access-secret';
 process.env.JWT_REFRESH_SECRET ??= 'orderly-e2e-refresh-secret';
 process.env.JWT_ACCESS_TTL ??= '15m';

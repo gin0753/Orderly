@@ -6,13 +6,16 @@ import {
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { getSafeTestDatabaseUrl } = require('../test-database-url.cjs') as {
-  getSafeTestDatabaseUrl: () => { url: string };
-};
+const { assertDestructiveTestDatabaseAllowed } =
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('../test-database-url.cjs') as {
+    assertDestructiveTestDatabaseAllowed: (environment: NodeJS.ProcessEnv) => {
+      databaseUrl: string;
+    };
+  };
 
-const { url } = getSafeTestDatabaseUrl();
-const prisma = new PrismaClient({ datasourceUrl: url });
+const { databaseUrl } = assertDestructiveTestDatabaseAllowed(process.env);
+const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
 
 async function main() {
   await prisma.adminSession.deleteMany();

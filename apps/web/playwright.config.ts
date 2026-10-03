@@ -1,8 +1,19 @@
+import { createRequire } from "node:module";
+
 import { defineConfig, devices } from "@playwright/test";
 
-const testDatabaseUrl =
-  process.env.TEST_DATABASE_URL ??
-  "postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public";
+const require = createRequire(__filename);
+const { assertDestructiveTestDatabaseAllowed } = require(
+  "../api/test/test-database-url.cjs",
+) as {
+  assertDestructiveTestDatabaseAllowed: (
+    environment: NodeJS.ProcessEnv,
+  ) => {
+    databaseUrl: string;
+    directDatabaseUrl: string | null;
+  };
+};
+const testDatabaseTarget = assertDestructiveTestDatabaseAllowed(process.env);
 
 export default defineConfig({
   testDir: "./test/browser",
@@ -28,13 +39,17 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "pnpm --filter api exec nest start",
+      command: "pnpm --filter api run test:e2e:server",
       cwd: "../..",
       url: "http://localhost:4000/api/menu",
       reuseExistingServer: false,
       timeout: 120_000,
       env: {
-        DATABASE_URL: testDatabaseUrl,
+        NODE_ENV: "test",
+        DATABASE_URL: testDatabaseTarget.databaseUrl,
+        DIRECT_DATABASE_URL:
+          testDatabaseTarget.directDatabaseUrl ??
+          testDatabaseTarget.databaseUrl,
         API_PORT: "4000",
         WEB_ORIGIN: "http://localhost:3000",
         JWT_ACCESS_SECRET: "browser-test-access-secret-at-least-32-characters",
