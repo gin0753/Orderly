@@ -7,8 +7,9 @@ type MenuSectionProps = {
   title: string;
   itemCount?: number;
   products: MenuProduct[];
-  onProductSelect: (product: MenuProduct) => void;
-  onQuickAdd: (product: MenuProduct) => void;
+  onProductSelect: (product: MenuProduct, opener: HTMLElement) => void;
+  onQuickAdd: (product: MenuProduct, opener: HTMLElement) => void;
+  isAcceptingOrders?: boolean;
 };
 
 export function MenuSection({
@@ -18,6 +19,7 @@ export function MenuSection({
   products,
   onProductSelect,
   onQuickAdd,
+  isAcceptingOrders = true,
 }: MenuSectionProps) {
   return (
     <section id={sectionId} className="mt-6 scroll-mt-36">
@@ -42,6 +44,7 @@ export function MenuSection({
             product={product}
             onProductSelect={onProductSelect}
             onQuickAdd={onQuickAdd}
+            isAcceptingOrders={isAcceptingOrders}
           />
         ))}
       </div>

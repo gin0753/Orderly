@@ -73,8 +73,8 @@ function AdminRouteLoadingState({
 }: AdminRouteLoadingStateProps) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[var(--color-page-background)] px-4">
-      <div className="flex flex-col items-center gap-4 text-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--color-border-subtle)] border-t-[var(--color-brand)]" />
+      <div role="status" aria-live="polite" className="flex flex-col items-center gap-4 text-center">
+        <div aria-hidden="true" className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--color-border-subtle)] border-t-[var(--color-brand)]" />
 
         <p className="text-sm text-[var(--color-text-muted)]">{label}</p>
       </div>
@@ -90,7 +90,7 @@ type AdminRouteErrorStateProps = {
 function AdminRouteErrorState({ message, onRetry }: AdminRouteErrorStateProps) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[var(--color-background)] px-4">
-      <Card className="w-full max-w-md space-y-5 p-6 text-center">
+      <Card role="alert" className="w-full max-w-md space-y-5 p-6 text-center">
         <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-brand-soft)] text-lg text-[var(--color-brand-text-hover)]">
           !
         </div>

@@ -171,7 +171,7 @@ export function DeliveryAddressForm({
 
 function FieldError({ children }: { children: ReactNode }) {
   return (
-    <span className="text-sm font-medium text-[var(--color-danger)]">
+    <span className="text-sm font-medium text-[var(--color-danger-strong)]">
       {children}
     </span>
   );

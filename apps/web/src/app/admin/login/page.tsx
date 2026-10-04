@@ -7,7 +7,7 @@ export default function AdminLoginPage() {
       <div className="mx-auto grid min-h-[720px] max-w-6xl overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm lg:grid-cols-[1.1fr_0.9fr]">
         <section className="flex flex-col justify-between bg-[var(--color-text-primary)] p-8 text-[var(--color-text-inverse)] sm:p-12">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-brand)] font-bold text-[var(--color-text-inverse)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-brand-strong)] font-bold text-[var(--color-text-inverse)]">
               O
             </div>
 
@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
 
 function LoginFormLoadingState() {
   return (
-    <div className="w-full max-w-md space-y-5 rounded-2xl border border-[var(--color-border)] p-6 sm:p-8">
+    <div role="status" aria-live="polite" aria-label="Loading sign in" className="w-full max-w-md space-y-5 rounded-2xl border border-[var(--color-border)] p-6 sm:p-8">
       <div className="h-7 w-28 animate-pulse rounded bg-[var(--color-surface-disabled)]" />
       <div className="h-10 animate-pulse rounded-lg bg-[var(--color-surface-disabled)]" />
       <div className="h-10 animate-pulse rounded-lg bg-[var(--color-surface-disabled)]" />

@@ -7,7 +7,10 @@ import { useState } from "react";
 import { useUpdateAdminProduct } from "../../../mutations/use-admin-product-mutations";
 import { adminMenuQueryOptions } from "../../../queries/admin-menu-query-options";
 import type { AdminProductFormValues } from "../../../types/admin-product-form.types";
-import type { AdminProductCategoryFilterOption } from "../../../types/admin-product.types";
+import type {
+  AdminProductCategoryFilterOption,
+  AdminProductDetail,
+} from "../../../types/admin-product.types";
 import {
   mapFormValuesToUpdateRequest,
   mapProductToFormValues,
@@ -110,10 +113,19 @@ export function AdminEditProductScreen({
     );
   }
 
-  const product = productQuery.data;
+  const product = productQuery.data as AdminProductDetail | undefined;
 
   if (!product) {
-    return null;
+    return (
+      <AdminProductEditorError
+        title="Product unavailable"
+        message="This product could not be found or is no longer available."
+        onBack={handleBack}
+        onRetry={() => {
+          void productQuery.refetch();
+        }}
+      />
+    );
   }
 
   const categories = mergeCurrentCategory(

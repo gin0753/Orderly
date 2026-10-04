@@ -10,6 +10,8 @@ import { formatMoneyFromCents } from "@/lib/format-money";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { AppHeaderShell } from "./app-header-shell";
 import { Button } from "../ui/button";
+import { setCartOpener } from "@/features/cart/utils/cart-focus";
+import { useHasHydrated } from "@/hooks/use-has-hydrated";
 
 const navLinks = [
   { label: "Menu", href: "/" },
@@ -21,6 +23,8 @@ export function SiteHeader() {
 
   const cartItemCount = useAppSelector(selectCartItemCount);
   const cartSubtotalCents = useAppSelector(selectCartSubtotalCents);
+  const hasHydrated = useHasHydrated();
+  const visibleCartItemCount = hasHydrated ? cartItemCount : 0;
 
   return (
     <AppHeaderShell
@@ -31,7 +35,10 @@ export function SiteHeader() {
       rightSlot={
         <Button
           type="button"
-          onClick={() => dispatch(openCart())}
+          onClick={(event) => {
+            setCartOpener(event.currentTarget);
+            dispatch(openCart());
+          }}
           className="relative flex h-12 min-w-12 cursor-pointer items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)] shadow-sm transition hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-muted)] md:h-10"
           aria-label="Open cart"
         >
@@ -58,15 +65,15 @@ export function SiteHeader() {
               />
             </svg>
 
-            {cartItemCount > 0 ? (
-              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-brand)] px-1 text-[10px] font-bold text-[var(--color-text-inverse)]">
-                {cartItemCount}
+            {visibleCartItemCount > 0 ? (
+              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-brand-strong)] px-1 text-[10px] font-bold text-[var(--color-text-inverse)]">
+                {visibleCartItemCount}
               </span>
             ) : null}
           </span>
 
           <span className="hidden md:inline">
-            {cartItemCount > 0
+            {visibleCartItemCount > 0
               ? formatMoneyFromCents(cartSubtotalCents)
               : "Cart"}
           </span>

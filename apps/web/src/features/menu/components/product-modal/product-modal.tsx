@@ -1,13 +1,15 @@
 "use client";
 
-import { ProductImage } from "@/components/ui/product-image";
-import { useEffect } from "react";
+import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 
+import { ProductImage } from "@/components/ui/product-image";
 import { Button } from "@/components/ui/button";
+import { containDialogFocus } from "@/components/ui/dialog-focus";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { addItem, openCart } from "@/features/cart/cart-slice";
 import { createCartItem } from "@/features/cart/cart-utils";
+import { setCartOpener } from "@/features/cart/utils/cart-focus";
 import type { MenuProduct } from "@/features/menu/types";
 import { useScrollLock } from "@/hooks/use-scroll-lock";
 import { formatMoneyFromCents } from "@/lib/format-money";
@@ -18,11 +20,23 @@ import { useProductConfigurator } from "./hooks/use-product-configurator";
 
 type ProductModalProps = {
   product: MenuProduct;
+  isAcceptingOrders: boolean;
+  opener: HTMLElement | null;
   onClose: () => void;
 };
 
-export function ProductModal({ product, onClose }: ProductModalProps) {
+export function ProductModal({
+  product,
+  isAcceptingOrders,
+  opener,
+  onClose,
+}: ProductModalProps) {
   const dispatch = useAppDispatch();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const shouldRestoreFocusRef = useRef(true);
+  const titleId = useId();
+  const validationId = useId();
 
   const {
     selectedOptionIdsByGroup,
@@ -37,21 +51,31 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
   useScrollLock();
 
   useEffect(() => {
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
+    const dialog = dialogRef.current;
+
+    if (!dialog?.isConnected) {
+      return;
     }
 
-    window.addEventListener("keydown", handleEscape);
+    if (!dialog.open) {
+      dialog.showModal();
+    }
+
+    closeRef.current?.focus();
 
     return () => {
-      window.removeEventListener("keydown", handleEscape);
+      if (dialog.open) {
+        dialog.close();
+      }
+
+      if (shouldRestoreFocusRef.current && opener?.isConnected) {
+        opener.focus();
+      }
     };
-  }, [onClose]);
+  }, [opener]);
 
   function handleAddToCart() {
-    if (!hasValidOptionSelections) {
+    if (!hasValidOptionSelections || !isAcceptingOrders) {
       return;
     }
 
@@ -67,132 +91,163 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
       quantity,
     });
 
+    shouldRestoreFocusRef.current = false;
+    setCartOpener(opener);
     dispatch(addItem(cartItem));
-    dispatch(openCart());
     onClose();
+    dispatch(openCart());
   }
 
   return (
-    <div className="animate-orderly-fade-in fixed inset-0 z-50 flex items-end justify-center bg-[var(--color-overlay)] px-4 py-6 backdrop-blur-sm md:items-center">
-      <button
-        type="button"
-        aria-label="Close product modal"
-        className="absolute inset-0 cursor-default"
-        onClick={onClose}
-      />
-
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      aria-describedby={
+        !isAcceptingOrders || !hasValidOptionSelections
+          ? validationId
+          : undefined
+      }
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+      onKeyDown={containDialogFocus}
+      className="fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none border-0 bg-transparent p-0 text-[var(--color-text-primary)] backdrop:bg-[var(--color-overlay)] backdrop:backdrop-blur-sm"
+    >
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="product-modal-title"
-        className="animate-orderly-slide-up relative z-10 flex h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl bg-[var(--color-surface)] shadow-2xl md:grid md:h-[calc(100vh-3rem)] md:max-h-[760px] md:grid-cols-[0.95fr_1.05fr] md:rounded-3xl"
+        className="flex h-full items-end justify-center px-4 py-6 md:items-center"
+        onClick={(event) => {
+          if (event.target === event.currentTarget) {
+            onClose();
+          }
+        }}
       >
-        <div className="relative h-56 overflow-hidden bg-[var(--color-surface-muted)] md:h-full">
-          <ProductImage
-            src={product.imageUrl}
-            alt={product.name}
-            sizes="(min-width: 928px) 426px, (min-width: 768px) calc((100vw - 32px) * 0.475), calc(100vw - 32px)"
-            className="object-contain"
-            priority
-          />
-        </div>
+        <div className="relative flex h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl bg-[var(--color-surface)] shadow-2xl md:grid md:h-[calc(100vh-3rem)] md:max-h-[760px] md:grid-cols-[0.95fr_1.05fr] md:rounded-3xl">
+          <div className="relative h-56 overflow-hidden bg-[var(--color-surface-muted)] md:h-full">
+            <ProductImage
+              src={product.imageUrl}
+              alt={product.name}
+              sizes="(min-width: 928px) 426px, (min-width: 768px) calc((100vw - 32px) * 0.475), calc(100vw - 32px)"
+              className="object-contain"
+              priority
+            />
+          </div>
 
-        <div className="flex min-h-0 flex-1 flex-col md:h-full">
-          <div className="min-h-0 flex-1 overflow-y-auto p-5 md:p-8">
-            <header className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-brand-text)]">
-                  Customize your item
-                </p>
-
-                <h2
-                  id="product-modal-title"
-                  className="mt-2 text-2xl font-bold tracking-tight text-[var(--color-text-primary)]"
-                >
-                  {product.name}
-                </h2>
-
-                <p className="mt-2 text-lg font-semibold text-[var(--color-text-primary)]">
-                  {formatMoneyFromCents(product.priceCents)}
-                </p>
-
-                {product.description ? (
-                  <p className="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">
-                    {product.description}
+          <div className="flex min-h-0 flex-1 flex-col md:h-full">
+            <div className="min-h-0 flex-1 overflow-y-auto p-5 md:p-8">
+              <div className="mb-6 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-brand-text)]">
+                    Customize your item
                   </p>
-                ) : null}
+                  <h2
+                    id={titleId}
+                    className="mt-2 text-2xl font-bold tracking-tight text-[var(--color-text-primary)]"
+                  >
+                    {product.name}
+                  </h2>
+                  <p className="mt-2 text-lg font-semibold text-[var(--color-text-primary)]">
+                    {formatMoneyFromCents(product.priceCents)}
+                  </p>
+                  {product.description ? (
+                    <p className="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">
+                      {product.description}
+                    </p>
+                  ) : null}
+                </div>
+
+                <Button
+                  ref={closeRef}
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClose}
+                  className="-mr-2 -mt-2 size-11 shrink-0 bg-[var(--color-surface-glass)] text-[var(--color-text-muted)] backdrop-blur hover:text-[var(--color-text-primary)]"
+                  aria-label="Close product details"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {product.optionGroups.map((group) => (
+                <ProductOptionGroup
+                  key={group.id}
+                  group={group}
+                  selectedOptionIds={selectedOptionIdsByGroup[group.id] ?? []}
+                  onSelect={(optionId) => selectOption(group, optionId)}
+                />
+              ))}
+
+              <section className="mt-6 border-t border-[var(--color-border-soft)] pt-5">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+                      Quantity
+                    </h3>
+                    <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                      Choose how many you would like to add.
+                    </p>
+                  </div>
+                  <QuantityStepper value={quantity} onChange={setQuantity} />
+                </div>
+              </section>
+            </div>
+
+            <div className="shrink-0 border-t border-[var(--color-border-soft)] bg-[var(--color-surface)] p-5 md:p-6">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <span className="text-sm text-[var(--color-text-secondary)]">
+                  Item total
+                </span>
+                <span className="text-lg font-bold text-[var(--color-text-primary)]">
+                  {formatMoneyFromCents(itemTotalCents)}
+                </span>
               </div>
 
               <Button
                 type="button"
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="-mr-2 -mt-2 shrink-0 bg-[var(--color-surface-glass)] text-[var(--color-text-muted)] backdrop-blur hover:text-[var(--color-text-primary)]"
-                aria-label="Close product details"
+                variant="brand"
+                size="lg"
+                disabled={!hasValidOptionSelections || !isAcceptingOrders}
+                onClick={handleAddToCart}
+                className="w-full rounded-2xl"
               >
-                <X className="h-5 w-5" />
+                {isAcceptingOrders ? (
+                  <>
+                    Add to cart
+                    <span className="mx-1">·</span>
+                    {formatMoneyFromCents(itemTotalCents)}
+                  </>
+                ) : (
+                  "Ordering paused"
+                )}
               </Button>
-            </header>
 
-            {product.optionGroups.map((group) => (
-              <ProductOptionGroup
-                key={group.id}
-                group={group}
-                selectedOptionIds={selectedOptionIdsByGroup[group.id] ?? []}
-                onSelect={(optionId) => selectOption(group, optionId)}
-              />
-            ))}
-
-            <section className="mt-6 border-t border-[var(--color-border-soft)] pt-5">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
-                    Quantity
-                  </h3>
-
-                  <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                    Choose how many you would like to add.
-                  </p>
-                </div>
-
-                <QuantityStepper value={quantity} onChange={setQuantity} />
-              </div>
-            </section>
-          </div>
-
-          <footer className="shrink-0 border-t border-[var(--color-border-soft)] bg-[var(--color-surface)] p-5 md:p-6">
-            <div className="mb-4 flex items-center justify-between gap-4">
-              <span className="text-sm text-[var(--color-text-secondary)]">
-                Item total
-              </span>
-
-              <span className="text-lg font-bold text-[var(--color-text-primary)]">
-                {formatMoneyFromCents(itemTotalCents)}
-              </span>
+              {!isAcceptingOrders ? (
+                <p
+                  id={validationId}
+                  role="status"
+                  className="mt-3 text-center text-xs text-[var(--color-warning-strong)]"
+                >
+                  You can inspect this item while ordering is paused.
+                </p>
+              ) : !hasValidOptionSelections ? (
+                <p
+                  id={validationId}
+                  role="status"
+                  className="mt-3 text-center text-xs text-[var(--color-text-muted)]"
+                >
+                  Complete all required selections before adding this item.
+                </p>
+              ) : null}
             </div>
-
-            <Button
-              type="button"
-              variant="brand"
-              size="lg"
-              disabled={!hasValidOptionSelections}
-              onClick={handleAddToCart}
-              className="w-full rounded-2xl"
-            >
-              Add to cart
-              <span className="mx-1">·</span>
-              {formatMoneyFromCents(itemTotalCents)}
-            </Button>
-
-            {!hasValidOptionSelections ? (
-              <p className="mt-3 text-center text-xs text-[var(--color-text-muted)]">
-                Complete all required selections before adding this item.
-              </p>
-            ) : null}
-          </footer>
+          </div>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }

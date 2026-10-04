@@ -1,37 +1,51 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import type { OrderTrackingErrorKind } from "../../api/order-tracking-api";
 
 type OrderTrackingErrorStateProps = {
   orderNumber: string;
-  error?: string | null;
+  errorKind: OrderTrackingErrorKind;
+  message?: string | null;
   onRetry: () => void;
 };
 
 export function OrderTrackingErrorState({
   orderNumber,
-  error,
+  errorKind,
+  message,
   onRetry,
 }: OrderTrackingErrorStateProps) {
   const router = useRouter();
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
 
   return (
-    <main className="min-h-screen bg-[var(--color-page-background)] px-4 py-6 text-[var(--color-text-primary)] md:px-8 md:py-10">
-      <div className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center">
-        <Card className="border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
+    <div className="flex min-h-[70vh] items-center justify-center">
+        <Card role="alert" className="w-full max-w-xl border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-danger-background)] text-2xl font-bold text-[var(--color-danger-foreground)]">
             !
           </div>
 
-          <h1 className="mt-5 text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
-            Unable to load order
+          <h1
+            ref={headingRef}
+            tabIndex={-1}
+            className="mt-5 text-2xl font-bold tracking-tight text-[var(--color-text-primary)]"
+          >
+            {errorKind === "invalid-details"
+              ? "Order not found"
+              : "Tracking unavailable"}
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-[var(--color-text-muted)]">
-            {error ?? "Please check your details and try again."}
+            {message}
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -50,7 +64,6 @@ export function OrderTrackingErrorState({
             </Button>
           </div>
         </Card>
-      </div>
-    </main>
+    </div>
   );
 }

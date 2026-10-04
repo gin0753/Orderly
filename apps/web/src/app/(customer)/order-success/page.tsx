@@ -1,6 +1,13 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
+import { CustomerStatePanel } from "@/components/ui/customer-state-panel";
 import { formatMoneyFromCents } from "@/lib/format-money";
+
+export const metadata: Metadata = {
+  title: "Order received",
+  description: "View your Orderly Kitchen order confirmation.",
+};
 
 type OrderSuccessPageProps = {
   searchParams: Promise<{
@@ -20,9 +27,37 @@ export default async function OrderSuccessPage({
   const totalCents = Number(params.totalCents);
 
   const hasValidTotal = Number.isFinite(totalCents) && totalCents > 0;
+  const hasValidOrderType = orderType === "PICKUP" || orderType === "DELIVERY";
+
+  if (!orderNumber || !hasValidTotal || !hasValidOrderType) {
+    return (
+      <CustomerStatePanel
+        eyebrow="Order confirmation"
+        title="Order details unavailable"
+        description="We couldn’t open this confirmation. You can track an existing order or return to the menu."
+        icon="!"
+        actions={
+          <>
+            <Link
+              href="/"
+              className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl bg-[var(--color-brand-strong)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] hover:bg-[var(--color-text-primary)]"
+            >
+              Browse menu
+            </Link>
+            <Link
+              href="/track-order"
+              className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-[var(--color-border)] px-6 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
+            >
+              Track order
+            </Link>
+          </>
+        }
+      />
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-[var(--color-background)] px-4 py-8 sm:px-6 lg:px-8">
+    <div className="bg-[var(--color-background)] px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-2xl flex-col items-center rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-14 text-center shadow-sm sm:px-10">
         <div className="flex size-16 items-center justify-center rounded-full bg-[var(--color-brand-soft)] text-3xl">
           ✓
@@ -37,8 +72,8 @@ export default async function OrderSuccessPage({
         </h1>
 
         <p className="mt-4 max-w-md text-[var(--color-text-secondary)]">
-          We&apos;ve received your order and the restaurant will start preparing
-          it shortly.
+          We&apos;ve received your order. Use order tracking for the latest
+          status.
         </p>
 
         <div className="mt-8 w-full rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface-hover)] p-5 text-left">
@@ -46,50 +81,33 @@ export default async function OrderSuccessPage({
             <span className="text-sm text-[var(--color-text-secondary)]">
               Status
             </span>
-            <span className="rounded-full bg-[var(--color-brand)] px-3 py-1 text-xs font-semibold text-[var(--color-text-inverse)]">
+            <span className="rounded-full bg-[var(--color-brand-strong)] px-3 py-1 text-xs font-semibold text-[var(--color-text-inverse)]">
               Pending
             </span>
           </div>
 
           <div className="grid gap-4 pt-4 text-sm">
-            {orderNumber ? (
-              <SummaryRow label="Order number" value={`#${orderNumber}`} />
-            ) : null}
+            <SummaryRow label="Order number" value={`#${orderNumber}`} />
 
-            {orderType ? (
-              <SummaryRow
-                label="Fulfillment"
-                value={orderType === "DELIVERY" ? "Delivery" : "Pickup"}
-              />
-            ) : null}
+            <SummaryRow
+              label="Fulfillment"
+              value={orderType === "DELIVERY" ? "Delivery" : "Pickup"}
+            />
 
-            {hasValidTotal ? (
-              <SummaryRow
-                label="Total"
-                value={formatMoneyFromCents(totalCents)}
-              />
-            ) : null}
-
-            <SummaryRow label="Payment" value="Unpaid" />
+            <SummaryRow
+              label="Total"
+              value={formatMoneyFromCents(totalCents)}
+            />
           </div>
         </div>
 
         <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row">
-          {orderNumber ? (
-            <Link
-              href={`/track-order/${encodeURIComponent(orderNumber)}`}
-              className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
-            >
-              Track your order
-            </Link>
-          ) : (
-            <Link
-              href="/track-order"
-              className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
-            >
-              Track an order
-            </Link>
-          )}
+          <Link
+            href={`/track-order/${encodeURIComponent(orderNumber)}`}
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-[var(--color-brand-strong)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-text-primary)]"
+          >
+            Track your order
+          </Link>
 
           <Link
             href="/"
@@ -99,11 +117,8 @@ export default async function OrderSuccessPage({
           </Link>
         </div>
 
-        <p className="mt-6 text-xs text-[var(--color-text-muted)]">
-          Demo checkout only. Payment processing will be added in a later stage.
-        </p>
       </div>
-    </main>
+    </div>
   );
 }
 

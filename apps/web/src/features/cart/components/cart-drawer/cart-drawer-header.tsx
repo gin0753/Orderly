@@ -1,26 +1,32 @@
 import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import type { Ref } from "react";
 
 type CartDrawerHeaderProps = {
   itemCount: number;
   isEmpty: boolean;
   onClose: () => void;
+  closeButtonRef?: Ref<HTMLButtonElement>;
 };
 
 export function CartDrawerHeader({
   itemCount,
   isEmpty,
   onClose,
+  closeButtonRef,
 }: CartDrawerHeaderProps) {
   return (
-    <header className="flex items-center justify-between border-b border-[var(--color-border-soft)] px-5 py-4">
+    <div className="flex items-center justify-between border-b border-[var(--color-border-soft)] px-5 py-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-brand-text)]">
           Orderly
         </p>
 
-        <h2 className="mt-1 text-lg font-bold text-[var(--color-text-primary)]">
+        <h2
+          id="cart-drawer-title"
+          className="mt-1 text-lg font-bold text-[var(--color-text-primary)]"
+        >
           Your Cart
         </h2>
 
@@ -32,15 +38,16 @@ export function CartDrawerHeader({
       </div>
 
       <Button
+        ref={closeButtonRef}
         type="button"
         variant="ghost"
         size="icon"
         onClick={onClose}
-        className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+        className="size-11 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
         aria-label="Close cart"
       >
         <X className="h-5 w-5" />
       </Button>
-    </header>
+    </div>
   );
 }

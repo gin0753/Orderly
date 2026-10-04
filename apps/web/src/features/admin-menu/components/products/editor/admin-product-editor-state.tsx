@@ -47,6 +47,7 @@ export function AdminProductEditorError({
 }: AdminProductEditorErrorProps) {
   return (
     <Card
+      role="alert"
       className={[
         "border border-[var(--color-danger-border)]",
         "bg-[var(--color-danger-surface)]",

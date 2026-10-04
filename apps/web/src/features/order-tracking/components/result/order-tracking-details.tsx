@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 
 import type { OrderTrackingResponse } from "../../types/order-tracking.types";
-import { getEstimatedTimeLabel } from "../../utils/order-status-copy";
 
 type OrderTrackingDetailsProps = {
   order: OrderTrackingResponse;
@@ -18,7 +17,7 @@ function DetailCard({ label, children, className = "" }: DetailCardProps) {
     <div
       className={`rounded-2xl bg-[var(--color-surface-muted)] p-4 ${className}`}
     >
-      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">
+      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
         {label}
       </p>
 
@@ -53,9 +52,6 @@ export function OrderTrackingDetails({ order }: OrderTrackingDetailsProps) {
           <p className="mt-2 text-sm font-bold text-[var(--color-text-primary)]">
             {order.orderType === "PICKUP" ? "Pickup" : "Delivery"}
           </p>
-          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-            {getEstimatedTimeLabel(order)}
-          </p>
         </DetailCard>
 
         <DetailCard label="Customer">
@@ -67,20 +63,13 @@ export function OrderTrackingDetails({ order }: OrderTrackingDetailsProps) {
           </p>
         </DetailCard>
 
-        <DetailCard
-          label={
-            order.orderType === "PICKUP"
-              ? "Pickup location"
-              : "Delivery address"
-          }
-          className="sm:col-span-2"
-        >
-          <p className="mt-2 text-sm font-medium text-[var(--color-text-primary)]">
-            {order.orderType === "PICKUP"
-              ? "123 Collins St, Melbourne VIC 3000"
-              : formattedAddress || "Delivery address unavailable"}
-          </p>
-        </DetailCard>
+        {order.orderType === "DELIVERY" ? (
+          <DetailCard label="Delivery address" className="sm:col-span-2">
+            <p className="mt-2 text-sm font-medium text-[var(--color-text-primary)]">
+              {formattedAddress || "Delivery address unavailable"}
+            </p>
+          </DetailCard>
+        ) : null}
 
         {order.notes ? (
           <DetailCard label="Order notes" className="sm:col-span-2">

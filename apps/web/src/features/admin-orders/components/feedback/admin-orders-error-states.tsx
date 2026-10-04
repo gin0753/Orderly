@@ -15,7 +15,7 @@ export function AdminOrdersLoadErrorState({
   onRetry,
 }: AdminOrdersLoadErrorStateProps) {
   return (
-    <Card className="rounded-3xl border-[var(--color-danger-border)] bg-[var(--color-danger-surface)]">
+    <Card role="alert" className="rounded-3xl border-[var(--color-danger-border)] bg-[var(--color-danger-surface)]">
       <CardContent className="flex flex-col items-center justify-center p-10 text-center">
         <span className="flex size-12 items-center justify-center rounded-full bg-[var(--color-surface)]/70 text-[var(--color-danger-strong)]">
           <AlertTriangle className="size-5" />
@@ -59,7 +59,7 @@ export function AdminOrdersInlineError({
   onRetry,
 }: AdminOrdersInlineErrorProps) {
   return (
-    <Card className="mb-5 rounded-3xl border-[var(--color-danger-border)] bg-[var(--color-danger-surface)]">
+    <Card role="alert" className="mb-5 rounded-3xl border-[var(--color-danger-border)] bg-[var(--color-danger-surface)]">
       <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-start gap-3">
           <AlertCircle className="mt-0.5 size-4 shrink-0 text-[var(--color-danger-strong)]" />

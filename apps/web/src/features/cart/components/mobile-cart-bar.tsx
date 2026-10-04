@@ -11,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatMoneyFromCents } from "@/lib/format-money";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setCartOpener } from "@/features/cart/utils/cart-focus";
+import { useHasHydrated } from "@/hooks/use-has-hydrated";
 
 export function MobileCartBar() {
   const dispatch = useAppDispatch();
@@ -18,8 +20,9 @@ export function MobileCartBar() {
   const itemCount = useAppSelector(selectCartItemCount);
   const subtotalCents = useAppSelector(selectCartSubtotalCents);
   const isEmpty = useAppSelector(selectIsCartEmpty);
+  const hasHydrated = useHasHydrated();
 
-  if (isEmpty) {
+  if (!hasHydrated || isEmpty) {
     return null;
   }
 
@@ -29,7 +32,10 @@ export function MobileCartBar() {
         type="button"
         variant="brand"
         size="lg"
-        onClick={() => dispatch(openCart())}
+        onClick={(event) => {
+          setCartOpener(event.currentTarget);
+          dispatch(openCart());
+        }}
         className="w-full justify-between rounded-2xl px-5"
       >
         <span className="flex items-center gap-3">

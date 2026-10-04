@@ -15,14 +15,14 @@ const options: Array<{
   {
     value: "pickup",
     title: "Pickup",
-    description: "20–30 min",
+    description: "Collect your order from the restaurant",
     price: "Free",
     icon: "🛍️",
   },
   {
     value: "delivery",
     title: "Delivery",
-    description: "30–45 min",
+    description: "Have your order delivered to your address",
     price: "$3.99",
     icon: "🚗",
   },
@@ -74,7 +74,7 @@ export function FulfillmentSelector({
                   className={[
                     "mt-1 block text-sm font-semibold",
                     option.value === "pickup"
-                      ? "text-[var(--color-success)]"
+                      ? "text-[var(--color-success-strong)]"
                       : "text-[var(--color-text-primary)]",
                   ].join(" ")}
                 >

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -27,6 +27,8 @@ import { createOrder } from "@/features/checkout/api/create-order";
 import { CheckoutTransition } from "./checkout-transition";
 import { Button } from "@/components/ui/button";
 import { saveTrackingLookup } from "@/features/order-tracking/utils/order-tracking-storage";
+import { ApiError } from "@/lib/api-fetch";
+import { useHasHydrated } from "@/hooks/use-has-hydrated";
 
 const initialFormState: CheckoutFormState = {
   fulfillmentType: "pickup",
@@ -41,12 +43,22 @@ const initialFormState: CheckoutFormState = {
   orderNotes: "",
 };
 
-export function CheckoutPageClient() {
+type CheckoutPageClientProps = {
+  initialIsAcceptingOrders?: boolean;
+};
+
+export function CheckoutPageClient({
+  initialIsAcceptingOrders = true,
+}: CheckoutPageClientProps) {
   const [form, setForm] = useState<CheckoutFormState>(initialFormState);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isRedirectingToSuccess, setIsRedirectingToSuccess] = useState(false);
+  const [isAcceptingOrders, setIsAcceptingOrders] = useState(
+    initialIsAcceptingOrders,
+  );
+  const submitErrorRef = useRef<HTMLDivElement>(null);
 
   const fieldErrors = getCheckoutFieldErrors(form);
   const hasFieldErrors = hasCheckoutFieldErrors(fieldErrors);
@@ -60,6 +72,7 @@ export function CheckoutPageClient() {
 
   const cartItems = useAppSelector((state) => state.cart.items);
   const hasHydrated = useAppSelector(selectCartHasHydrated);
+  const hasClientHydrated = useHasHydrated();
 
   const subtotalCents = useMemo(() => {
     return getCartSubtotalCents(cartItems);
@@ -72,6 +85,12 @@ export function CheckoutPageClient() {
 
   const isCartEmpty = cartItems.length === 0;
 
+  useEffect(() => {
+    if (submitError) {
+      submitErrorRef.current?.focus();
+    }
+  }, [submitError]);
+
   function updateForm(patch: Partial<CheckoutFormState>) {
     setForm((current) => ({
       ...current,
@@ -83,7 +102,16 @@ export function CheckoutPageClient() {
     setHasSubmitted(true);
     setSubmitError(null);
 
-    if (hasFieldErrors || isSubmitting) {
+    if (hasFieldErrors) {
+      window.requestAnimationFrame(() => {
+        document
+          .querySelector<HTMLElement>('[aria-invalid="true"]')
+          ?.focus();
+      });
+      return;
+    }
+
+    if (isSubmitting || !isAcceptingOrders) {
       return;
     }
 
@@ -112,17 +140,27 @@ export function CheckoutPageClient() {
         )}&totalCents=${order.totalCents}&orderType=${order.orderType}`,
       );
     } catch (error) {
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong while placing your order.",
-      );
+      const availabilityChanged =
+        error instanceof ApiError &&
+        error.status === 400 &&
+        /not currently (accepting|available)/i.test(error.message);
+
+      if (availabilityChanged) {
+        setIsAcceptingOrders(false);
+        setSubmitError(
+          "Ordering is paused. Your details are still here, and you can try again when the kitchen is accepting orders.",
+        );
+      } else {
+        setSubmitError(
+          "We couldn’t place your order. Please check your details and try again.",
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  if (!hasHydrated) {
+  if (!hasClientHydrated || !hasHydrated) {
     return <CheckoutSkeleton />;
   }
 
@@ -132,7 +170,7 @@ export function CheckoutPageClient() {
 
   if (isCartEmpty) {
     return (
-      <main className="min-h-screen bg-[var(--color-background)] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="bg-[var(--color-background)] px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-2xl flex-col items-center justify-center rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-16 text-center shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-brand-text)]">
             Checkout
@@ -148,44 +186,55 @@ export function CheckoutPageClient() {
 
           <Link
             href="/"
-            className="mt-8 inline-flex h-12 items-center justify-center rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
+            className="mt-8 inline-flex h-12 items-center justify-center rounded-2xl bg-[var(--color-brand-strong)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-text-primary)]"
           >
             Browse menu
           </Link>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[var(--color-background)] px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-10">
+    <div className="bg-[var(--color-background)] px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-10">
       <div className="mx-auto max-w-7xl">
-        <header className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 shadow-sm sm:px-8">
-          <h1 className="sr-only">Checkout</h1>
-          <div className="flex items-center justify-between gap-4">
-            <Link
-              href="/"
-              className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]"
-            >
-              Orderly
-              <span className="text-[var(--color-brand)]">.</span>
-            </Link>
+        <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 shadow-sm sm:px-8">
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">
+            Checkout
+          </h1>
+          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+            Review your order and enter your details.
+          </p>
 
-            <div className="hidden items-center gap-2 text-sm text-[var(--color-text-secondary)] sm:flex">
-              <span>🔒</span>
-              <span>Secure checkout</span>
-            </div>
-          </div>
-
-          <div className="mt-8">
+          <div className="mt-6">
             <CheckoutStepIndicator />
           </div>
-        </header>
+        </div>
+
+        {!isAcceptingOrders ? (
+          <section
+            role="status"
+            className="mt-6 rounded-2xl border border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] p-4"
+          >
+            <h2 className="font-bold text-[var(--color-warning-strong)]">
+              Ordering is paused
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-[var(--color-text-secondary)]">
+              Your cart and details are preserved. Checkout will be available
+              when the kitchen is accepting orders again.
+            </p>
+          </section>
+        ) : null}
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px]">
           <div className="grid gap-5">
             {submitError ? (
-              <div className="rounded-2xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-4 text-sm font-medium text-[var(--color-danger-strong)]">
+              <div
+                ref={submitErrorRef}
+                tabIndex={-1}
+                role="alert"
+                className="rounded-2xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-4 text-sm font-medium text-[var(--color-danger-strong)]"
+              >
                 {submitError}
               </div>
             ) : null}
@@ -219,6 +268,7 @@ export function CheckoutPageClient() {
               disabled={isSubmitting}
               onSubmitLabel={isSubmitting ? "Placing order..." : "Place Order"}
               onSubmit={handleContinue}
+              isAcceptingOrders={isAcceptingOrders}
             />
           </div>
         </div>
@@ -235,14 +285,18 @@ export function CheckoutPageClient() {
 
           <Button
             type="button"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isAcceptingOrders}
             onClick={handleContinue}
-            className="h-12 rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)] disabled:cursor-not-allowed disabled:bg-[var(--color-surface-disabled)] disabled:text-[var(--color-text-disabled)]"
+            className="h-12 rounded-2xl px-6 text-sm font-semibold"
           >
-            {isSubmitting ? "Placing..." : "Place Order →"}
+            {!isAcceptingOrders
+              ? "Ordering paused"
+              : isSubmitting
+                ? "Placing..."
+                : "Place Order →"}
           </Button>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

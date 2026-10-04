@@ -13,6 +13,7 @@ import {
 } from "../checkout-utils";
 import type { FulfillmentType } from "../checkout-types";
 import { Button } from "@/components/ui/button";
+import { setCartOpener } from "@/features/cart/utils/cart-focus";
 
 type CheckoutOrderSummaryProps = {
   items: CartItem[];
@@ -22,6 +23,7 @@ type CheckoutOrderSummaryProps = {
   onSubmitLabel?: string;
   disabled?: boolean;
   onSubmit?: () => void;
+  isAcceptingOrders?: boolean;
 };
 
 export function CheckoutOrderSummary({
@@ -32,6 +34,7 @@ export function CheckoutOrderSummary({
   onSubmitLabel = "Place Order",
   disabled = false,
   onSubmit,
+  isAcceptingOrders = true,
 }: CheckoutOrderSummaryProps) {
   const dispatch = useAppDispatch();
   const deliveryFeeCents = getDeliveryFeeCents(subtotalCents, fulfillmentType);
@@ -62,7 +65,10 @@ export function CheckoutOrderSummary({
         <Button
           type="button"
           variant="ghost"
-          onClick={() => dispatch(openCart())}
+          onClick={(event) => {
+            setCartOpener(event.currentTarget);
+            dispatch(openCart());
+          }}
           className="text-sm font-semibold text-[var(--color-brand-text)] hover:text-[var(--color-brand-text-hover)]"
         >
           Edit cart
@@ -182,16 +188,21 @@ export function CheckoutOrderSummary({
 
       <Button
         type="button"
-        disabled={disabled}
+        disabled={disabled || !isAcceptingOrders}
         onClick={onSubmit}
-        className="mt-6 h-[52px] w-full rounded-2xl bg-[var(--color-brand)] px-5 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)] disabled:cursor-not-allowed disabled:bg-[var(--color-surface-disabled)] disabled:text-[var(--color-text-disabled)]"
+        className="mt-6 h-[52px] w-full rounded-2xl"
       >
-        {onSubmitLabel}
+        {isAcceptingOrders ? onSubmitLabel : "Ordering paused"}
       </Button>
 
-      <p className="mt-4 text-center text-xs text-[var(--color-text-muted)]">
-        🔒 Your information is secure and encrypted
-      </p>
+      {!isAcceptingOrders ? (
+        <p
+          role="status"
+          className="mt-4 text-center text-xs leading-5 text-[var(--color-warning-strong)]"
+        >
+          You can edit your cart and details while ordering is paused.
+        </p>
+      ) : null}
     </aside>
   );
 }

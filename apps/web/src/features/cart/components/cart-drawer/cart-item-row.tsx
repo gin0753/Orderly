@@ -51,7 +51,7 @@ export function CartItemRow({
             variant="ghost"
             size="icon"
             onClick={onRemove}
-            className="-mr-2 -mt-2 h-8 w-8 shrink-0 text-[var(--color-text-subtle)] hover:text-[var(--color-danger)]"
+            className="-mr-2 -mt-2 h-8 w-8 shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-danger-strong)]"
             aria-label={`Remove ${item.product.name}`}
           >
             <Trash2 className="h-4 w-4" />

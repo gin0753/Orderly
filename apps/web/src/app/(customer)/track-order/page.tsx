@@ -2,14 +2,14 @@ import { Card } from "@/components/ui/card";
 import { OrderLookupForm } from "@/features/order-tracking/components/lookup/order-lookup-form";
 
 export const metadata = {
-  title: "Track Order | Orderly",
-  description: "Track your Orderly order status in real time.",
+  title: "Track order",
+  description: "View the latest status of your Orderly Kitchen order.",
 };
 
 const trackingBenefits = [
   "Current order status",
   "Pickup or delivery details",
-  "Estimated ready time",
+  "Latest order status",
   "Items and order total",
 ];
 
@@ -38,7 +38,7 @@ export default async function TrackOrderPage({
   const params = await searchParams;
   const initialOrderNumber = params.orderNumber ?? "";
   return (
-    <main className="min-h-screen bg-[var(--color-page-background)] px-4 py-6 text-[var(--color-text-primary)] md:px-8 md:py-10">
+    <div className="bg-[var(--color-page-background)] px-4 py-6 text-[var(--color-text-primary)] md:px-8 md:py-10">
       <div className="mx-auto max-w-7xl">
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <Card className="overflow-hidden border-[var(--color-border)] bg-[var(--color-surface)] p-0">
@@ -49,7 +49,7 @@ export default async function TrackOrderPage({
                 </p>
 
                 <h1 className="max-w-lg text-4xl font-bold leading-tight tracking-[-0.04em] md:text-5xl">
-                  Track your order in real time
+                  Check your order status
                 </h1>
 
                 <p className="mt-5 max-w-lg text-base leading-7 text-[var(--color-text-secondary)]">
@@ -107,7 +107,7 @@ export default async function TrackOrderPage({
               <div className="mt-5 space-y-4">
                 {trackingBenefits.map((item) => (
                   <div key={item} className="flex items-center gap-3">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand)] text-xs font-bold text-[var(--color-text-inverse)]">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-strong)] text-xs font-bold text-[var(--color-text-inverse)]">
                       ✓
                     </span>
                     <span className="text-sm font-medium text-[var(--color-text-strong)]">
@@ -132,6 +132,6 @@ export default async function TrackOrderPage({
           </aside>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

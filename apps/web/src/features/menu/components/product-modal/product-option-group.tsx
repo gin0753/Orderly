@@ -84,7 +84,7 @@ export function ProductOptionGroup({
                     className={[
                       "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
                       isSelected
-                        ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white"
+                        ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)]"
                         : "border-[var(--color-border)]",
                     ].join(" ")}
                   >
@@ -130,7 +130,7 @@ export function ProductOptionGroup({
                     className={[
                       "flex h-5 w-5 items-center justify-center rounded border",
                       isSelected
-                        ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white"
+                        ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)]"
                         : "border-[var(--color-border)]",
                     ].join(" ")}
                   >

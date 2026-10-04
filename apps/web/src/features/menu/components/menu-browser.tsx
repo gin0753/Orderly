@@ -5,6 +5,7 @@ import { MobileCartBar } from "@/features/cart/components/mobile-cart-bar";
 import { addItem, openCart } from "@/features/cart/cart-slice";
 import { createCartItem } from "@/features/cart/cart-utils";
 import { useAppDispatch } from "@/store/hooks";
+import { setCartOpener } from "@/features/cart/utils/cart-focus";
 
 import { CategoryTabs } from "./category-tabs";
 import { EmptyMenuState } from "./empty-menu-state";
@@ -14,9 +15,13 @@ import { MenuCategory, MenuProduct } from "../types";
 
 type MenuBrowserProps = {
   categories: MenuCategory[];
+  isAcceptingOrders: boolean;
 };
 
-export function MenuBrowser({ categories }: MenuBrowserProps) {
+export function MenuBrowser({
+  categories,
+  isAcceptingOrders,
+}: MenuBrowserProps) {
   const dispatch = useAppDispatch();
 
   const [activeCategoryId, setActiveCategoryId] = useState("all");
@@ -24,6 +29,7 @@ export function MenuBrowser({ categories }: MenuBrowserProps) {
     null,
   );
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [productOpener, setProductOpener] = useState<HTMLElement | null>(null);
 
   const visibleCategories = useMemo(() => {
     if (activeCategoryId === "all") {
@@ -33,14 +39,19 @@ export function MenuBrowser({ categories }: MenuBrowserProps) {
     return categories.filter((category) => category.id === activeCategoryId);
   }, [activeCategoryId, categories]);
 
-  function handleProductSelect(product: MenuProduct) {
+  function handleProductSelect(product: MenuProduct, opener: HTMLElement) {
+    setProductOpener(opener);
     setSelectedProduct(product);
     setIsProductModalOpen(true);
   }
 
-  function handleQuickAdd(product: MenuProduct) {
+  function handleQuickAdd(product: MenuProduct, opener: HTMLElement) {
+    if (!isAcceptingOrders) {
+      return;
+    }
+
     if (product.optionGroups.length > 0) {
-      handleProductSelect(product);
+      handleProductSelect(product, opener);
       return;
     }
 
@@ -56,6 +67,7 @@ export function MenuBrowser({ categories }: MenuBrowserProps) {
       quantity: 1,
     });
 
+    setCartOpener(opener);
     dispatch(addItem(cartItem));
     dispatch(openCart());
   }
@@ -83,6 +95,24 @@ export function MenuBrowser({ categories }: MenuBrowserProps) {
         onCategoryChange={handleCategoryChange}
       />
 
+      {!isAcceptingOrders ? (
+        <section
+          role="status"
+          className="mt-5 rounded-2xl border border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] px-5 py-4"
+        >
+          <h2 className="text-base font-bold text-[var(--color-warning-strong)]">
+            Ordering is paused
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-[var(--color-text-secondary)]">
+            You can still browse the menu. Checkout will be available when the
+            kitchen is accepting orders again.
+          </p>
+          <p className="mt-2 text-sm font-semibold text-[var(--color-warning-strong)]">
+            Browsing remains available
+          </p>
+        </section>
+      ) : null}
+
       <div className="pb-28 md:pb-0">
         {visibleCategories.map((category) => (
           <MenuSection
@@ -93,6 +123,7 @@ export function MenuBrowser({ categories }: MenuBrowserProps) {
             products={category.products}
             onProductSelect={handleProductSelect}
             onQuickAdd={handleQuickAdd}
+            isAcceptingOrders={isAcceptingOrders}
           />
         ))}
       </div>
@@ -101,9 +132,12 @@ export function MenuBrowser({ categories }: MenuBrowserProps) {
         <ProductModal
           key={selectedProduct.id}
           product={selectedProduct}
+          isAcceptingOrders={isAcceptingOrders}
+          opener={productOpener}
           onClose={() => {
             setIsProductModalOpen(false);
             setSelectedProduct(null);
+            setProductOpener(null);
           }}
         />
       ) : null}

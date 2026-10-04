@@ -89,7 +89,7 @@ export function CustomerDetailsForm({
 
 function FieldError({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-sm font-medium text-[var(--color-danger)]">
+    <span className="text-sm font-medium text-[var(--color-danger-strong)]">
       {children}
     </span>
   );

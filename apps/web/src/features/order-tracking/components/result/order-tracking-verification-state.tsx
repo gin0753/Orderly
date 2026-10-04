@@ -13,8 +13,7 @@ export function OrderTrackingVerificationState({
   const router = useRouter();
 
   return (
-    <main className="min-h-screen bg-[var(--color-page-background)] px-4 py-6 text-[var(--color-text-primary)] md:px-8 md:py-10">
-      <div className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center">
+    <div className="flex min-h-[70vh] items-center justify-center">
         <Card className="border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-notice-background)] text-2xl">
             🔒
@@ -39,7 +38,6 @@ export function OrderTrackingVerificationState({
             Track order
           </Button>
         </Card>
-      </div>
-    </main>
+    </div>
   );
 }

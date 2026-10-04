@@ -11,14 +11,16 @@ import type { MenuProduct } from "../types";
 
 type ProductCardProps = {
   product: MenuProduct;
-  onProductSelect: (product: MenuProduct) => void;
-  onQuickAdd: (product: MenuProduct) => void;
+  onProductSelect: (product: MenuProduct, opener: HTMLElement) => void;
+  onQuickAdd: (product: MenuProduct, opener: HTMLElement) => void;
+  isAcceptingOrders?: boolean;
 };
 
 export function ProductCard({
   product,
   onProductSelect,
   onQuickAdd,
+  isAcceptingOrders = true,
 }: ProductCardProps) {
   const price = formatMoneyFromCents(product.priceCents);
 
@@ -27,7 +29,7 @@ export function ProductCard({
       <article>
         <button
           type="button"
-          onClick={() => onProductSelect(product)}
+          onClick={(event) => onProductSelect(product, event.currentTarget)}
           className="block w-full cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-inset"
           aria-label={`View ${product.name}`}
         >
@@ -65,19 +67,25 @@ export function ProductCard({
             type="button"
             variant="outlineBrand"
             size="sm"
-            onClick={() => onQuickAdd(product)}
+            onClick={(event) => onQuickAdd(product, event.currentTarget)}
+            disabled={!isAcceptingOrders}
             className="hidden sm:inline-flex"
           >
-            Add
+            {isAcceptingOrders ? "Add" : "Paused"}
           </Button>
 
           <Button
             type="button"
             variant="brand"
             size="icon"
-            onClick={() => onQuickAdd(product)}
+            onClick={(event) => onQuickAdd(product, event.currentTarget)}
+            disabled={!isAcceptingOrders}
             className="sm:hidden"
-            aria-label={`Quick add ${product.name}`}
+            aria-label={
+              isAcceptingOrders
+                ? `Quick add ${product.name}`
+                : `Ordering paused for ${product.name}`
+            }
           >
             <Plus className="h-4 w-4" />
           </Button>

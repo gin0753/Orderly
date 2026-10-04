@@ -21,7 +21,14 @@ jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: pushMock }),
   usePathname: () => pathname,
 }));
-jest.mock("@/features/order-tracking/api/order-tracking-api", () => ({ lookupGuestOrder: jest.fn() }));
+jest.mock("@/features/order-tracking/api/order-tracking-api", () => ({
+  lookupGuestOrder: jest.fn(),
+  OrderTrackingLookupError: class OrderTrackingLookupError extends Error {
+    kind = "unavailable";
+  },
+  TRACKING_UNAVAILABLE_MESSAGE:
+    "Tracking is temporarily unavailable. Try again in a moment.",
+}));
 
 beforeEach(() => {
   window.sessionStorage.clear();
@@ -35,7 +42,7 @@ it("uses one customer header on tracking with Orders active and a working cart",
   render(<Provider store={store}><CustomerLayout>{page}</CustomerLayout></Provider>);
   expect(screen.getAllByRole("banner")).toHaveLength(1);
   expect(screen.getByRole("link", { name: "Orders" })).toHaveAttribute("aria-current", "page");
-  expect(screen.getByRole("link", { name: "Menu" })).toHaveAttribute("href", "/");
+  expect(screen.getAllByRole("link", { name: "Menu" })).toHaveLength(2);
   expect(screen.queryByRole("link", { name: "Back to menu" })).not.toBeInTheDocument();
   expect(screen.getByDisplayValue("ORD-123")).toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: "Open cart" }));
@@ -61,7 +68,7 @@ it("edits the cart in checkout while preserving entered customer details", async
   await userEvent.type(screen.getByRole("textbox", { name: "Full name" }), "Sam Customer");
   await userEvent.click(screen.getByRole("button", { name: "Edit cart" }));
   expect(store.getState().cart.isCartOpen).toBe(true);
-  await userEvent.click(screen.getByRole("button", { name: "Close cart drawer" }));
+  await userEvent.click(screen.getByRole("button", { name: "Close cart" }));
   expect(screen.getByRole("textbox", { name: "Full name" })).toHaveValue("Sam Customer");
   expect(pushMock).not.toHaveBeenCalled();
   expect(screen.queryByText("Review")).not.toBeInTheDocument();

@@ -3,7 +3,7 @@ import { cn } from "@/lib/cn";
 
 import type { OrderTrackingResponse } from "../../types/order-tracking.types";
 import {
-  getEstimatedTimeLabel,
+  getOrderStatusSummary,
   isTerminalOrderStatus,
   ORDER_STATUS_BADGE_CLASS_NAMES,
   ORDER_STATUS_LABELS,
@@ -43,10 +43,10 @@ export function OrderTrackingHeader({
           </div>
 
           <p className="mt-3 text-sm font-medium text-[var(--color-text-muted)]">
-            {getEstimatedTimeLabel(order)}
+            {getOrderStatusSummary(order)}
           </p>
 
-          <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
             Placed {formatDateTime(order.createdAt)}
           </p>
         </div>

@@ -47,7 +47,7 @@ export function AdminOrdersPage() {
     searchTerm.trim().length > 0;
 
   return (
-    <main className="min-h-screen bg-[var(--color-background)] text-[var(--color-text-primary)]">
+    <div className="bg-[var(--color-background)] text-[var(--color-text-primary)]">
       <div className="mx-auto max-w-7xl px-4 py-4 md:px-8 md:py-6">
         <section className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
@@ -60,7 +60,7 @@ export function AdminOrdersPage() {
             </h1>
 
             <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              Manage and update incoming orders in real time.
+              Manage and update incoming orders.
             </p>
           </div>
 
@@ -132,6 +132,6 @@ export function AdminOrdersPage() {
           </>
         )}
       </div>
-    </main>
+    </div>
   );
 }

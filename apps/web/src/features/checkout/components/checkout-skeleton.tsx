@@ -26,12 +26,11 @@ export function CheckoutSkeletonCard({
 
 export function CheckoutSkeleton() {
   return (
-    <main className="min-h-screen bg-[var(--color-background)] px-4 py-6 pb-10 sm:px-6 lg:px-8">
+    <div className="bg-[var(--color-background)] px-4 py-6 pb-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <header className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 shadow-sm sm:px-8">
+        <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 shadow-sm sm:px-8">
           <div className="flex items-center justify-between gap-4">
             <SkeletonLine className="h-8 w-36" />
-            <SkeletonLine className="hidden h-5 w-32 sm:block" />
           </div>
 
           <div className="mt-8 flex items-center justify-center gap-6">
@@ -47,14 +46,8 @@ export function CheckoutSkeleton() {
               <SkeletonLine className="h-3 w-12" />
             </div>
 
-            <SkeletonLine className="hidden h-px w-24 sm:block" />
-
-            <div className="flex flex-col items-center gap-2">
-              <SkeletonCircle className="size-9" />
-              <SkeletonLine className="h-3 w-16" />
-            </div>
           </div>
-        </header>
+        </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px]">
           <div className="space-y-5">
@@ -219,6 +212,6 @@ export function CheckoutSkeleton() {
           </aside>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
