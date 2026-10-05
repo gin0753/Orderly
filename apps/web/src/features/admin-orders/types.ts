@@ -8,7 +8,7 @@ export type AdminOrderStatus =
 
 export type AdminOrderType = "PICKUP" | "DELIVERY";
 
-export type AdminPaymentStatus = "PENDING" | "PAID" | "FAILED" | "REFUNDED";
+export type AdminPaymentStatus = "UNPAID" | "PAID" | "FAILED" | "REFUNDED";
 
 export type AdminOrderItem = {
   id: string;
@@ -58,9 +58,11 @@ export type AdminOrder = {
   serviceFeeCents: number;
   totalCents: number;
 
-  deliveryAddress?: string | null;
-  deliverySuburb?: string | null;
-  deliveryPostcode?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postcode?: string | null;
   notes?: string | null;
 
   items: AdminOrderItem[];

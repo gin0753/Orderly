@@ -24,7 +24,7 @@ type AdminOrderDetailProps = {
 };
 
 function getDeliveryAddress(order: AdminOrder) {
-  return [order.deliveryAddress, order.deliverySuburb, order.deliveryPostcode]
+  return [order.addressLine1, order.addressLine2, order.city, order.state, order.postcode]
     .filter(Boolean)
     .join(", ");
 }

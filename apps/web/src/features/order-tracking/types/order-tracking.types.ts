@@ -8,7 +8,7 @@ export type OrderStatus =
 
 export type OrderType = "PICKUP" | "DELIVERY";
 
-export type PaymentStatus = "PENDING" | "PAID" | "FAILED" | "REFUNDED";
+export type PaymentStatus = "UNPAID" | "PAID" | "FAILED" | "REFUNDED";
 
 export type SubmitStatus = "idle" | "submitting" | "navigating";
 

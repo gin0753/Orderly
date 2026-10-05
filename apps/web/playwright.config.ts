@@ -54,6 +54,8 @@ export default defineConfig({
         WEB_ORIGIN: "http://localhost:3000",
         JWT_ACCESS_SECRET: "browser-test-access-secret-at-least-32-characters",
         JWT_REFRESH_SECRET: "browser-test-refresh-secret-at-least-32-characters",
+        CUSTOMER_JWT_ACCESS_SECRET: "browser-customer-access-secret-at-least-32-characters",
+        CUSTOMER_JWT_REFRESH_SECRET: "browser-customer-refresh-secret-at-least-32-characters",
         JWT_ACCESS_TTL: "15m",
         JWT_REFRESH_TTL: "7d",
         JWT_REFRESH_TTL_DAYS: "7",

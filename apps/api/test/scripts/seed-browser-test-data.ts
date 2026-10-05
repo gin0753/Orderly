@@ -18,6 +18,8 @@ const { databaseUrl } = assertDestructiveTestDatabaseAllowed(process.env);
 const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
 
 async function main() {
+  await prisma.customerSession.deleteMany();
+  await prisma.customerUser.deleteMany();
   await prisma.adminSession.deleteMany();
   await prisma.adminUser.deleteMany();
   await prisma.orderItemOption.deleteMany();

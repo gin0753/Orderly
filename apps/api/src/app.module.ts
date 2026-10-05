@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { AuthModule } from './modules/auth/auth.module';
+import { CustomerAuthModule } from './modules/customer-auth/customer-auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { MenuModule } from './modules/menu/menu.module';
 import { OrdersModule } from './modules/orders/orders.module';
@@ -28,6 +29,7 @@ import { PrismaModule } from './prisma/prisma.module';
     MenuModule,
     OrdersModule,
     AuthModule,
+    CustomerAuthModule,
   ],
   providers: [
     {

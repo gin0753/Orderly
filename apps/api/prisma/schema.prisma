@@ -279,3 +279,31 @@ model AdminSession {
 
   @@index([adminUserId])
 }
+
+model CustomerUser {
+  id            String            @id @default(uuid()) @db.Uuid
+  email         String            @unique @db.VarChar(160)
+  passwordHash  String?
+  googleSubject String?           @unique @db.VarChar(255)
+  name          String?           @db.VarChar(120)
+  phone         String?           @db.VarChar(40)
+  isActive      Boolean           @default(true)
+  sessions      CustomerSession[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model CustomerSession {
+  id                  String   @id @default(uuid()) @db.Uuid
+  customerUserId      String   @db.Uuid
+  refreshTokenHash    String   @db.Char(64)
+  refreshTokenVersion Int      @default(0)
+  expiresAt           DateTime
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  customerUser CustomerUser @relation(fields: [customerUserId], references: [id], onDelete: Cascade)
+
+  @@index([customerUserId])
+  @@index([expiresAt])
+}
