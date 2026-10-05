@@ -8,7 +8,7 @@ export function AdminMenuShell({ children }: AdminMenuShellProps) {
   return (
     <section className="space-y-5">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold leading-8 tracking-tight text-[var(--color-text-primary)]">
+        <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">
           Menu Management
         </h1>
 

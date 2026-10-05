@@ -128,7 +128,7 @@ export function ProductModal({
         }}
       >
         <div className="relative flex h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl bg-[var(--color-surface)] shadow-2xl md:grid md:h-[calc(100vh-3rem)] md:max-h-[760px] md:grid-cols-[0.95fr_1.05fr] md:rounded-3xl">
-          <div className="relative h-56 overflow-hidden bg-[var(--color-surface-muted)] md:h-full">
+          <div className="relative h-40 shrink-0 overflow-hidden bg-[var(--color-surface-muted)] md:h-full max-[359px]:h-32">
             <ProductImage
               src={product.imageUrl}
               alt={product.name}

@@ -23,8 +23,8 @@ export function CartItemRow({
   const selectedOptionsText = getCartItemOptionSummary(item);
 
   return (
-    <Card className="grid grid-cols-[72px_1fr] gap-4 border-[var(--color-border-soft)] p-3 shadow-none transition hover:border-[var(--color-border)]">
-      <div className="relative h-[72px] w-[72px] overflow-hidden rounded-xl bg-[var(--color-surface-muted)]">
+    <Card className="grid grid-cols-[56px_minmax(0,1fr)] gap-3 border-[var(--color-border-soft)] p-3 shadow-none transition hover:border-[var(--color-border)] sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-4">
+      <div className="relative size-14 overflow-hidden rounded-xl bg-[var(--color-surface-muted)] sm:size-[72px]">
         <ProductImage
           src={item.product.imageUrl}
           alt={item.product.name}
@@ -35,12 +35,12 @@ export function CartItemRow({
       <div className="min-w-0">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="line-clamp-1 text-sm font-bold text-[var(--color-text-primary)]">
+            <h3 className="break-words text-sm font-bold text-[var(--color-text-primary)]">
               {item.product.name}
             </h3>
 
             {selectedOptionsText ? (
-              <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--color-text-muted)]">
+              <p className="mt-1 break-words text-xs leading-5 text-[var(--color-text-muted)]">
                 {selectedOptionsText}
               </p>
             ) : null}
@@ -58,7 +58,7 @@ export function CartItemRow({
           </Button>
         </div>
 
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <QuantityStepper value={item.quantity} onChange={onQuantityChange} />
 
           <p className="text-sm font-bold text-[var(--color-text-primary)]">

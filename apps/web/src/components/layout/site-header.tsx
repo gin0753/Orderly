@@ -15,7 +15,7 @@ import { useHasHydrated } from "@/hooks/use-has-hydrated";
 
 const navLinks = [
   { label: "Menu", href: "/" },
-  { label: "Orders", href: "/track-order" },
+  { label: "Track order", href: "/track-order" },
 ];
 
 export function SiteHeader() {

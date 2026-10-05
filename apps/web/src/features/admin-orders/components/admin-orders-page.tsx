@@ -48,14 +48,14 @@ export function AdminOrdersPage() {
 
   return (
     <div className="bg-[var(--color-background)] text-[var(--color-text-primary)]">
-      <div className="mx-auto max-w-7xl px-4 py-4 md:px-8 md:py-6">
+      <div>
         <section className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[var(--color-brand)]">
               Admin dashboard
             </p>
 
-            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+            <h1 className="text-3xl font-bold tracking-tight">
               Orders
             </h1>
 
@@ -108,7 +108,7 @@ export function AdminOrdersPage() {
               />
             ) : null}
 
-            <section className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.85fr)]">
+            <section className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.85fr)]">
               <AdminOrderList
                 orders={orders}
                 meta={meta}

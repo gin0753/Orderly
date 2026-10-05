@@ -136,7 +136,7 @@ export function AdminLoginForm() {
               setEmail(event.target.value);
               clearVisibleErrors();
             }}
-            placeholder="admin@orderly.local"
+            placeholder="Enter your email address"
             disabled={isLoggingIn}
           />
         </div>

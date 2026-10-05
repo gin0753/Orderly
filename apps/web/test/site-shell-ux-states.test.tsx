@@ -178,7 +178,7 @@ it("preserves checkout details and cart editing while paused", async () => {
   })) {
     expect(submitButton).toBeDisabled();
   }
-  await userEvent.click(screen.getByRole("button", { name: "Edit cart" }));
+  await userEvent.click(screen.getAllByRole("button", { name: "Edit cart" })[0]);
   expect(store.getState().cart.isCartOpen).toBe(true);
   expect(nameField).toHaveValue("Sam Customer");
 });

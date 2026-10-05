@@ -35,7 +35,7 @@ export function CartDrawerFooter({
           <Link
             href="/checkout"
             onClick={() => dispatch(closeCart())}
-            className="mt-6 flex h-13 w-full items-center justify-center rounded-2xl bg-[var(--color-brand-strong)] px-5 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2"
+            className="flex h-13 w-full items-center justify-center rounded-2xl bg-[var(--color-brand-strong)] px-5 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2"
           >
             View Cart &amp; Checkout
           </Link>
@@ -44,7 +44,7 @@ export function CartDrawerFooter({
             type="button"
             disabled
             aria-describedby="cart-checkout-status"
-            className="mt-6 flex h-13 w-full cursor-not-allowed items-center justify-center rounded-2xl bg-[var(--color-surface-disabled)] px-5 text-sm font-semibold text-[var(--color-text-muted)]"
+            className="flex h-13 w-full cursor-not-allowed items-center justify-center rounded-2xl bg-[var(--color-surface-disabled)] px-5 text-sm font-semibold text-[var(--color-text-muted)]"
           >
             {checkoutAvailability === "checking"
               ? "Checking availability…"

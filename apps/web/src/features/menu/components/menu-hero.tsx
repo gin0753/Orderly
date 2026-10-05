@@ -116,7 +116,7 @@ export function MenuHero({ store, product }: MenuHeroProps) {
         <div className="mt-[1.125rem] grid grid-cols-2 gap-2.5 md:mt-6 md:flex md:flex-wrap md:gap-3">
           <a
             href="#menu"
-            className={`${actionClassName} bg-[var(--color-brand-text-hover)] text-[var(--color-text-inverse)] shadow-sm hover:bg-[var(--color-brand-hover)]`}
+            className={`${actionClassName} bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)] shadow-sm hover:bg-[var(--color-text-primary)]`}
           >
             Browse menu
           </a>

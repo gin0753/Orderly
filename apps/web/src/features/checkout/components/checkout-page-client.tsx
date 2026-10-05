@@ -249,14 +249,25 @@ export function CheckoutPageClient({
               onChange={updateForm}
             />
 
-            <DeliveryAddressForm
-              form={form}
-              errors={visibleErrors}
-              onChange={updateForm}
-              disabled={form.fulfillmentType === "pickup"}
-            />
+            {form.fulfillmentType === "delivery" ? (
+              <DeliveryAddressForm
+                form={form}
+                errors={visibleErrors}
+                onChange={updateForm}
+                disabled={false}
+              />
+            ) : null}
 
             <OrderNotesField form={form} onChange={updateForm} />
+            <div className="lg:hidden">
+              <CheckoutOrderSummary
+                compact
+                items={cartItems}
+                subtotalCents={subtotalCents}
+                fulfillmentType={form.fulfillmentType}
+                isAcceptingOrders={isAcceptingOrders}
+              />
+            </div>
           </div>
 
           <div className="hidden lg:block">
@@ -274,7 +285,7 @@ export function CheckoutPageClient({
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_-12px_30px_rgba(0,0,0,0.08)] lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-12px_30px_rgba(0,0,0,0.08)] lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-4">
           <div className="min-w-0 flex-1">
             <p className="text-xs text-[var(--color-text-secondary)]">Total</p>
