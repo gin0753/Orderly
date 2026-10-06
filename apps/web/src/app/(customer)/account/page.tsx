@@ -22,6 +22,7 @@ export default function AccountPage() {
       </section>
     </div>
     <nav aria-label="More account options" className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold">
+      <Link href="/account/orders" className="text-[var(--color-brand-text)] underline underline-offset-4">Your orders</Link>
       <Link href="/" className="text-[var(--color-brand-text)] underline underline-offset-4">Browse menu</Link>
       <Link href="/track-order" className="text-[var(--color-brand-text)] underline underline-offset-4">Track an order</Link>
     </nav>

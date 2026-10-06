@@ -146,3 +146,24 @@ order and offers explicit sign-in or guest continuation. Guest continuation
 clears customer cookies before a separate submission. A short-lived per-tab
 draft preserves manually entered checkout details across a sign-in redirect;
 it is read once and removed, and it never stores authentication credentials.
+
+## Customer order history (Stage 13.7)
+
+`GET /api/customer/orders` and `GET /api/customer/orders/:id` use required
+CustomerSession authentication. Both reads scope the database query by
+`customerUserId`; another customer's order, a guest order, and a missing order
+all produce the same 404 detail response. List responses contain only summary
+fields. Detail responses explicitly map stored item, option, contact, address,
+note, and price snapshots. Neither response includes ownership IDs, payment
+status, or Admin-only data.
+
+The list accepts `page` (default 1), `pageSize` (default 10, maximum 50),
+`status` (the existing OrderStatus values or `all`), and `sort` (`newest`,
+`oldest`, `amount_high`, `amount_low`). Unknown and invalid parameters are
+rejected. Sorts use `createdAt` and `id` tie-breakers. `/account/orders` keeps
+status, sort, and page in the URL; its TanStack Query keys sit under the
+customer-private prefix and are removed on logout, terminal expiry, or
+identity change. Guest tracking remains a separate verification path.
+
+Order Again is deferred. Stored size names and prices describe the historical
+order, but they do not reliably identify a current size option for replay.

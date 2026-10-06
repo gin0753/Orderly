@@ -30,7 +30,7 @@ it("shows guest navigation without dead account/order links", () => {
   expect(screen.getByRole("button", { name: "Open cart" })).toBeInTheDocument();
 });
 
-it("shows authenticated account navigation, keeps tracking, and preserves the cart on logout", async () => {
+it("shows authenticated order navigation and preserves the cart on logout", async () => {
   const store = makeStore();
   const requestId = "auth";
   store.dispatch(bootstrapCustomer.pending(requestId, undefined));
@@ -40,8 +40,8 @@ it("shows authenticated account navigation, keeps tracking, and preserves the ca
   render(<Provider store={store}><SiteHeader /></Provider>);
   const desktop = screen.getByRole("navigation", { name: "Primary navigation" });
   expect(within(desktop).getByRole("link", { name: "Account" })).toHaveAttribute("href", "/account");
-  expect(within(desktop).getByRole("link", { name: "Track order" })).toBeInTheDocument();
-  expect(within(desktop).queryByRole("link", { name: "Orders" })).not.toBeInTheDocument();
+  expect(within(desktop).getByRole("link", { name: "Orders" })).toHaveAttribute("href", "/account/orders");
+  expect(within(desktop).queryByRole("link", { name: "Track order" })).not.toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: "Sign out" }));
   expect(api.logout).toHaveBeenCalledTimes(1);
   expect(store.getState().customerAuth.status).toBe("unauthenticated");

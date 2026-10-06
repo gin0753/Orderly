@@ -28,7 +28,7 @@ export function SiteHeader() {
   const authenticated = status === "authenticated";
   const navLinks = [
     { label: "Menu", href: "/" },
-    { label: "Track order", href: "/track-order" },
+    authenticated ? { label: "Orders", href: "/account/orders" } : { label: "Track order", href: "/track-order" },
     authenticated ? { label: "Account", href: "/account" } : { label: "Sign in", href: `/login?returnTo=${encodeURIComponent(safeCustomerReturnPath(pathname === "/" ? "/account" : pathname))}` },
   ];
 

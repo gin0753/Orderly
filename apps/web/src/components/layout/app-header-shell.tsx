@@ -30,6 +30,14 @@ function isNavLinkActive(pathname: string, href: string) {
     return pathname === "/";
   }
 
+  if (href === "/account" && pathname.startsWith("/account/orders")) {
+    return false;
+  }
+
+  if (href === "/account" && pathname.startsWith("/account/orders")) {
+    return false;
+  }
+
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
