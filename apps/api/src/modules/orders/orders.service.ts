@@ -70,7 +70,7 @@ type ResolvedOrderItem = {
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createOrder(dto: CreateOrderDto) {
+  async createOrder(dto: CreateOrderDto, customerUserId: string | null = null) {
     this.validateOrderFulfillment(dto);
 
     const customerPhone = this.normalizeCustomerPhone(dto.customer.phone);
@@ -131,6 +131,7 @@ export class OrdersService {
           customerName: dto.customer.name.trim(),
           customerPhone,
           customerEmail: dto.customer.email.trim().toLowerCase(),
+          customerUserId,
 
           addressLine1: dto.address?.addressLine1.trim(),
           addressLine2: dto.address?.addressLine2?.trim() || undefined,

@@ -29,6 +29,8 @@ import { Button } from "@/components/ui/button";
 import { saveTrackingLookup } from "@/features/order-tracking/utils/order-tracking-storage";
 import { ApiError } from "@/lib/api-fetch";
 import { useHasHydrated } from "@/hooks/use-has-hydrated";
+import { logoutCustomer } from "@/features/customer-auth/store/customer-auth-slice";
+import { clearCheckoutReturnDraft, readCheckoutReturnDraft, saveCheckoutReturnDraft, withCustomerPrefill, type ContactField } from "../checkout-customer";
 
 const initialFormState: CheckoutFormState = {
   fulfillmentType: "pickup",
@@ -50,16 +52,25 @@ type CheckoutPageClientProps = {
 export function CheckoutPageClient({
   initialIsAcceptingOrders = true,
 }: CheckoutPageClientProps) {
-  const [form, setForm] = useState<CheckoutFormState>(initialFormState);
+  const [checkout, setCheckout] = useState(() => readCheckoutReturnDraft() ?? {
+    form: initialFormState,
+    touched: { fullName: false, email: false, phone: false },
+  });
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [needsSessionRecovery, setNeedsSessionRecovery] = useState(false);
+  const [isRecovering, setIsRecovering] = useState(false);
   const [isRedirectingToSuccess, setIsRedirectingToSuccess] = useState(false);
   const [isAcceptingOrders, setIsAcceptingOrders] = useState(
     initialIsAcceptingOrders,
   );
   const submitErrorRef = useRef<HTMLDivElement>(null);
 
+  const customer = useAppSelector((state) => state.customerAuth.customer);
+  const authNotice = useAppSelector((state) => state.customerAuth.notice);
+  const requiresSessionRecovery = needsSessionRecovery || authNotice === "Your session expired. Sign in again to continue.";
+  const form = withCustomerPrefill(checkout.form, checkout.touched, customer);
   const fieldErrors = getCheckoutFieldErrors(form);
   const hasFieldErrors = hasCheckoutFieldErrors(fieldErrors);
   const visibleErrors = hasSubmitted ? fieldErrors : {};
@@ -91,11 +102,35 @@ export function CheckoutPageClient({
     }
   }, [submitError]);
 
+  useEffect(() => { clearCheckoutReturnDraft(); }, []);
+
   function updateForm(patch: Partial<CheckoutFormState>) {
-    setForm((current) => ({
+    setCheckout((current) => ({
       ...current,
-      ...patch,
+      form: { ...current.form, ...patch },
     }));
+  }
+
+  function updateContactForm(patch: Partial<CheckoutFormState>) {
+    setCheckout((current) => {
+      const touched = { ...current.touched };
+      for (const field of ["fullName", "email", "phone"] as ContactField[]) {
+        if (Object.hasOwn(patch, field)) touched[field] = true;
+      }
+      return { form: { ...current.form, ...patch }, touched };
+    });
+  }
+
+  async function continueAsGuest() {
+    if (isRecovering) return;
+    setIsRecovering(true);
+    try {
+      await dispatch(logoutCustomer()).unwrap();
+      setNeedsSessionRecovery(false);
+      setSubmitError("Your customer session has been cleared. Review your details, then place the order as a guest.");
+    } catch {
+      setSubmitError("We couldn’t clear your session. Please try again or sign in again.");
+    } finally { setIsRecovering(false); }
   }
 
   async function handleContinue() {
@@ -111,7 +146,7 @@ export function CheckoutPageClient({
       return;
     }
 
-    if (isSubmitting || !isAcceptingOrders) {
+    if (isSubmitting || !isAcceptingOrders || requiresSessionRecovery) {
       return;
     }
 
@@ -123,13 +158,15 @@ export function CheckoutPageClient({
         cartItems,
       });
 
-      const order = await createOrder(createOrderRequest);
+      const order = await createOrder(createOrderRequest, { expectCustomer: Boolean(customer) });
 
       saveTrackingLookup({
         orderNumber: order.orderNumber,
         email: createOrderRequest.customer.email,
         phone: createOrderRequest.customer.phone,
       });
+
+      clearCheckoutReturnDraft();
 
       setIsRedirectingToSuccess(true);
       dispatch(clearCart());
@@ -145,7 +182,10 @@ export function CheckoutPageClient({
         error.status === 400 &&
         /not currently (accepting|available)/i.test(error.message);
 
-      if (availabilityChanged) {
+      if (error instanceof ApiError && error.status === 401) {
+        setNeedsSessionRecovery(true);
+        setSubmitError("Your customer session expired before this order was placed. Your cart and entered details are still here.");
+      } else if (availabilityChanged) {
         setIsAcceptingOrders(false);
         setSubmitError(
           "Ordering is paused. Your details are still here, and you can try again when the kitchen is accepting orders.",
@@ -205,6 +245,9 @@ export function CheckoutPageClient({
           <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
             Review your order and enter your details.
           </p>
+          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+            {customer ? <>Signed in as <span className="font-semibold text-[var(--color-text-primary)]">{customer.email}</span>. You can use different contact details for this order.</> : <>Checking out as a guest. <Link href="/login?returnTo=%2Fcheckout" onClick={() => saveCheckoutReturnDraft(checkout)} className="font-semibold text-[var(--color-brand-text)] underline underline-offset-2">Sign in</Link> if you have an account.</>}
+          </p>
 
           <div className="mt-6">
             <CheckoutStepIndicator />
@@ -228,16 +271,20 @@ export function CheckoutPageClient({
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px]">
           <div className="grid gap-5">
-            {submitError ? (
+            {submitError || requiresSessionRecovery ? (
               <div
                 ref={submitErrorRef}
                 tabIndex={-1}
                 role="alert"
                 className="rounded-2xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-4 text-sm font-medium text-[var(--color-danger-strong)]"
               >
-                {submitError}
+                {submitError ?? "Your customer session ended. Sign in again or explicitly continue as a guest before placing this order."}
               </div>
             ) : null}
+            {requiresSessionRecovery ? <div className="flex flex-wrap gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+              <Link href="/login?returnTo=%2Fcheckout" onClick={() => saveCheckoutReturnDraft(checkout)} className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--color-brand-strong)] px-5 text-sm font-semibold text-[var(--color-text-inverse)]">Sign in again</Link>
+              <Button type="button" variant="secondary" disabled={isRecovering} onClick={() => { void continueAsGuest(); }}>{isRecovering ? "Clearing session…" : "Continue as guest"}</Button>
+            </div> : null}
             <FulfillmentSelector
               value={form.fulfillmentType}
               onChange={(fulfillmentType) => updateForm({ fulfillmentType })}
@@ -246,7 +293,7 @@ export function CheckoutPageClient({
             <CustomerDetailsForm
               form={form}
               errors={visibleErrors}
-              onChange={updateForm}
+              onChange={updateContactForm}
             />
 
             {form.fulfillmentType === "delivery" ? (
@@ -276,7 +323,7 @@ export function CheckoutPageClient({
               subtotalCents={subtotalCents}
               fulfillmentType={form.fulfillmentType}
               validationErrors={summaryErrors}
-              disabled={isSubmitting}
+              disabled={isSubmitting || requiresSessionRecovery}
               onSubmitLabel={isSubmitting ? "Placing order..." : "Place Order"}
               onSubmit={handleContinue}
               isAcceptingOrders={isAcceptingOrders}
@@ -296,7 +343,7 @@ export function CheckoutPageClient({
 
           <Button
             type="button"
-            disabled={isSubmitting || !isAcceptingOrders}
+            disabled={isSubmitting || !isAcceptingOrders || requiresSessionRecovery}
             onClick={handleContinue}
             className="h-12 rounded-2xl px-6 text-sm font-semibold"
           >

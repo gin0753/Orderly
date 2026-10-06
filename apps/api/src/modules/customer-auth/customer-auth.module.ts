@@ -10,6 +10,7 @@ import { CustomerGoogleOAuthService } from './customer-google-oauth.service';
 import { GoogleOAuthConfig } from './google-oauth.config';
 import { GoogleProvider } from './google-provider';
 import { CustomerJwtAuthGuard } from './guards/customer-jwt-auth.guard';
+import { OptionalCustomerJwtAuthGuard } from './guards/optional-customer-jwt-auth.guard';
 import { CustomerMutationGuard } from './guards/customer-mutation.guard';
 import { CustomerJwtStrategy } from './strategies/customer-jwt.strategy';
 
@@ -24,8 +25,9 @@ import { CustomerJwtStrategy } from './strategies/customer-jwt.strategy';
     GoogleProvider,
     CustomerJwtStrategy,
     CustomerJwtAuthGuard,
+    OptionalCustomerJwtAuthGuard,
     CustomerMutationGuard,
   ],
-  exports: [CustomerJwtAuthGuard],
+  exports: [CustomerJwtAuthGuard, OptionalCustomerJwtAuthGuard],
 })
 export class CustomerAuthModule {}

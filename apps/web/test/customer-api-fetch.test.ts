@@ -122,3 +122,53 @@ it("rejects unsafe API paths before making a request", async () => {
   expect(fetchMock).not.toHaveBeenCalled();
   expect(new ApiError(401, "x")).toBeInstanceOf(Error);
 });
+
+it("submits optional-auth orders as guests without a refresh", async () => {
+  const client = createCustomerApiClient();
+  fetchMock.mockResolvedValue(json(201, { orderNumber: "10001" }));
+  await expect(client.request("/orders", { method: "POST", body: "{}", auth: "optional" }))
+    .resolves.toEqual({ orderNumber: "10001" });
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  const request = fetchMock.mock.calls[0][1] as RequestInit;
+  expect(request.credentials).toBe("include");
+  expect(new Headers(request.headers).get("X-Orderly-Client")).toBe("customer-web");
+});
+
+it("refreshes and retries an optional-auth order once before creating it", async () => {
+  const client = createCustomerApiClient();
+  let refreshed = false;
+  let orderCalls = 0;
+  fetchMock.mockImplementation(async (input: string | URL | Request) => {
+    const url = String(input);
+    if (url.endsWith("/customer/auth/me")) return json(401);
+    if (url.endsWith("/customer/auth/refresh")) { refreshed = true; return json(200); }
+    orderCalls += 1;
+    return refreshed ? json(201, { orderNumber: "10002" }) : json(401);
+  });
+  await expect(client.request("/orders", { method: "POST", body: "{}", auth: "optional" }))
+    .resolves.toEqual({ orderNumber: "10002" });
+  expect(orderCalls).toBe(2);
+  expect(fetchMock.mock.calls.filter(([input]) => String(input).endsWith("/customer/auth/refresh"))).toHaveLength(1);
+});
+
+it("never downgrades a terminal optional-auth failure into a guest order", async () => {
+  const client = createCustomerApiClient();
+  const expired = jest.fn();
+  client.onSessionFailure(expired);
+  fetchMock.mockResolvedValue(json(401));
+  await expect(client.request("/orders", { method: "POST", body: "{}", auth: "optional" }))
+    .rejects.toMatchObject({ status: 401 });
+  expect(fetchMock.mock.calls.filter(([input]) => String(input).endsWith("/orders"))).toHaveLength(1);
+  expect(expired).toHaveBeenCalledTimes(1);
+});
+
+it("keeps optional-auth infrastructure failures distinct from terminal expiry", async () => {
+  const client = createCustomerApiClient();
+  const expired = jest.fn();
+  client.onSessionFailure(expired);
+  fetchMock.mockResolvedValue(json(503));
+  await expect(client.request("/orders", { method: "POST", body: "{}", auth: "optional" }))
+    .rejects.toMatchObject({ status: 503 });
+  expect(expired).not.toHaveBeenCalled();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});

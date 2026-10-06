@@ -1,4 +1,4 @@
-import { expect, test, type BrowserContext } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { createRequire } from "node:module";
 
 const requireFromTest = createRequire(__filename);
@@ -10,7 +10,6 @@ const { PrismaClient } = requireFromTest("../../../api/node_modules/@prisma/clie
 };
 const password = "Browser link password 123!";
 const linkedEmail = "google.link.browser@example.com";
-let linkedCookies: Parameters<BrowserContext["addCookies"]>[0] = [];
 
 test.describe.configure({ mode: "serial" });
 
@@ -85,7 +84,6 @@ test("matching password email blocks anonymous Google linking, then explicit lin
   await expect(page).toHaveURL(/\/account$/);
   await expect(page.getByLabel("Email")).toHaveValue(linkedEmail);
   expect(await customerIds(linkedEmail)).toEqual([{ id: original[0].id, googleSubject: "google-web-link" }]);
-  linkedCookies = await page.context().cookies();
 });
 
 for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }, { width: 320, height: 568 }]) {
@@ -96,8 +94,9 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
       await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     }
-    await page.context().addCookies(linkedCookies);
-    await page.goto("/account");
+    await page.goto("/login");
+    await page.getByRole("button", { name: "Continue with Google" }).click();
+    await page.getByRole("link", { name: "Continue as new", exact: true }).click();
     await expect(page).toHaveURL(/\/account$/);
     await expect(page.getByRole("heading", { name: "Sign-in methods" })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);

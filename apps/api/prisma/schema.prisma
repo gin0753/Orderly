@@ -183,6 +183,9 @@ model Order {
   userId String? @db.Uuid
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  customerUserId String?       @db.Uuid
+  customerUser   CustomerUser? @relation(fields: [customerUserId], references: [id], onDelete: SetNull)
+
   status        OrderStatus   @default(PENDING)
   orderType     OrderType
   paymentStatus PaymentStatus @default(UNPAID)
@@ -210,6 +213,9 @@ model Order {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([customerUserId, createdAt, id])
+  @@index([customerUserId, status, createdAt, id])
+  @@index([customerUserId, totalCents, createdAt, id])
   @@index([status])
   @@index([createdAt])
   @@index([customerEmail])
@@ -294,6 +300,7 @@ model CustomerUser {
   phone         String?           @db.VarChar(40)
   isActive      Boolean           @default(true)
   sessions      CustomerSession[]
+  orders        Order[]
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 }

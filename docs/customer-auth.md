@@ -123,3 +123,26 @@ and sets new customer cookies. Old access and refresh credentials are revoked;
 Admin sessions are untouched. The account page publishes a session-change
 event so other tabs recheck their customer state. Google-only customers cannot
 create a password in this stage.
+
+## Authenticated checkout ownership (Stage 13.6)
+
+`POST /api/orders` remains available to guests. It uses optional customer
+authentication: no customer cookies means an unowned guest order; any customer
+cookie with an invalid, expired, revoked, or inactive session yields 401 before
+order creation. Admin cookies alone do not identify a customer. The server
+derives `Order.customerUserId` from the validated CustomerSession. The browser
+cannot submit an ownership field, and order contact details remain snapshots
+from the checkout form even when they differ from the account profile.
+
+The nullable relation uses `ON DELETE SET NULL`. Existing orders are not
+claimed from contact details. Ownership indexes support the bounded order
+history queries planned for Stage 13.7. Public creation and guest tracking
+responses do not expose `customerUserId`.
+
+Checkout prefills untouched name, email, and phone fields from customer state;
+typed contact details remain order-specific. Optional-auth requests refresh an
+expired access token and retry once. A terminal session failure stops the
+order and offers explicit sign-in or guest continuation. Guest continuation
+clears customer cookies before a separate submission. A short-lived per-tab
+draft preserves manually entered checkout details across a sign-in redirect;
+it is read once and removed, and it never stores authentication credentials.
