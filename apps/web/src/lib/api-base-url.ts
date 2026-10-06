@@ -2,7 +2,7 @@
 export const API_BASE_URL = (
   process.env.NODE_ENV === "production"
     ? typeof window === "undefined"
-      ? "https://orderly-production-1ac4.up.railway.app/api"
+      ? `${process.env.ORDERLY_API_ORIGIN ?? "https://orderly-production-1ac4.up.railway.app"}/api`
       : "/api"
     : (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api")
 ).replace(/\/$/, "");

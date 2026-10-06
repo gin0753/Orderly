@@ -12,11 +12,9 @@ import { AppHeaderShell } from "./app-header-shell";
 import { Button } from "../ui/button";
 import { setCartOpener } from "@/features/cart/utils/cart-focus";
 import { useHasHydrated } from "@/hooks/use-has-hydrated";
-
-const navLinks = [
-  { label: "Menu", href: "/" },
-  { label: "Track order", href: "/track-order" },
-];
+import { usePathname } from "next/navigation";
+import { CustomerSignOut } from "@/features/customer-auth/components/customer-sign-out";
+import { safeCustomerReturnPath } from "@/features/customer-auth/lib/return-path";
 
 export function SiteHeader() {
   const dispatch = useAppDispatch();
@@ -25,6 +23,14 @@ export function SiteHeader() {
   const cartSubtotalCents = useAppSelector(selectCartSubtotalCents);
   const hasHydrated = useHasHydrated();
   const visibleCartItemCount = hasHydrated ? cartItemCount : 0;
+  const status = useAppSelector((state) => state.customerAuth.status);
+  const pathname = usePathname();
+  const authenticated = status === "authenticated";
+  const navLinks = [
+    { label: "Menu", href: "/" },
+    { label: "Track order", href: "/track-order" },
+    authenticated ? { label: "Account", href: "/account" } : { label: "Sign in", href: `/login?returnTo=${encodeURIComponent(safeCustomerReturnPath(pathname === "/" ? "/account" : pathname))}` },
+  ];
 
   return (
     <AppHeaderShell
@@ -32,7 +38,10 @@ export function SiteHeader() {
       navLinks={navLinks}
       mobileLabel="Customer navigation"
       onBeforeMobileOpen={() => dispatch(closeCart())}
+      mobileFooter={authenticated ? <CustomerSignOut /> : undefined}
       rightSlot={
+        <div className="flex items-center gap-2">
+        {authenticated ? <div className="hidden md:block"><CustomerSignOut /></div> : null}
         <Button
           type="button"
           onClick={(event) => {
@@ -78,6 +87,7 @@ export function SiteHeader() {
               : "Cart"}
           </span>
         </Button>
+        </div>
       }
     />
   );

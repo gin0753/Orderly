@@ -32,6 +32,11 @@ run([
   "./test/scripts/seed-browser-test-data.ts",
 ]);
 run(["--filter", "api", "build"]);
+if (process.env.ORDERLY_BROWSER_PRODUCTION === "1") {
+  environment.ORDERLY_API_ORIGIN = "http://localhost:4000";
+  environment.ORDERLY_BROWSER_PRODUCTION = "1";
+  run(["--filter", "web", "build"]);
+}
 
 console.log("Browser test database preflight:");
 console.log(`NODE_ENV=${environment.NODE_ENV}`);
@@ -39,12 +44,14 @@ console.log(`host=${target.hostCategory}`);
 console.log(`database=${target.databaseName}`);
 console.log(`prismaTargetsMatch=${target.targetsMatch}`);
 
-run([
-  "--filter",
-  "web",
-  "test:e2e:run",
-  ...playwrightArguments,
-]);
+const suites = playwrightArguments.length
+  ? [playwrightArguments]
+  : process.env.ORDERLY_BROWSER_PRODUCTION === "1"
+    ? [["critical-workflow.spec.ts"], ["google-oauth.spec.ts"], ["customer-account.spec.ts"]]
+    : [[]];
+for (const suite of suites) {
+  run(["--filter", "web", "test:e2e:run", ...suite]);
+}
 
 function run(args) {
   const result = spawnSync(process.execPath, [pnpmCli, ...args], {

@@ -2,6 +2,9 @@ import { expect, test, type Page } from "@playwright/test";
 import { createRequire } from "node:module";
 
 type TestPrismaClient = {
+  customerSession: {
+    deleteMany: (args: { where: { customerUser: { email: string } } }) => Promise<unknown>;
+  };
   storeSettings: {
     findUniqueOrThrow: (args: {
       where: { id: string };
@@ -38,6 +41,8 @@ const { PrismaClient } = requireFromBrowserTest(
 
 const CUSTOMER_NAME = "Taylor Browser";
 const CUSTOMER_EMAIL = "taylor.browser@example.com";
+const ACCOUNT_EMAIL = "account.browser@example.com";
+const ACCOUNT_PASSWORD = "Browser account password 123!";
 const ADMIN_EMAIL = "browser.admin@orderly.test";
 const ADMIN_PASSWORD = "BrowserPassword123!";
 
@@ -153,6 +158,91 @@ test("protected admin route redirects unauthenticated users to login", async ({
   );
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
 });
+
+test("customer registration survives reload and logout preserves public browsing", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("link", { name: "Create an account" }).click();
+  await expect(page).toHaveURL(/\/register/);
+  await page.getByLabel("Name").fill("Account Browser");
+  await page.getByLabel("Email").fill(ACCOUNT_EMAIL);
+  await page.getByLabel("Password", { exact: true }).fill(ACCOUNT_PASSWORD);
+  await page.getByLabel("Confirm password").fill(ACCOUNT_PASSWORD);
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/account$/);
+  await expect(page.getByRole("heading", { name: "Account", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Account" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Email")).toHaveValue(ACCOUNT_EMAIL);
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Golden Path Pizza" })).toBeVisible();
+});
+
+test("customer login survives reload and restores a protected return path", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(ACCOUNT_EMAIL);
+  await page.getByLabel("Password", { exact: true }).fill(ACCOUNT_PASSWORD);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/account$/);
+  await page.reload();
+  await expect(page.getByLabel("Email")).toHaveValue(ACCOUNT_EMAIL);
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
+
+  await page.goto("/account");
+  await expect(page).toHaveURL(/\/login\?returnTo=%2Faccount$/);
+  await page.getByLabel("Email").fill(ACCOUNT_EMAIL);
+  await page.getByLabel("Password", { exact: true }).fill(ACCOUNT_PASSWORD);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/account$/);
+  await expect(page.getByRole("heading", { name: "Account", exact: true })).toBeVisible();
+});
+
+test("revoked customer session exits protected state while preserving the cart", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "View Golden Path Pizza" }).click();
+  const dialog = page.getByRole("dialog", { name: "Golden Path Pizza" });
+  await dialog.getByRole("radio", { name: "Large" }).click();
+  await dialog.getByRole("button", { name: /^Add to cart/ }).click();
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(ACCOUNT_EMAIL);
+  await page.getByLabel("Password", { exact: true }).fill(ACCOUNT_PASSWORD);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/account$/);
+
+  const databaseUrl = process.env.TEST_DATABASE_URL;
+  if (!databaseUrl) throw new Error("TEST_DATABASE_URL is required for browser tests.");
+  const prisma = new PrismaClient({ datasources: { db: { url: databaseUrl } } });
+  try {
+    await prisma.customerSession.deleteMany({ where: { customerUser: { email: ACCOUNT_EMAIL } } });
+  } finally {
+    await prisma.$disconnect();
+  }
+  await page.reload();
+  await expect(page).toHaveURL(/\/login\?returnTo=%2Faccount$/);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open cart" }).click();
+  await expect(page.getByRole("dialog", { name: "Your Cart" }).getByText("Golden Path Pizza", { exact: true })).toBeVisible();
+});
+
+for (const viewport of [
+  { width: 1440, height: 900 },
+  { width: 1024, height: 768 },
+  { width: 390, height: 844 },
+  { width: 320, height: 568 },
+]) {
+  test(`customer auth pages fit ${viewport.width}x${viewport.height}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    for (const path of ["/login", "/register"]) {
+      await page.goto(path);
+      await expect(page.locator("form")).toBeVisible();
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(overflow).toBeLessThanOrEqual(1);
+    }
+  });
+}
 
 test.describe("mobile customer smoke", () => {
   test.use({ viewport: { width: 390, height: 844 } });
@@ -523,8 +613,12 @@ function captureUnexpectedRuntimeErrors(page: Page) {
     const isExpectedUnauthenticatedBootstrap =
       message.text() ===
       "Failed to load resource: the server responded with a status of 401 (Unauthorized)";
+    const isRateLimitedAnonymousBootstrap =
+      message.text() ===
+        "Failed to load resource: the server responded with a status of 429 (Too Many Requests)" &&
+      message.location().url.includes("/api/customer/auth/refresh");
 
-    if (message.type() === "error" && !isExpectedUnauthenticatedBootstrap) {
+    if (message.type() === "error" && !isExpectedUnauthenticatedBootstrap && !isRateLimitedAnonymousBootstrap) {
       errors.push(`console: ${message.text()}`);
     }
   });

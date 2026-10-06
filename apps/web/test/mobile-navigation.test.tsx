@@ -72,7 +72,7 @@ it("exposes customer ARIA state, isolated links and current destination", async 
   expect(trigger).toHaveAttribute("aria-controls", dialog.id);
   expect(dialog).toHaveAttribute("aria-modal", "true");
   const links = within(dialog).getAllByRole("link");
-  expect(links.map(link => [link.textContent, link.getAttribute("href")])).toEqual([["Menu", "/"], ["Track order", "/track-order"]]);
+  expect(links.map(link => [link.textContent, link.getAttribute("href")])).toEqual([["Menu", "/"], ["Track order", "/track-order"], ["Sign in", "/login?returnTo=%2Ftrack-order"]]);
   expect(links[1]).toHaveAttribute("aria-current", "page");
   expect(links[0]).not.toHaveAttribute("aria-current");
   expect(within(dialog).queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
@@ -120,7 +120,7 @@ it("does not close on interior clicks and cycles keyboard focus", async () => {
   const close = within(dialog).getByRole("button", { name: "Close customer navigation" });
   close.focus();
   await userEvent.tab({ shift: true });
-  expect(within(dialog).getByRole("link", { name: "Track order" })).toHaveFocus();
+  expect(within(dialog).getByRole("link", { name: "Sign in" })).toHaveFocus();
   await userEvent.tab();
   expect(close).toHaveFocus();
   await userEvent.tab();

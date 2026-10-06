@@ -8,7 +8,7 @@ import {
   ValidateBy,
 } from 'class-validator';
 
-function PasswordBytes() {
+export function PasswordBytes() {
   return ValidateBy({
     name: 'passwordBytes',
     validator: {

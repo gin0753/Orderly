@@ -18,3 +18,7 @@ process.env.CUSTOMER_JWT_ACCESS_TTL = '15m';
 process.env.CUSTOMER_JWT_REFRESH_TTL = '7d';
 process.env.CUSTOMER_SESSION_ABSOLUTE_TTL = '30d';
 process.env.WEB_ORIGIN = 'http://localhost:3000';
+process.env.GOOGLE_CLIENT_ID = 'orderly-browser-test-client';
+process.env.GOOGLE_CLIENT_SECRET = 'orderly-browser-test-client-secret';
+process.env.GOOGLE_CALLBACK_URL = 'http://localhost:3000/api/customer/auth/google/callback';
+process.env.GOOGLE_OAUTH_TEST_PROVIDER = '1';

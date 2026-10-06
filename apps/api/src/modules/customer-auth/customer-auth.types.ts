@@ -4,7 +4,9 @@ import type { Request } from 'express';
 export type PublicCustomer = Pick<
   CustomerUser,
   'id' | 'email' | 'name' | 'phone'
->;
+> & {
+  authMethods: { password: boolean; google: boolean };
+};
 export type CustomerPrincipal = PublicCustomer & { sessionId: string };
 export interface CustomerRequest extends Request {
   user: CustomerPrincipal;
@@ -23,8 +25,27 @@ export type CustomerTokens = {
 };
 export type CustomerAuthResult = CustomerTokens & { user: PublicCustomer };
 
-export function publicCustomer(user: PublicCustomer): PublicCustomer {
-  return { id: user.id, email: user.email, name: user.name, phone: user.phone };
+export function publicCustomer(
+  user:
+    | Pick<
+        CustomerUser,
+        'id' | 'email' | 'name' | 'phone' | 'passwordHash' | 'googleSubject'
+      >
+    | PublicCustomer,
+): PublicCustomer {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    phone: user.phone,
+    authMethods:
+      'authMethods' in user
+        ? user.authMethods
+        : {
+            password: Boolean(user.passwordHash),
+            google: Boolean(user.googleSubject),
+          },
+  };
 }
 
 export function isCustomerPayload(

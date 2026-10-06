@@ -115,6 +115,7 @@ describe('Customer authentication API', () => {
     const body = response.body as IdentityBody;
     expect(Object.keys(body)).toEqual(['user']);
     expect(Object.keys(body.user).sort()).toEqual([
+      'authMethods',
       'email',
       'id',
       'name',
@@ -141,7 +142,7 @@ describe('Customer authentication API', () => {
     );
     expect(session.refreshTokenHash).toHaveLength(64);
     expect(JSON.stringify(response.body)).not.toMatch(
-      /password|token|session|googleSubject|isActive/i,
+      /passwordHash|token|session|googleSubject|isActive/i,
     );
     for (const name of Object.values(CUSTOMER_COOKIES)) {
       const attributes = cookies(response).find((entry) =>

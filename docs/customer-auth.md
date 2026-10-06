@@ -1,8 +1,8 @@
-# Customer password authentication — Stage 13.2
+# Customer authentication — Stages 13.2–13.4
 
 Customer authentication is separate from Admin authentication. No existing
-identity or order ownership is migrated. The nullable Google subject reserves
-the agreed schema shape; Google authentication is not implemented.
+identity or order ownership is migrated. Google OIDC is a second credential
+method; the Google subject is authoritative and matching email never links accounts.
 
 ## Deployment
 
@@ -31,9 +31,10 @@ POST register/login/refresh/logout requests must include:
 
 Register returns 201, login/refresh return 200, logout returns 204. GET `/me`
 requires the customer access cookie. Identity responses contain only
-`{ user: { id, email, name, phone } }`. Tokens remain in HttpOnly host-only
-cookies with SameSite=Lax, path `/api`, and Secure in production. Identity
-responses and cookie writes prohibit caching. Invalid mutations return 403;
+`{ user: { id, email, name, phone, authMethods: { password, google } } }`.
+Tokens remain in HttpOnly host-only cookies with SameSite=Lax, path `/api`, and
+Secure in production. Credential hashes and Google subjects are never exposed.
+Responses and cookie writes prohibit caching. Invalid mutations return 403;
 invalid credentials/sessions return 401; duplicate registration returns 409.
 Registration and login are limited to five requests/minute; refresh to 30.
 
@@ -68,7 +69,7 @@ deployment scheduler is introduced in this stage.
 
 Local registration does not verify email ownership. Do not use matching email
 to link Google identities, recover passwords or claim historical orders.
-Google linking, recovery and frontend customer state are later-stage work.
+Recovery and email changes remain later-stage work.
 The credential invariant is enforced by the customer service/strategy;
 direct database writes must preserve at least one credential.
 
@@ -78,3 +79,47 @@ must review shared rate-limit storage and trusted-proxy IP handling.
 Stage 13.8 must also address the existing order-number concurrency race:
 `generateOrderNumber` reads the latest number and increments it, which can
 collide during simultaneous order creation. Stage 13.2 does not change it.
+
+## Google OAuth (Stage 13.4)
+
+Create a Google OAuth **Web application** client. Set `GOOGLE_CLIENT_ID`,
+`GOOGLE_CLIENT_SECRET`, and `GOOGLE_CALLBACK_URL` together on the API. An absent
+set disables Google sign-in; a partial set fails API startup. Register the
+exact `GOOGLE_CALLBACK_URL` in Google Console. It must be
+`WEB_ORIGIN/api/customer/auth/google/callback`, using the public frontend
+origin and its `/api` reverse proxy. Do not use the backend Railway hostname.
+Use HTTPS in production. Never put the client secret in the web app.
+
+The backend uses authorization code, OpenID Connect, state, nonce and S256
+PKCE through `openid-client`. It requests only `openid email profile`. OAuth
+transactions expire after five minutes and are consumed once; state, nonce
+and browser binding are stored as SHA-256 digests. The short-lived browser
+binding is an HttpOnly cookie scoped to `/api/customer/auth/google`. Provider
+tokens are not persisted. Completed sign-ins issue normal CustomerSession
+cookies. Password accounts with a matching Google email cannot sign in with
+Google until the customer signs in with their password and explicitly connects
+Google from `/account`, with current-password reauthentication. The provider
+subject cannot move between customers. A linked subject remains valid if its
+Google email later changes; Orderly does not alter its stored email.
+
+`GOOGLE_OAUTH_TEST_PROVIDER=1` is accepted only under `NODE_ENV=test` and is
+used by the controlled browser fixture. It is not a production provider path.
+
+## Customer account management (Stage 13.5)
+
+`PATCH /api/customer/account` accepts only `name` and `phone`. A submitted name
+is trimmed, non-empty, and at most 120 characters. Phone is optional, follows
+the checkout-style character pattern, and can be cleared with `null` or an
+empty string. Email is read-only. The endpoint returns the same sanitized
+customer shape as `/customer/auth/me` and requires the existing customer
+mutation protections.
+
+`POST /api/customer/account/password` accepts `currentPassword` and
+`newPassword` only. It requires an existing password credential, validates the
+new password against registration's 15-character minimum and 72-byte bcrypt
+limit, and rate-limits attempts. A successful change atomically updates the
+hash, deletes all of that customer's sessions, creates a replacement session,
+and sets new customer cookies. Old access and refresh credentials are revoked;
+Admin sessions are untouched. The account page publishes a session-change
+event so other tabs recheck their customer state. Google-only customers cannot
+create a password in this stage.

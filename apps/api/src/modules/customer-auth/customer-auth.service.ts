@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -22,6 +23,10 @@ import {
   CustomerLoginDto,
   CustomerRegisterDto,
 } from './dto/customer-credentials.dto';
+import {
+  CustomerPasswordChangeDto,
+  CustomerProfileDto,
+} from './dto/customer-account.dto';
 
 const PASSWORD_COST = 12;
 // A valid cost-12 bcrypt hash used for accounts without a password. Never a login credential.
@@ -76,6 +81,114 @@ export class CustomerAuthService {
       throw new UnauthorizedException('Invalid email or password.');
     }
     return this.prisma.$transaction((tx) => this.createSession(tx, user));
+  }
+
+  async signInWithGoogle(identity: {
+    subject: string;
+    email: string;
+    name: string | null;
+  }): Promise<CustomerAuthResult> {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        let user = await tx.customerUser.findUnique({
+          where: { googleSubject: identity.subject },
+        });
+        if (!user) {
+          // The unique email constraint prevents an unverified password account from being merged.
+          const existingEmail = await tx.customerUser.findUnique({
+            where: { email: identity.email },
+          });
+          if (existingEmail)
+            throw new ConflictException(
+              'An Orderly account already uses this email. Sign in with your password, then connect Google from your account.',
+            );
+          user = await tx.customerUser.create({
+            data: {
+              email: identity.email,
+              googleSubject: identity.subject,
+              name: identity.name,
+            },
+          });
+        }
+        if (!user.isActive)
+          throw new UnauthorizedException('This account is unavailable.');
+        return this.createSession(tx, user);
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        const bySubject = await this.prisma.customerUser.findUnique({
+          where: { googleSubject: identity.subject },
+        });
+        if (bySubject?.isActive)
+          return this.prisma.$transaction((tx) =>
+            this.createSession(tx, bySubject),
+          );
+        throw new ConflictException(
+          'Unable to sign in with this Google account.',
+        );
+      }
+      throw error;
+    }
+  }
+
+  async connectGoogle(
+    sessionId: string,
+    identity: { subject: string; email: string },
+  ): Promise<void> {
+    const session = await this.prisma.customerSession.findUnique({
+      where: { id: sessionId },
+      include: { customerUser: true },
+    });
+    if (
+      !session ||
+      session.expiresAt <= new Date() ||
+      !session.customerUser.isActive ||
+      !session.customerUser.passwordHash
+    ) {
+      throw new UnauthorizedException(
+        'Sign in with your password to connect Google.',
+      );
+    }
+    if (session.customerUser.email !== identity.email)
+      throw new ConflictException(
+        'Google email must match your Orderly account email.',
+      );
+    if (
+      session.customerUser.googleSubject &&
+      session.customerUser.googleSubject !== identity.subject
+    ) {
+      throw new ConflictException(
+        'A different Google account is already connected.',
+      );
+    }
+    if (session.customerUser.googleSubject === identity.subject) return;
+    try {
+      const updated = await this.prisma.customerUser.updateMany({
+        where: {
+          id: session.customerUserId,
+          googleSubject: null,
+          isActive: true,
+        },
+        data: { googleSubject: identity.subject },
+      });
+      if (updated.count !== 1)
+        throw new ConflictException(
+          'Google connection changed. Please try again.',
+        );
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          'This Google account is already connected to another customer.',
+        );
+      }
+      throw error;
+    }
   }
 
   async refresh(token?: string): Promise<CustomerAuthResult> {
@@ -140,6 +253,81 @@ export class CustomerAuthService {
     }
     await this.prisma.customerSession.deleteMany({
       where: { id: payload.sid, customerUserId: payload.sub },
+    });
+  }
+
+  async currentSessionId(token?: string): Promise<string | null> {
+    if (!token) return null;
+    try {
+      const payload = await this.verifyRefresh(token);
+      const session = await this.prisma.customerSession.findFirst({
+        where: {
+          id: payload.sid,
+          customerUserId: payload.sub,
+          refreshTokenVersion: payload.version,
+          refreshTokenHash: digest(token),
+          expiresAt: { gt: new Date() },
+          customerUser: { isActive: true },
+        },
+      });
+      return session &&
+        session.createdAt.getTime() + this.config.absoluteSeconds * 1000 >
+          Date.now()
+        ? session.id
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async updateProfile(customerId: string, dto: CustomerProfileDto) {
+    const changed = await this.prisma.customerUser.updateMany({
+      where: { id: customerId, isActive: true },
+      data: {
+        ...(dto.name !== undefined ? { name: dto.name } : {}),
+        ...(dto.phone !== undefined ? { phone: dto.phone } : {}),
+      },
+    });
+    if (changed.count !== 1)
+      throw new UnauthorizedException('Account is unavailable.');
+    const user = await this.prisma.customerUser.findUniqueOrThrow({
+      where: { id: customerId },
+    });
+    return publicCustomer(user);
+  }
+
+  async changePassword(
+    customerId: string,
+    dto: CustomerPasswordChangeDto,
+  ): Promise<CustomerAuthResult> {
+    const user = await this.prisma.customerUser.findUnique({
+      where: { id: customerId },
+    });
+    const matches = await bcrypt.compare(
+      dto.currentPassword,
+      user?.passwordHash ?? DUMMY_PASSWORD_HASH,
+    );
+    if (!user?.isActive || !user.passwordHash || !matches)
+      throw new BadRequestException('Current password is incorrect.');
+    const passwordHash = await bcrypt.hash(dto.newPassword, PASSWORD_COST);
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.customerUser.updateMany({
+        where: {
+          id: customerId,
+          isActive: true,
+          passwordHash: user.passwordHash,
+        },
+        data: { passwordHash },
+      });
+      if (updated.count !== 1)
+        throw new ConflictException('Account changed. Please try again.');
+      await tx.customerSession.deleteMany({
+        where: { customerUserId: customerId },
+      });
+      const current = await tx.customerUser.findUniqueOrThrow({
+        where: { id: customerId },
+      });
+      return this.createSession(tx, current);
     });
   }
 

@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12"
   },
   "scripts": {
     "dev": "nest start --watch",
@@ -50,6 +50,7 @@
     "class-validator": "^0.15.1",
     "cookie-parser": "^1.4.7",
     "openai": "^7.5.0",
+    "openid-client": "^6.8.8",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "prisma": "^6.19.3",

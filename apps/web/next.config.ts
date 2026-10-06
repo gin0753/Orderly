@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
       {
         source: "/api/:path*",
         destination:
-          "https://orderly-production-1ac4.up.railway.app/api/:path*",
+          `${process.env.ORDERLY_API_ORIGIN ?? "https://orderly-production-1ac4.up.railway.app"}/api/:path*`,
       },
     ];
   },
