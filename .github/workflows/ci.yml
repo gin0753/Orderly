@@ -16,15 +16,32 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: orderly_user
+          POSTGRES_PASSWORD: orderly_password
+          POSTGRES_DB: orderly_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U orderly_user -d orderly_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     env:
       CI: "true"
+      NODE_ENV: test
 
       DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public
       DIRECT_DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public
-      TEST_DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test
+      TEST_DATABASE_URL: postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public
 
       WEB_ORIGIN: http://localhost:3000
       API_PORT: "4000"
+      ORDERLY_API_ORIGIN: https://ci-api.invalid
 
       JWT_ACCESS_SECRET: ci-access-secret-that-is-long-enough-for-tests
       JWT_REFRESH_SECRET: ci-refresh-secret-that-is-long-enough-for-tests
@@ -53,6 +70,9 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm db:generate
+
+      - name: Verify test PostgreSQL is ready
+        run: docker exec "${{ job.services.postgres.id }}" pg_isready -h 127.0.0.1 -U orderly_user -d orderly_test
 
       - name: Install Playwright Chromium
         run: pnpm --filter web exec playwright install --with-deps chromium

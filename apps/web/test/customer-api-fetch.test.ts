@@ -115,6 +115,39 @@ it("uses a shared Web Lock so a waiting tab rechecks cookies instead of rotating
   expect(refreshes).toBe(1);
 });
 
+it("fails closed on a cross-tab refresh race without Web Locks", async () => {
+  const firstTab = createCustomerApiClient();
+  const secondTab = createCustomerApiClient();
+  const firstExpired = jest.fn();
+  const secondExpired = jest.fn();
+  firstTab.onSessionFailure(firstExpired);
+  secondTab.onSessionFailure(secondExpired);
+  let refreshCalls = 0;
+  let orderCreates = 0;
+  fetchMock.mockImplementation(async (input: string | URL | Request) => {
+    const url = String(input);
+    if (url.endsWith("/customer/auth/me")) return json(401);
+    if (url.endsWith("/customer/auth/refresh")) {
+      refreshCalls += 1;
+      return refreshCalls === 1 ? json(200, { user: { id: "a" } }) : json(401);
+    }
+    if (url.endsWith("/orders")) {
+      if (refreshCalls === 0) return json(401);
+      orderCreates += 1;
+      return json(201, { orderNumber: "10001" });
+    }
+    throw new Error(`Unexpected request: ${url}`);
+  });
+  const results = await Promise.allSettled([
+    firstTab.request("/orders", { method: "POST", body: "{}", auth: "optional" }),
+    secondTab.request("/orders", { method: "POST", body: "{}", auth: "optional" }),
+  ]);
+  expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+  expect(results.filter((result) => result.status === "rejected")).toHaveLength(1);
+  expect(orderCreates).toBe(1);
+  expect(firstExpired.mock.calls.length + secondExpired.mock.calls.length).toBe(1);
+});
+
 it("rejects unsafe API paths before making a request", async () => {
   const client = createCustomerApiClient();
   await expect(client.request("https://attacker.test")).rejects.toThrow("relative API paths");

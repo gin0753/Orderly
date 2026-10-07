@@ -14,6 +14,9 @@ The API fails startup when configuration is unsafe or secrets are missing.
 Production `WEB_ORIGIN` must be the exact HTTPS frontend origin without a
 trailing slash. The existing frontend `/api` rewrite keeps browser cookies
 first-party; do not send browser authentication requests directly to Railway.
+Set the web deployment's server-side `ORDERLY_API_ORIGIN` to the exact HTTPS
+Railway API origin. Production web builds fail without it; the old hard-coded
+Railway fallback is removed. Browser requests remain on the web origin.
 
 ## API contract
 
@@ -73,12 +76,15 @@ Recovery and email changes remain later-stage work.
 The credential invariant is enforced by the customer service/strategy;
 direct database writes must preserve at least one credential.
 
-Nest's existing default in-memory throttling is per instance. Production QA
-must review shared rate-limit storage and trusted-proxy IP handling.
-
-Stage 13.8 must also address the existing order-number concurrency race:
-`generateOrderNumber` reads the latest number and increments it, which can
-collide during simultaneous order creation. Stage 13.2 does not change it.
+Throttling uses Nest's in-memory storage and Express's client IP. The API
+trusts exactly one network hop (the Railway-facing proxy), so earlier
+client-supplied `X-Forwarded-For` entries cannot choose the throttle key.
+Deploy V1 with one API replica: counters are not shared across replicas.
+If the topology changes, verify the proxy chain and use shared throttle
+storage before scaling out. Browser requests pass through the web `/api`
+rewrite; check that the proxy forwards a distinct client IP, since an
+intermediate shared egress address could cause unrelated users to share a
+rate limit. Do not enable unrestricted `trust proxy`.
 
 ## Google OAuth (Stage 13.4)
 
@@ -167,3 +173,22 @@ identity change. Guest tracking remains a separate verification path.
 
 Order Again is deferred. Stored size names and prices describe the historical
 order, but they do not reliably identify a current size option for replay.
+
+## Final QA (Stage 13.8)
+
+Order numbers use the PostgreSQL `Order_orderNumber_seq` sequence. Its migration
+starts above the greatest existing numeric order number (or 10000 on a fresh
+database). Allocation is atomic across API instances and retains the visible
+numeric format. Sequence values consumed by failed transactions can leave gaps;
+existing order numbers are unchanged. Apply the migration before deploying
+the corresponding API code.
+
+Without Web Locks, simultaneous refreshes in separate tabs may race. The
+server rejects refresh-token replay and can revoke the session; the client
+never falls back to a guest checkout on a failed authenticated submission.
+The user may need to sign in again. In-tab refreshes remain coordinated.
+The checkout return draft expires after ten minutes in per-tab sessionStorage;
+an expired draft is ignored. Expired OAuth transactions are deleted when a new
+OAuth flow starts and are invalid after five minutes even before deletion.
+Expired customer sessions are invalid on every protected request; periodically
+delete physical rows with the SQL operation documented above.

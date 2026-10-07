@@ -390,7 +390,7 @@ for (const viewport of [
     ).toHaveAttribute("href", "/");
     expect(await hasHorizontalOverflow(page)).toBe(false);
     expect(runtimeErrors).toEqual([
-      "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "console: Failed to load resource: the server responded with a status of 404 (Not Found) (/missing-stage-12-5-4-route)",
     ]);
   });
 }
@@ -608,18 +608,40 @@ test("reduced-motion preference disables application and utility animations", as
 
 function captureUnexpectedRuntimeErrors(page: Page) {
   const errors: string[] = [];
+  let anonymousRefreshRateLimits = 0;
+  page.on("response", (response) => {
+    const request = response.request();
+    if (
+      response.status() === 429 &&
+      request.method() === "POST" &&
+      new URL(response.url()).pathname === "/api/customer/auth/refresh" &&
+      !request.headers().cookie?.includes("orderly_customer_refresh=")
+    ) {
+      anonymousRefreshRateLimits += 1;
+    }
+  });
 
   page.on("console", (message) => {
+    const sourcePath = new URL(message.location().url, page.url()).pathname;
     const isExpectedUnauthenticatedBootstrap =
       message.text() ===
-      "Failed to load resource: the server responded with a status of 401 (Unauthorized)";
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)" &&
+      [
+        "/api/customer/auth/me",
+        "/api/customer/auth/refresh",
+        "/api/auth/me",
+        "/api/auth/refresh",
+      ].includes(sourcePath);
     const isRateLimitedAnonymousBootstrap =
       message.text() ===
         "Failed to load resource: the server responded with a status of 429 (Too Many Requests)" &&
-      message.location().url.includes("/api/customer/auth/refresh");
+      sourcePath === "/api/customer/auth/refresh" &&
+      anonymousRefreshRateLimits > 0;
+
+    if (isRateLimitedAnonymousBootstrap) anonymousRefreshRateLimits -= 1;
 
     if (message.type() === "error" && !isExpectedUnauthenticatedBootstrap && !isRateLimitedAnonymousBootstrap) {
-      errors.push(`console: ${message.text()}`);
+      errors.push(`console: ${message.text()} (${sourcePath})`);
     }
   });
   page.on("pageerror", (error) => {

@@ -156,6 +156,28 @@ describe('Guest orders API (e2e)', () => {
     ]);
   });
 
+  it('allocates distinct order numbers for concurrent checkouts', async () => {
+    const fixture = await createCheckoutFixture(prisma);
+    const requestBody = createPickupRequest(fixture.productId, [
+      fixture.smallOptionId,
+    ]);
+
+    const responses = await Promise.all(
+      Array.from({ length: 8 }, () =>
+        request(httpServer).post('/api/orders').send(requestBody),
+      ),
+    );
+    expect(responses.map((response) => response.status)).toEqual(
+      Array(8).fill(201),
+    );
+    const numbers = responses.map(
+      (response) => (response.body as CreatedOrderBody).orderNumber,
+    );
+    expect(new Set(numbers).size).toBe(8);
+    expect(numbers.every((number) => /^\d+$/.test(number))).toBe(true);
+    expect(await prisma.order.count()).toBe(8);
+  });
+
   it('binds an authenticated order to the session while keeping submitted contact snapshots', async () => {
     const fixture = await createCheckoutFixture(prisma);
     const owner = await passwordCustomer();
@@ -178,6 +200,25 @@ describe('Guest orders API (e2e)', () => {
       (await prisma.customerUser.findUniqueOrThrow({ where: { id: owner.id } }))
         .email,
     ).toBe('owner@example.test');
+
+    await prisma.product.update({
+      where: { id: fixture.productId },
+      data: { name: 'Renamed pizza', archivedAt: new Date() },
+    });
+    await prisma.productOption.update({
+      where: { id: fixture.smallOptionId },
+      data: { name: 'Renamed size', priceDelta: '9.00' },
+    });
+    const history = await request(httpServer)
+      .get(`/api/customer/orders/${order.id}`)
+      .set('Cookie', owner.access)
+      .expect(200);
+    const historicalItem = (history.body as { items: unknown[] }).items[0];
+    expect(historicalItem).toMatchObject({
+      name: 'Integration Pizza',
+      sizeName: 'Small',
+      sizePriceCents: 0,
+    });
   });
 
   it.each(['customerUserId', 'customerId', 'userId'])(

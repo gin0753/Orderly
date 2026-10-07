@@ -19,6 +19,7 @@ import {
 import { OrdersService } from './orders.service';
 
 type TransactionMock = {
+  $queryRaw: jest.Mock;
   storeSettings: { findUnique: jest.Mock };
   product: { findMany: jest.Mock };
   order: { findFirst: jest.Mock; create: jest.Mock };
@@ -198,6 +199,7 @@ describe('OrdersService order creation rules', () => {
 
   beforeEach(() => {
     tx = {
+      $queryRaw: jest.fn(),
       storeSettings: { findUnique: jest.fn() },
       product: { findMany: jest.fn() },
       order: { findFirst: jest.fn(), create: jest.fn() },
@@ -211,7 +213,7 @@ describe('OrdersService order creation rules', () => {
 
     tx.storeSettings.findUnique.mockResolvedValue(createStoreSettings());
     tx.product.findMany.mockResolvedValue([createProduct()]);
-    tx.order.findFirst.mockResolvedValue({ orderNumber: '10000' });
+    tx.$queryRaw.mockResolvedValue([{ orderNumber: '10001' }]);
     tx.order.create.mockImplementation(
       ({ data }: { data: Record<string, unknown> }) => ({
         id: 'order-1',
