@@ -17,6 +17,9 @@ first-party; do not send browser authentication requests directly to Railway.
 Set the web deployment's server-side `ORDERLY_API_ORIGIN` to the exact HTTPS
 Railway API origin. Production web builds fail without it; the old hard-coded
 Railway fallback is removed. Browser requests remain on the web origin.
+Set the same independently generated, high-entropy
+`ORDERLY_PROXY_IDENTITY_SECRET` (at least 32 UTF-8 bytes) on Vercel and Railway.
+Do not reuse JWT or Google secrets, expose it through `NEXT_PUBLIC_`, or log it.
 
 ## API contract
 
@@ -76,15 +79,15 @@ Recovery and email changes remain later-stage work.
 The credential invariant is enforced by the customer service/strategy;
 direct database writes must preserve at least one credential.
 
-Throttling uses Nest's in-memory storage and Express's client IP. The API
-trusts exactly one network hop (the Railway-facing proxy), so earlier
-client-supplied `X-Forwarded-For` entries cannot choose the throttle key.
-Deploy V1 with one API replica: counters are not shared across replicas.
-If the topology changes, verify the proxy chain and use shared throttle
-storage before scaling out. Browser requests pass through the web `/api`
-rewrite; check that the proxy forwards a distinct client IP, since an
-intermediate shared egress address could cause unrelated users to share a
-rate limit. Do not enable unrestricted `trust proxy`.
+Throttling uses Nest's in-memory storage. The Vercel `/api` proxy reads its
+platform-normalized `X-Forwarded-For`, removes incoming Orderly identity
+headers, and forwards a normalized client IP with an HMAC-SHA256 signature.
+The API verifies the signature with the shared server-only secret and keys the
+limit by a one-way digest. Missing or invalid signatures use only the direct
+socket peer as a separate fallback; forwarded headers cannot choose it.
+Express `trust proxy` is not used for throttling. Railway currently runs one
+API replica. Throttle storage is process-local; horizontal scaling requires
+shared throttle storage.
 
 ## Google OAuth (Stage 13.4)
 

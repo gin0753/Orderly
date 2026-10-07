@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,6 +17,7 @@ if (!pnpmCli) {
   throw new Error("This script must be run through pnpm.");
 }
 const { environment, target } = createSafeTestDatabaseEnvironment(process.env);
+environment.ORDERLY_PROXY_IDENTITY_SECRET = randomBytes(32).toString("hex");
 
 run([
   "--filter",
