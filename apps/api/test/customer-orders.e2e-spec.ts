@@ -6,6 +6,7 @@ import type { Server } from 'node:http';
 import request from 'supertest';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { createTestApp } from './support/create-test-app';
+import { expectPrivateCache } from './support/cache-policy';
 
 type Summary = {
   id: string;
@@ -130,6 +131,7 @@ describe('Customer order history (e2e)', () => {
     const first = await request(server)
       .get('/api/customer/orders?pageSize=1')
       .set('Cookie', a.cookie)
+      .expect(expectPrivateCache)
       .expect(200);
     expect((first.body as List).meta).toEqual({
       page: 1,
@@ -278,6 +280,7 @@ describe('Customer order history (e2e)', () => {
     const response = await request(server)
       .get(`/api/customer/orders/${own.id}`)
       .set('Cookie', a.cookie)
+      .expect(expectPrivateCache)
       .expect(200);
     expect(response.body).toMatchObject({
       id: own.id,

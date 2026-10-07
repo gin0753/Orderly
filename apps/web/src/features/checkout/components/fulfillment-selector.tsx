@@ -1,8 +1,13 @@
 import type { FulfillmentType } from "../checkout-types";
+import { DELIVERY_FEE_CENTS } from "../checkout-utils";
+import { formatMoneyFromCents } from "@/lib/format-money";
 
 type FulfillmentSelectorProps = {
   value: FulfillmentType;
   onChange: (value: FulfillmentType) => void;
+  deliveryFeeCents?: number;
+  pickupEnabled?: boolean;
+  deliveryEnabled?: boolean;
 };
 
 const options: Array<{
@@ -23,7 +28,7 @@ const options: Array<{
     value: "delivery",
     title: "Delivery",
     description: "Have your order delivered to your address",
-    price: "$3.99",
+    price: "",
     icon: "🚗",
   },
 ];
@@ -31,6 +36,9 @@ const options: Array<{
 export function FulfillmentSelector({
   value,
   onChange,
+  deliveryFeeCents = DELIVERY_FEE_CENTS,
+  pickupEnabled = true,
+  deliveryEnabled = true,
 }: FulfillmentSelectorProps) {
   return (
     <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
@@ -46,14 +54,17 @@ export function FulfillmentSelector({
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {options.map((option) => {
           const isSelected = value === option.value;
+          const isEnabled = option.value === "pickup" ? pickupEnabled : deliveryEnabled;
 
           return (
             <button
               key={option.value}
               type="button"
+              disabled={!isEnabled}
+              aria-pressed={isSelected && isEnabled}
               onClick={() => onChange(option.value)}
               className={[
-                "flex items-center gap-4 rounded-2xl border p-4 text-left transition cursor-pointer",
+                "flex items-center gap-4 rounded-2xl border p-4 text-left transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50",
                 isSelected
                   ? "border-[var(--color-brand)] bg-[var(--color-brand-soft)]"
                   : "border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-border-hover)]",
@@ -68,7 +79,7 @@ export function FulfillmentSelector({
                   {option.title}
                 </span>
                 <span className="mt-1 block text-sm text-[var(--color-text-secondary)]">
-                  {option.description}
+                  {isEnabled ? option.description : "Currently unavailable"}
                 </span>
                 <span
                   className={[
@@ -78,7 +89,9 @@ export function FulfillmentSelector({
                       : "text-[var(--color-text-primary)]",
                   ].join(" ")}
                 >
-                  {option.price}
+                  {option.value === "delivery"
+                    ? formatMoneyFromCents(deliveryFeeCents)
+                    : option.price}
                 </span>
               </span>
 

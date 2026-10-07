@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
@@ -652,17 +653,30 @@ export class OrdersService {
       return existingOrder;
     }
 
-    return this.prisma.order.update({
-      where: {
-        id,
-      },
-      data: {
-        status: nextStatus,
-      },
-      include: {
-        items: true,
-      },
-    });
+    try {
+      return await this.prisma.order.update({
+        where: {
+          id,
+          status: existingOrder.status,
+        },
+        data: {
+          status: nextStatus,
+        },
+        include: {
+          items: true,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new ConflictException(
+          'Order status changed. Refresh and try again.',
+        );
+      }
+      throw error;
+    }
   }
 
   async lookupGuestOrder(dto: GuestOrderLookupDto) {

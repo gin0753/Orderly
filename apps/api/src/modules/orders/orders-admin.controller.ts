@@ -5,6 +5,9 @@ import { ListOrdersQueryDto } from './dto/list-orders-query.dto';
 import { PerformOrderActionDto } from './dto/perform-order-action.dto';
 import { OrdersService } from './orders.service';
 
+import { PrivateResponse } from '../../http/private-response.interceptor';
+
+@PrivateResponse()
 @Controller('orders')
 @RequireAdmin()
 export class OrdersAdminController {

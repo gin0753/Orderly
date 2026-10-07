@@ -498,6 +498,15 @@ describe('AuthService', () => {
   });
 
   describe('logout', () => {
+    it('does not report successful logout when session revocation fails', async () => {
+      jwtService.verifyAsync.mockResolvedValue(createRefreshPayload());
+      prisma.adminSession.deleteMany.mockRejectedValueOnce(
+        new Error('Database unavailable'),
+      );
+      await expect(service.logout('current-refresh-token')).rejects.toThrow(
+        'Database unavailable',
+      );
+    });
     it('deletes the current refresh session', async () => {
       jwtService.verifyAsync.mockResolvedValue(createRefreshPayload());
 

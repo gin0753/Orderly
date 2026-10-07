@@ -18,7 +18,10 @@ import { UpdateCategoryAvailabilityDto } from './dto/update-category-availabilit
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { GetAdminCategoriesQueryDto } from './dto/get-admin-categories-query.dto';
 
+import { PrivateResponse } from '../../../../http/private-response.interceptor';
+
 @RequireAdmin()
+@PrivateResponse()
 @Controller('admin/menu/categories')
 export class AdminCategoriesController {
   constructor(

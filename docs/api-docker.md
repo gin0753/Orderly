@@ -16,6 +16,10 @@ the isolated dependency tree. No database connection is needed to build.
 Supply configuration at runtime through ECS environment variables and secrets:
 
 - `DATABASE_URL`: reachable PostgreSQL database with the appropriate TLS settings.
+- `DIRECT_DATABASE_URL`: direct PostgreSQL connection used by Prisma migrations;
+  use the direct Neon endpoint when `DATABASE_URL` uses pooling.
+- `ORDERLY_PROXY_IDENTITY_SECRET`: the same independent high-entropy secret as
+  the Vercel deployment, at least 32 UTF-8 bytes. Required at production startup.
 - `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, and `JWT_REFRESH_TTL_DAYS`: the
   existing authentication configuration. The two secrets must differ and
   contain at least 32 characters in production; missing or unsafe secrets
@@ -48,7 +52,7 @@ the container command with:
 ```
 
 The Prisma CLI, schema, and committed migrations are included. The command
-runs in `/app` and needs `DATABASE_URL`, database network access, and migration
+runs in `/app` and needs `DATABASE_URL`, `DIRECT_DATABASE_URL`, database network access, and migration
 permissions. It does not seed the database. Wait for a successful task exit
 before deploying API tasks that require the new schema. API startup does not
 automatically apply migrations. Existing databases need migration history

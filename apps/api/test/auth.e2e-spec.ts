@@ -28,7 +28,7 @@ describe('Admin authentication API (e2e)', () => {
   let prisma: PrismaService;
 
   beforeAll(async () => {
-    app = await createTestApp();
+    app = await createTestApp({ bypassThrottling: true });
     httpServer = app.getHttpServer() as Server;
     prisma = app.get(PrismaService);
   });
@@ -41,6 +41,16 @@ describe('Admin authentication API (e2e)', () => {
     await prisma.adminSession.deleteMany();
     await prisma.adminUser.deleteMany();
     await createTestAdmin(prisma);
+  });
+
+  it('rejects cross-site form login before creating an admin session', async () => {
+    await request(httpServer)
+      .post('/api/auth/login')
+      .set('Origin', 'https://untrusted.example')
+      .type('form')
+      .send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD })
+      .expect(403);
+    expect(await prisma.adminSession.count()).toBe(0);
   });
 
   it('logs in with secure cookie attributes and stores only a refresh hash', async () => {
@@ -136,6 +146,33 @@ describe('Admin authentication API (e2e)', () => {
       .get('/api/auth/me')
       .set('Cookie', `${AUTH_COOKIE_NAMES.accessToken}=${accessCookie.value}`)
       .expect(401);
+  });
+
+  it('preserves cookies on transient refresh and logout persistence failures', async () => {
+    const agent = request.agent(httpServer);
+    await login(agent);
+    const lookup = jest
+      .spyOn(prisma.adminSession, 'findUnique')
+      .mockRejectedValueOnce(new Error('Simulated database outage'));
+    try {
+      const refresh = await agent.post('/api/auth/refresh').expect(500);
+      expect(refresh.headers['set-cookie']).toBeUndefined();
+    } finally {
+      lookup.mockRestore();
+    }
+    const revoke = jest
+      .spyOn(prisma.adminSession, 'deleteMany')
+      .mockRejectedValueOnce(new Error('Simulated database outage'));
+    try {
+      const logout = await agent.post('/api/auth/logout').expect(500);
+      expect(logout.headers['set-cookie']).toBeUndefined();
+      expect(await prisma.adminSession.count()).toBe(1);
+    } finally {
+      revoke.mockRestore();
+    }
+    await agent.get('/api/auth/me').expect(200);
+    await agent.post('/api/auth/logout').expect(204);
+    expect(await prisma.adminSession.count()).toBe(0);
   });
 
   it('returns the generic credential error for an invalid login', async () => {

@@ -13,6 +13,7 @@ import request from 'supertest';
 import { BCRYPT_SALT_ROUNDS } from '../src/modules/auth/auth.constants';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { createTestApp } from './support/create-test-app';
+import { expectPrivateCache } from './support/cache-policy';
 
 const ADMIN_EMAIL = 'menu.admin@orderly.test';
 const ADMIN_PASSWORD = 'CorrectPassword123!';
@@ -62,6 +63,7 @@ describe('Admin menu API (e2e)', () => {
     const response = await agent
       .post('/api/admin/menu/products')
       .send(createNestedProductRequest(category.id))
+      .expect(expectPrivateCache)
       .expect(201);
     const body = response.body as unknown as ProductBody;
 
@@ -100,6 +102,27 @@ describe('Admin menu API (e2e)', () => {
       .get('/api/menu')
       .expect(200);
     const publicMenu = publicResponse.body as unknown as PublicMenuBody;
+    expect(
+      String(publicResponse.headers['cache-control'] ?? '')
+        .toLowerCase()
+        .split(',')
+        .map((value) => value.trim()),
+    ).not.toContain('private');
+    expect(
+      String(publicResponse.headers['cache-control'] ?? '')
+        .toLowerCase()
+        .split(',')
+        .map((value) => value.trim()),
+    ).not.toContain('no-store');
+    await agent
+      .get('/api/admin/menu/products')
+      .expect(200)
+      .expect(expectPrivateCache);
+    await agent
+      .get('/api/admin/menu/categories')
+      .expect(200)
+      .expect(expectPrivateCache);
+    await agent.get('/api/auth/me').expect(200).expect(expectPrivateCache);
     expect(publicMenu.categories).toEqual([
       expect.objectContaining({
         id: category.id,

@@ -1,0 +1,11 @@
+Read-only checks on 7 October 2026 (Australia/Sydney).
+Railway GET /api/health: 200
+Vercel GET /api/menu: 200; 5 categories; configured deliveryFee=5
+Vercel GET /api/customer/auth/google/status: 200; enabled=false
+Vercel GET /api/customer/auth/me without cookies: 401
+Vercel GET /api/auth/me without cookies: 401
+Vercel GET /api/customer/auth/google/test-provider with syntactically valid fixture state: 404
+No production mutations or database writes were performed.
+Initial sandbox requests failed at the transport layer; permitted retries succeeded.
+The first logging wrapper had a PowerShell redirection error after the checks completed;
+this file records the tool-observed results without repeating the network requests.

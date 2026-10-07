@@ -19,6 +19,7 @@ type CheckoutOrderSummaryProps = {
   items: CartItem[];
   subtotalCents: number;
   fulfillmentType: FulfillmentType;
+  configuredDeliveryFeeCents?: number;
   validationErrors?: string[];
   onSubmitLabel?: string;
   disabled?: boolean;
@@ -31,6 +32,7 @@ export function CheckoutOrderSummary({
   items,
   subtotalCents,
   fulfillmentType,
+  configuredDeliveryFeeCents,
   validationErrors = [],
   onSubmitLabel = "Place Order",
   disabled = false,
@@ -39,10 +41,15 @@ export function CheckoutOrderSummary({
   compact = false,
 }: CheckoutOrderSummaryProps) {
   const dispatch = useAppDispatch();
-  const deliveryFeeCents = getDeliveryFeeCents(subtotalCents, fulfillmentType);
+  const deliveryFeeCents = getDeliveryFeeCents(
+    subtotalCents,
+    fulfillmentType,
+    configuredDeliveryFeeCents,
+  );
   const totalCents = getCheckoutTotalCents({
     subtotalCents,
     fulfillmentType,
+    configuredDeliveryFeeCents,
   });
 
   const itemCount = items.reduce((total, item) => total + item.quantity, 0);
@@ -88,7 +95,9 @@ export function CheckoutOrderSummary({
 
           return (
             <div key={item.key} className="flex gap-4 py-4 first:pt-0">
-              <div className={`${compact ? "hidden" : "relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--color-surface-hover)]"}`}>
+              <div
+                className={`${compact ? "hidden" : "relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--color-surface-hover)]"}`}
+              >
                 <ProductImage
                   src={item.product.imageUrl}
                   alt={item.product.name}
