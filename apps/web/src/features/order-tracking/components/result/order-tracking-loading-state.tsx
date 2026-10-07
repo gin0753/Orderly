@@ -6,8 +6,9 @@ import {
 
 export function OrderTrackingLoadingState() {
   return (
-    <main className="min-h-screen bg-[var(--color-page-background)] px-4 py-6 text-[var(--color-text-primary)] md:px-8 md:py-10">
-      <div className="mx-auto max-w-6xl">
+    <div role="status" aria-live="polite">
+      <span className="sr-only">Loading order.</span>
+      <div aria-hidden="true">
         <SkeletonLine className="mb-8 h-10 w-36" />
 
         <div className="grid gap-6 lg:grid-cols-[1fr_0.75fr]">
@@ -27,6 +28,6 @@ export function OrderTrackingLoadingState() {
           </SkeletonCard>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 export function CheckoutTransition() {
   return (
-    <main className="min-h-screen bg-[var(--color-background)] px-4 py-8 sm:px-6 lg:px-8">
+    <div className="bg-[var(--color-background)] px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto flex min-h-[70vh] max-w-2xl flex-col items-center justify-center rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-16 text-center shadow-sm">
         <div className="flex size-16 items-center justify-center rounded-full bg-[var(--color-brand-soft)]">
           <div className="size-7 animate-spin rounded-full border-2 border-[var(--color-brand)] border-t-transparent" />
@@ -23,6 +23,6 @@ export function CheckoutTransition() {
           page.
         </p>
       </div>
-    </main>
+    </div>
   );
 }

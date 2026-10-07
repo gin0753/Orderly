@@ -1,31 +1,32 @@
-import { Button } from "@/components/ui/button";
 import { MenuProduct } from "../types";
 
 import { ProductCard } from "./product-card";
 
 type MenuSectionProps = {
+  sectionId: string;
   title: string;
-  emoji?: string;
   itemCount?: number;
   products: MenuProduct[];
-  onProductSelect: (product: MenuProduct) => void;
-  onQuickAdd: (product: MenuProduct) => void;
+  onProductSelect: (product: MenuProduct, opener: HTMLElement) => void;
+  onQuickAdd: (product: MenuProduct, opener: HTMLElement) => void;
+  isAcceptingOrders?: boolean;
 };
 
 export function MenuSection({
+  sectionId,
   title,
-  emoji,
   itemCount,
   products,
   onProductSelect,
   onQuickAdd,
+  isAcceptingOrders = true,
 }: MenuSectionProps) {
   return (
-    <section className="mt-10">
-      <div className="mb-5 flex items-center justify-between">
+    <section id={sectionId} className="mt-6 scroll-mt-36">
+      <div className="mb-4 flex items-center">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
-            {title} {emoji ? <span>{emoji}</span> : null}
+            {title}
           </h2>
 
           {typeof itemCount === "number" ? (
@@ -34,14 +35,6 @@ export function MenuSection({
             </span>
           ) : null}
         </div>
-
-        <Button
-          type="button"
-          onClick={() => {}}
-          className="h-auto rounded-none bg-transparent p-0 text-sm font-semibold text-[var(--color-brand-text)] shadow-none transition hover:bg-transparent hover:text-[var(--color-brand-text-hover)]"
-        >
-          See all
-        </Button>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -51,6 +44,7 @@ export function MenuSection({
             product={product}
             onProductSelect={onProductSelect}
             onQuickAdd={onQuickAdd}
+            isAcceptingOrders={isAcceptingOrders}
           />
         ))}
       </div>

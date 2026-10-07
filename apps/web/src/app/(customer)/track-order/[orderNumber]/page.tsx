@@ -7,8 +7,8 @@ type TrackOrderDetailPageProps = {
 };
 
 export const metadata = {
-  title: "Order Tracking | Orderly",
-  description: "Track your Orderly order status.",
+  title: "Order tracking",
+  description: "View the latest status of your Orderly Kitchen order.",
 };
 
 export default async function TrackOrderDetailPage({

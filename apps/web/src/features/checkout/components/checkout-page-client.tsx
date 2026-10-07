@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -27,6 +27,10 @@ import { createOrder } from "@/features/checkout/api/create-order";
 import { CheckoutTransition } from "./checkout-transition";
 import { Button } from "@/components/ui/button";
 import { saveTrackingLookup } from "@/features/order-tracking/utils/order-tracking-storage";
+import { ApiError } from "@/lib/api-fetch";
+import { useHasHydrated } from "@/hooks/use-has-hydrated";
+import { logoutCustomer } from "@/features/customer-auth/store/customer-auth-slice";
+import { clearCheckoutReturnDraft, readCheckoutReturnDraft, saveCheckoutReturnDraft, withCustomerPrefill, type ContactField } from "../checkout-customer";
 
 const initialFormState: CheckoutFormState = {
   fulfillmentType: "pickup",
@@ -41,13 +45,32 @@ const initialFormState: CheckoutFormState = {
   orderNotes: "",
 };
 
-export function CheckoutPageClient() {
-  const [form, setForm] = useState<CheckoutFormState>(initialFormState);
+type CheckoutPageClientProps = {
+  initialIsAcceptingOrders?: boolean;
+};
+
+export function CheckoutPageClient({
+  initialIsAcceptingOrders = true,
+}: CheckoutPageClientProps) {
+  const [checkout, setCheckout] = useState(() => readCheckoutReturnDraft() ?? {
+    form: initialFormState,
+    touched: { fullName: false, email: false, phone: false },
+  });
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [needsSessionRecovery, setNeedsSessionRecovery] = useState(false);
+  const [isRecovering, setIsRecovering] = useState(false);
   const [isRedirectingToSuccess, setIsRedirectingToSuccess] = useState(false);
+  const [isAcceptingOrders, setIsAcceptingOrders] = useState(
+    initialIsAcceptingOrders,
+  );
+  const submitErrorRef = useRef<HTMLDivElement>(null);
 
+  const customer = useAppSelector((state) => state.customerAuth.customer);
+  const authNotice = useAppSelector((state) => state.customerAuth.notice);
+  const requiresSessionRecovery = needsSessionRecovery || authNotice === "Your session expired. Sign in again to continue.";
+  const form = withCustomerPrefill(checkout.form, checkout.touched, customer);
   const fieldErrors = getCheckoutFieldErrors(form);
   const hasFieldErrors = hasCheckoutFieldErrors(fieldErrors);
   const visibleErrors = hasSubmitted ? fieldErrors : {};
@@ -60,6 +83,7 @@ export function CheckoutPageClient() {
 
   const cartItems = useAppSelector((state) => state.cart.items);
   const hasHydrated = useAppSelector(selectCartHasHydrated);
+  const hasClientHydrated = useHasHydrated();
 
   const subtotalCents = useMemo(() => {
     return getCartSubtotalCents(cartItems);
@@ -72,18 +96,57 @@ export function CheckoutPageClient() {
 
   const isCartEmpty = cartItems.length === 0;
 
+  useEffect(() => {
+    if (submitError) {
+      submitErrorRef.current?.focus();
+    }
+  }, [submitError]);
+
+  useEffect(() => { clearCheckoutReturnDraft(); }, []);
+
   function updateForm(patch: Partial<CheckoutFormState>) {
-    setForm((current) => ({
+    setCheckout((current) => ({
       ...current,
-      ...patch,
+      form: { ...current.form, ...patch },
     }));
+  }
+
+  function updateContactForm(patch: Partial<CheckoutFormState>) {
+    setCheckout((current) => {
+      const touched = { ...current.touched };
+      for (const field of ["fullName", "email", "phone"] as ContactField[]) {
+        if (Object.hasOwn(patch, field)) touched[field] = true;
+      }
+      return { form: { ...current.form, ...patch }, touched };
+    });
+  }
+
+  async function continueAsGuest() {
+    if (isRecovering) return;
+    setIsRecovering(true);
+    try {
+      await dispatch(logoutCustomer()).unwrap();
+      setNeedsSessionRecovery(false);
+      setSubmitError("Your customer session has been cleared. Review your details, then place the order as a guest.");
+    } catch {
+      setSubmitError("We couldn’t clear your session. Please try again or sign in again.");
+    } finally { setIsRecovering(false); }
   }
 
   async function handleContinue() {
     setHasSubmitted(true);
     setSubmitError(null);
 
-    if (hasFieldErrors || isSubmitting) {
+    if (hasFieldErrors) {
+      window.requestAnimationFrame(() => {
+        document
+          .querySelector<HTMLElement>('[aria-invalid="true"]')
+          ?.focus();
+      });
+      return;
+    }
+
+    if (isSubmitting || !isAcceptingOrders || requiresSessionRecovery) {
       return;
     }
 
@@ -95,13 +158,15 @@ export function CheckoutPageClient() {
         cartItems,
       });
 
-      const order = await createOrder(createOrderRequest);
+      const order = await createOrder(createOrderRequest, { expectCustomer: Boolean(customer) });
 
       saveTrackingLookup({
         orderNumber: order.orderNumber,
         email: createOrderRequest.customer.email,
         phone: createOrderRequest.customer.phone,
       });
+
+      clearCheckoutReturnDraft();
 
       setIsRedirectingToSuccess(true);
       dispatch(clearCart());
@@ -112,17 +177,30 @@ export function CheckoutPageClient() {
         )}&totalCents=${order.totalCents}&orderType=${order.orderType}`,
       );
     } catch (error) {
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong while placing your order.",
-      );
+      const availabilityChanged =
+        error instanceof ApiError &&
+        error.status === 400 &&
+        /not currently (accepting|available)/i.test(error.message);
+
+      if (error instanceof ApiError && error.status === 401) {
+        setNeedsSessionRecovery(true);
+        setSubmitError("Your customer session expired before this order was placed. Your cart and entered details are still here.");
+      } else if (availabilityChanged) {
+        setIsAcceptingOrders(false);
+        setSubmitError(
+          "Ordering is paused. Your details are still here, and you can try again when the kitchen is accepting orders.",
+        );
+      } else {
+        setSubmitError(
+          "We couldn’t place your order. Please check your details and try again.",
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  if (!hasHydrated) {
+  if (!hasClientHydrated || !hasHydrated) {
     return <CheckoutSkeleton />;
   }
 
@@ -132,7 +210,7 @@ export function CheckoutPageClient() {
 
   if (isCartEmpty) {
     return (
-      <main className="min-h-screen bg-[var(--color-background)] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="bg-[var(--color-background)] px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-2xl flex-col items-center justify-center rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-16 text-center shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-brand-text)]">
             Checkout
@@ -148,47 +226,65 @@ export function CheckoutPageClient() {
 
           <Link
             href="/"
-            className="mt-8 inline-flex h-12 items-center justify-center rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)]"
+            className="mt-8 inline-flex h-12 items-center justify-center rounded-2xl bg-[var(--color-brand-strong)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-text-primary)]"
           >
             Browse menu
           </Link>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[var(--color-background)] px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-10">
+    <div className="bg-[var(--color-background)] px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-10">
       <div className="mx-auto max-w-7xl">
-        <header className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 shadow-sm sm:px-8">
-          <h1 className="sr-only">Checkout</h1>
-          <div className="flex items-center justify-between gap-4">
-            <Link
-              href="/"
-              className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]"
-            >
-              Orderly
-              <span className="text-[var(--color-brand)]">.</span>
-            </Link>
+        <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 shadow-sm sm:px-8">
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">
+            Checkout
+          </h1>
+          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+            Review your order and enter your details.
+          </p>
+          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+            {customer ? <>Signed in as <span className="font-semibold text-[var(--color-text-primary)]">{customer.email}</span>. You can use different contact details for this order.</> : <>Checking out as a guest. <Link href="/login?returnTo=%2Fcheckout" onClick={() => saveCheckoutReturnDraft(checkout)} className="font-semibold text-[var(--color-brand-text)] underline underline-offset-2">Sign in</Link> if you have an account.</>}
+          </p>
 
-            <div className="hidden items-center gap-2 text-sm text-[var(--color-text-secondary)] sm:flex">
-              <span>🔒</span>
-              <span>Secure checkout</span>
-            </div>
-          </div>
-
-          <div className="mt-8">
+          <div className="mt-6">
             <CheckoutStepIndicator />
           </div>
-        </header>
+        </div>
+
+        {!isAcceptingOrders ? (
+          <section
+            role="status"
+            className="mt-6 rounded-2xl border border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] p-4"
+          >
+            <h2 className="font-bold text-[var(--color-warning-strong)]">
+              Ordering is paused
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-[var(--color-text-secondary)]">
+              Your cart and details are preserved. Checkout will be available
+              when the kitchen is accepting orders again.
+            </p>
+          </section>
+        ) : null}
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px]">
           <div className="grid gap-5">
-            {submitError ? (
-              <div className="rounded-2xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-4 text-sm font-medium text-[var(--color-danger-strong)]">
-                {submitError}
+            {submitError || requiresSessionRecovery ? (
+              <div
+                ref={submitErrorRef}
+                tabIndex={-1}
+                role="alert"
+                className="rounded-2xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-4 text-sm font-medium text-[var(--color-danger-strong)]"
+              >
+                {submitError ?? "Your customer session ended. Sign in again or explicitly continue as a guest before placing this order."}
               </div>
             ) : null}
+            {requiresSessionRecovery ? <div className="flex flex-wrap gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+              <Link href="/login?returnTo=%2Fcheckout" onClick={() => saveCheckoutReturnDraft(checkout)} className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--color-brand-strong)] px-5 text-sm font-semibold text-[var(--color-text-inverse)]">Sign in again</Link>
+              <Button type="button" variant="secondary" disabled={isRecovering} onClick={() => { void continueAsGuest(); }}>{isRecovering ? "Clearing session…" : "Continue as guest"}</Button>
+            </div> : null}
             <FulfillmentSelector
               value={form.fulfillmentType}
               onChange={(fulfillmentType) => updateForm({ fulfillmentType })}
@@ -197,17 +293,28 @@ export function CheckoutPageClient() {
             <CustomerDetailsForm
               form={form}
               errors={visibleErrors}
-              onChange={updateForm}
+              onChange={updateContactForm}
             />
 
-            <DeliveryAddressForm
-              form={form}
-              errors={visibleErrors}
-              onChange={updateForm}
-              disabled={form.fulfillmentType === "pickup"}
-            />
+            {form.fulfillmentType === "delivery" ? (
+              <DeliveryAddressForm
+                form={form}
+                errors={visibleErrors}
+                onChange={updateForm}
+                disabled={false}
+              />
+            ) : null}
 
             <OrderNotesField form={form} onChange={updateForm} />
+            <div className="lg:hidden">
+              <CheckoutOrderSummary
+                compact
+                items={cartItems}
+                subtotalCents={subtotalCents}
+                fulfillmentType={form.fulfillmentType}
+                isAcceptingOrders={isAcceptingOrders}
+              />
+            </div>
           </div>
 
           <div className="hidden lg:block">
@@ -216,15 +323,16 @@ export function CheckoutPageClient() {
               subtotalCents={subtotalCents}
               fulfillmentType={form.fulfillmentType}
               validationErrors={summaryErrors}
-              disabled={isSubmitting}
+              disabled={isSubmitting || requiresSessionRecovery}
               onSubmitLabel={isSubmitting ? "Placing order..." : "Place Order"}
               onSubmit={handleContinue}
+              isAcceptingOrders={isAcceptingOrders}
             />
           </div>
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[0_-12px_30px_rgba(0,0,0,0.08)] lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-12px_30px_rgba(0,0,0,0.08)] lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-4">
           <div className="min-w-0 flex-1">
             <p className="text-xs text-[var(--color-text-secondary)]">Total</p>
@@ -235,14 +343,18 @@ export function CheckoutPageClient() {
 
           <Button
             type="button"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isAcceptingOrders || requiresSessionRecovery}
             onClick={handleContinue}
-            className="h-12 rounded-2xl bg-[var(--color-brand)] px-6 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)] disabled:cursor-not-allowed disabled:bg-[var(--color-surface-disabled)] disabled:text-[var(--color-text-disabled)]"
+            className="h-12 rounded-2xl px-6 text-sm font-semibold"
           >
-            {isSubmitting ? "Placing..." : "Place Order →"}
+            {!isAcceptingOrders
+              ? "Ordering paused"
+              : isSubmitting
+                ? "Placing..."
+                : "Place Order →"}
           </Button>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

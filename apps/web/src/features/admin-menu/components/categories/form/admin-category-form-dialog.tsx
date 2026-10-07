@@ -121,7 +121,7 @@ export function AdminCategoryFormDialog({
             disabled={isSubmitting}
             onClick={onClose}
             className={[
-              "rounded-md px-2 py-1",
+              "flex size-11 items-center justify-center rounded-md",
               "text-lg leading-none",
               "text-[var(--color-text-muted)]",
               "transition-colors",

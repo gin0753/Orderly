@@ -12,6 +12,7 @@ export function AdminCategoriesErrorState({
 }: AdminCategoriesErrorStateProps) {
   return (
     <Card
+      role="alert"
       className={[
         "border border-[var(--color-danger-border)]",
         "bg-[var(--color-danger-surface)]",

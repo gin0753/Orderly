@@ -23,7 +23,20 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    const accessSecret = configService.getOrThrow<string>('JWT_ACCESS_SECRET');
+    const refreshSecret =
+      configService.getOrThrow<string>('JWT_REFRESH_SECRET');
+    if (
+      accessSecret === refreshSecret ||
+      (configService.get<string>('NODE_ENV') === 'production' &&
+        (accessSecret.length < 32 || refreshSecret.length < 32))
+    ) {
+      throw new Error(
+        'Admin JWT secrets must be distinct and at least 32 characters in production.',
+      );
+    }
+  }
 
   async login(loginDto: LoginDto): Promise<AuthResponse> {
     const email = loginDto.email.trim().toLowerCase();

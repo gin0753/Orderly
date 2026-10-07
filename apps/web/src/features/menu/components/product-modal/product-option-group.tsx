@@ -68,7 +68,7 @@ export function ProductOptionGroup({
                 disabled={!option.isAvailable}
                 onClick={() => onSelect(option.id)}
                 className={[
-                  "rounded-2xl border p-4 text-left transition",
+                  "rounded-2xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2",
                   "disabled:cursor-not-allowed disabled:opacity-50",
                   isSelected
                     ? "border-[var(--color-brand)] bg-[var(--color-brand-soft)]"
@@ -84,7 +84,7 @@ export function ProductOptionGroup({
                     className={[
                       "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
                       isSelected
-                        ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white"
+                        ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)]"
                         : "border-[var(--color-border)]",
                     ].join(" ")}
                   >
@@ -118,7 +118,7 @@ export function ProductOptionGroup({
                 disabled={isDisabled}
                 onClick={() => onSelect(option.id)}
                 className={[
-                  "flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3 text-left transition",
+                  "flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2",
                   "disabled:cursor-not-allowed disabled:opacity-50",
                   isSelected
                     ? "border-[var(--color-brand)] bg-[var(--color-brand-soft)]"
@@ -130,7 +130,7 @@ export function ProductOptionGroup({
                     className={[
                       "flex h-5 w-5 items-center justify-center rounded border",
                       isSelected
-                        ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white"
+                        ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)]"
                         : "border-[var(--color-border)]",
                     ].join(" ")}
                   >

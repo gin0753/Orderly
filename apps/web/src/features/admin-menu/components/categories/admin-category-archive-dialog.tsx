@@ -20,6 +20,7 @@ export function AdminCategoryArchiveDialog({
   onConfirm,
 }: AdminCategoryArchiveDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const descriptionId = useId();
 
@@ -31,6 +32,7 @@ export function AdminCategoryArchiveDialog({
     }
 
     dialog.showModal();
+    cancelRef.current?.focus();
 
     return () => {
       if (dialog.open) {
@@ -119,6 +121,7 @@ export function AdminCategoryArchiveDialog({
 
         <div className="mt-6 flex justify-end gap-3">
           <Button
+            ref={cancelRef}
             type="button"
             variant="secondary"
             disabled={isArchiving}

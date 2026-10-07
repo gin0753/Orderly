@@ -4,10 +4,10 @@ import { Suspense } from "react";
 export default function AdminLoginPage() {
   return (
     <main className="min-h-screen bg-[var(--color-background)] p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto grid min-h-[720px] max-w-6xl overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="flex flex-col justify-between bg-[var(--color-text-primary)] p-8 text-[var(--color-text-inverse)] sm:p-12">
+      <div className="mx-auto grid max-w-6xl overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm lg:min-h-[720px] lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="flex flex-col justify-between bg-[var(--color-text-primary)] p-5 text-[var(--color-text-inverse)] sm:p-8 lg:p-12">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-brand)] font-bold text-[var(--color-text-inverse)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-brand-strong)] font-bold text-[var(--color-text-inverse)]">
               O
             </div>
 
@@ -16,12 +16,12 @@ export default function AdminLoginPage() {
             </span>
           </div>
 
-          <div className="max-w-sm space-y-5 py-16 lg:py-0">
+          <div className="max-w-sm space-y-3 py-4 lg:space-y-5 lg:py-0">
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-[var(--color-brand)]">
               Admin portal
             </p>
 
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl lg:text-5xl">
               Welcome back.
             </h1>
 
@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
 
 function LoginFormLoadingState() {
   return (
-    <div className="w-full max-w-md space-y-5 rounded-2xl border border-[var(--color-border)] p-6 sm:p-8">
+    <div role="status" aria-live="polite" aria-label="Loading sign in" className="w-full max-w-md space-y-5 rounded-2xl border border-[var(--color-border)] p-6 sm:p-8">
       <div className="h-7 w-28 animate-pulse rounded bg-[var(--color-surface-disabled)]" />
       <div className="h-10 animate-pulse rounded-lg bg-[var(--color-surface-disabled)]" />
       <div className="h-10 animate-pulse rounded-lg bg-[var(--color-surface-disabled)]" />

@@ -89,8 +89,7 @@ export function OrderStatusTimeline({
             </h2>
 
             <p className="mt-1 text-sm leading-6 text-[var(--color-danger-foreground)]">
-              The order was updated on {formatDateTime(updatedAt)}. Please
-              contact the restaurant if you need help.
+              The order was updated on {formatDateTime(updatedAt)}.
             </p>
           </div>
         </div>
@@ -151,8 +150,8 @@ export function OrderStatusTimeline({
                   className={cn(
                     "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-bold",
                     isActiveOrDone
-                      ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-[var(--color-text-inverse)]"
-                      : "border-[var(--color-border)] bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)]",
+                      ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)]"
+                      : "border-[var(--color-border)] bg-[var(--color-surface-muted)] text-[var(--color-text-muted)]",
                   )}
                 >
                   {isDone ? "✓" : index + 1}

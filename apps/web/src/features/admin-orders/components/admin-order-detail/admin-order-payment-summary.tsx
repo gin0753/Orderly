@@ -32,13 +32,6 @@ export function AdminOrderPaymentSummary({
           </div>
         ))}
 
-        {typeof order.serviceFeeCents === "number" ? (
-          <div className="flex justify-between">
-            <span className="text-[var(--color-text-secondary)]">Tax</span>
-            <span>{formatMoneyFromCents(order.serviceFeeCents)}</span>
-          </div>
-        ) : null}
-
         <div className="mt-3 flex justify-between border-t border-[var(--color-border)] pt-3 text-base font-bold">
           <span>Total</span>
           <span>{formatMoneyFromCents(order.totalCents)}</span>

@@ -43,6 +43,11 @@ enum AdminRole {
   ADMIN
 }
 
+enum CustomerOAuthPurpose {
+  SIGN_IN
+  CONNECT_GOOGLE
+}
+
 enum ProductOptionGroupKind {
   SIZE
   MODIFIER
@@ -178,6 +183,9 @@ model Order {
   userId String? @db.Uuid
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  customerUserId String?       @db.Uuid
+  customerUser   CustomerUser? @relation(fields: [customerUserId], references: [id], onDelete: SetNull)
+
   status        OrderStatus   @default(PENDING)
   orderType     OrderType
   paymentStatus PaymentStatus @default(UNPAID)
@@ -205,6 +213,9 @@ model Order {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([customerUserId, createdAt, id])
+  @@index([customerUserId, status, createdAt, id])
+  @@index([customerUserId, totalCents, createdAt, id])
   @@index([status])
   @@index([createdAt])
   @@index([customerEmail])
@@ -278,4 +289,51 @@ model AdminSession {
   adminUser AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
 
   @@index([adminUserId])
+}
+
+model CustomerUser {
+  id            String            @id @default(uuid()) @db.Uuid
+  email         String            @unique @db.VarChar(160)
+  passwordHash  String?
+  googleSubject String?           @unique @db.VarChar(255)
+  name          String?           @db.VarChar(120)
+  phone         String?           @db.VarChar(40)
+  isActive      Boolean           @default(true)
+  sessions      CustomerSession[]
+  orders        Order[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model CustomerSession {
+  id                  String   @id @default(uuid()) @db.Uuid
+  customerUserId      String   @db.Uuid
+  refreshTokenHash    String   @db.Char(64)
+  refreshTokenVersion Int      @default(0)
+  expiresAt           DateTime
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  customerUser CustomerUser @relation(fields: [customerUserId], references: [id], onDelete: Cascade)
+  oauthTransactions CustomerOAuthTransaction[]
+
+  @@index([customerUserId])
+  @@index([expiresAt])
+}
+
+model CustomerOAuthTransaction {
+  id                 String               @id @default(uuid()) @db.Uuid
+  stateHash          String               @unique @db.Char(64)
+  browserBindingHash String               @db.Char(64)
+  nonceHash          String               @db.Char(64)
+  codeVerifier       String
+  purpose            CustomerOAuthPurpose
+  returnPath         String               @db.VarChar(512)
+  customerSessionId  String?              @db.Uuid
+  expiresAt          DateTime
+  createdAt          DateTime             @default(now())
+
+  customerSession CustomerSession? @relation(fields: [customerSessionId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
 }

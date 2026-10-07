@@ -1,24 +1,29 @@
 import { spawnSync } from "node:child_process";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const webRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const workspaceRoot = path.resolve(webRoot, "../..");
 const pnpmCli = process.env.npm_execpath;
+const playwrightArguments = process.argv.slice(2);
+const require = createRequire(import.meta.url);
+const { createSafeTestDatabaseEnvironment } = require(
+  "../../../../api/test/test-database-url.cjs",
+);
 
 if (!pnpmCli) {
   throw new Error("This script must be run through pnpm.");
 }
-const testDatabaseUrl =
-  process.env.TEST_DATABASE_URL ??
-  "postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public";
-const environment = {
-  ...process.env,
-  TEST_DATABASE_URL: testDatabaseUrl,
-};
-delete environment.DATABASE_URL;
+const { environment, target } = createSafeTestDatabaseEnvironment(process.env);
 
-run(["--filter", "api", "test:db:reset"]);
+run([
+  "--filter",
+  "api",
+  "exec",
+  "node",
+  "./test/scripts/reset-test-database.mjs",
+]);
 run([
   "--filter",
   "api",
@@ -26,7 +31,27 @@ run([
   "tsx",
   "./test/scripts/seed-browser-test-data.ts",
 ]);
-run(["--filter", "web", "test:e2e:run"]);
+run(["--filter", "api", "build"]);
+if (process.env.ORDERLY_BROWSER_PRODUCTION === "1") {
+  environment.ORDERLY_API_ORIGIN = "http://localhost:4000";
+  environment.ORDERLY_BROWSER_PRODUCTION = "1";
+  run(["--filter", "web", "build"]);
+}
+
+console.log("Browser test database preflight:");
+console.log(`NODE_ENV=${environment.NODE_ENV}`);
+console.log(`host=${target.hostCategory}`);
+console.log(`database=${target.databaseName}`);
+console.log(`prismaTargetsMatch=${target.targetsMatch}`);
+
+const suites = playwrightArguments.length
+  ? [playwrightArguments]
+  : process.env.ORDERLY_BROWSER_PRODUCTION === "1" || process.env.GITHUB_ACTIONS === "true"
+    ? [["critical-workflow.spec.ts"], ["google-oauth.spec.ts"], ["customer-account.spec.ts"], ["customer-checkout-ownership.spec.ts"], ["customer-order-history.spec.ts"]]
+    : [[]];
+for (const suite of suites) {
+  run(["--filter", "web", "test:e2e:run", ...suite]);
+}
 
 function run(args) {
   const result = spawnSync(process.execPath, [pnpmCli, ...args], {

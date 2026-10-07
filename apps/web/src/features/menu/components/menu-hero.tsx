@@ -1,55 +1,195 @@
-export function MenuHero() {
+import Link from "next/link";
+
+import { ProductImage } from "@/components/ui/product-image";
+import { formatMoneyFromCents } from "@/lib/format-money";
+
+import type { MenuProduct, MenuStore } from "../types";
+
+type MenuHeroStore = Partial<
+  Pick<
+    MenuStore,
+    | "name"
+    | "isAcceptingOrders"
+    | "pickupEnabled"
+    | "deliveryEnabled"
+    | "estimatedPreparationMinutes"
+  >
+>;
+
+type MenuHeroProduct = Pick<
+  MenuProduct,
+  "name" | "imageUrl" | "priceCents"
+>;
+
+type MenuHeroProps = {
+  store?: MenuHeroStore | null;
+  product?: MenuHeroProduct | null;
+};
+
+const actionClassName = [
+  "inline-flex min-h-12 min-w-0 items-center justify-center rounded-[0.875rem]",
+  "px-3 text-sm font-semibold transition",
+  "focus-visible:outline-none focus-visible:ring-2",
+  "focus-visible:ring-[var(--color-brand-text-hover)] focus-visible:ring-offset-2",
+  "sm:px-5",
+].join(" ");
+
+function getFulfillmentLabel(store?: MenuHeroStore | null) {
+  if (
+    typeof store?.pickupEnabled !== "boolean" ||
+    typeof store.deliveryEnabled !== "boolean"
+  ) {
+    return null;
+  }
+
+  if (store.pickupEnabled && store.deliveryEnabled) {
+    return "Pickup + delivery";
+  }
+
+  if (store.pickupEnabled) {
+    return "Pickup available";
+  }
+
+  if (store.deliveryEnabled) {
+    return "Delivery available";
+  }
+
+  return null;
+}
+
+function getPreparationLabel(store?: MenuHeroStore | null) {
+  const minutes = store?.estimatedPreparationMinutes;
+
+  return typeof minutes === "number" &&
+    Number.isInteger(minutes) &&
+    minutes > 0
+    ? `Estimated prep · ${minutes} min`
+    : null;
+}
+
+function getAvailabilityLabel(store?: MenuHeroStore | null) {
+  if (store?.isAcceptingOrders === true) {
+    return "Accepting orders";
+  }
+
+  if (store?.isAcceptingOrders === false) {
+    return "Ordering paused";
+  }
+
+  return null;
+}
+
+export function MenuHero({ store, product }: MenuHeroProps) {
+  const storeName = store?.name?.trim() || null;
+  const fulfillmentLabel = getFulfillmentLabel(store);
+  const preparationLabel = getPreparationLabel(store);
+  const availabilityLabel = getAvailabilityLabel(store);
+
   return (
-    <section className="overflow-hidden rounded-3xl bg-[var(--color-surface)] shadow-sm ring-1 ring-[var(--color-ring)]">
-      <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
-        <div className="flex flex-col justify-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-brand-text)]">
-            Good food, made simple
+    <section
+      aria-labelledby="homepage-hero-title"
+      className={[
+        "grid overflow-hidden rounded-3xl",
+        "border border-[var(--color-border)]",
+        "bg-[var(--color-surface)] shadow-sm",
+        product ? "md:grid-cols-[1.04fr_0.96fr]" : "",
+      ].join(" ")}
+    >
+      <div className="flex flex-col justify-center px-6 pb-[1.125rem] pt-[1.375rem] sm:p-8 md:min-h-[389px] md:px-8 md:py-7 lg:min-h-[405px] lg:px-10 lg:py-9 max-[359px]:px-[1.125rem] max-[359px]:pb-4 max-[359px]:pt-5">
+        {storeName ? (
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-brand-text-hover)]">
+            {storeName}
           </p>
+        ) : null}
 
-          <h1 className="mt-4 max-w-2xl text-4xl font-bold tracking-tight text-[var(--color-text-primary)] sm:text-5xl">
-            Order from Orderly Kitchen
-          </h1>
+        <h1
+          id="homepage-hero-title"
+          className={`${storeName ? "mt-2.5 md:mt-3.5" : ""} max-w-xl text-[2.375rem] font-bold leading-[1.02] tracking-[-0.045em] text-[var(--color-text-primary)] md:text-[2.5rem] lg:text-[3.5rem] lg:leading-[0.98] max-[359px]:text-[2.125rem]`}
+        >
+          Fresh comfort food, ready when you are.
+        </h1>
 
-          <p className="mt-4 max-w-xl text-base leading-7 text-[var(--color-text-secondary)]">
-            Fresh ingredients, bold flavours, and a smooth ordering experience
-            built for modern restaurants.
-          </p>
+        <p className="mt-3 max-w-xl text-[0.9375rem] leading-6 text-[var(--color-text-secondary)] md:mt-[1.125rem] md:text-base md:leading-7 max-[359px]:text-sm">
+          Pizza, pasta and sides made for easy pickup or delivery.
+        </p>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <InfoChip label="Pickup" value="20–30 min" />
-            <InfoChip label="Delivery" value="30–45 min" />
-            <InfoChip label="Rating" value="4.8 / 5" />
-            <InfoChip label="Status" value="Open now" />
-          </div>
+        <div className="mt-[1.125rem] grid grid-cols-2 gap-2.5 md:mt-6 md:flex md:flex-wrap md:gap-3">
+          <a
+            href="#menu"
+            className={`${actionClassName} bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)] shadow-sm hover:bg-[var(--color-text-primary)]`}
+          >
+            Browse menu
+          </a>
+
+          <Link
+            href="/track-order"
+            className={`${actionClassName} border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]`}
+          >
+            Track order
+          </Link>
         </div>
 
-        <div className="relative min-h-64 overflow-hidden rounded-3xl orderly-warm-gradient">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex h-48 w-48 items-center justify-center rounded-full bg-[var(--color-surface)] text-7xl shadow-sm sm:h-56 sm:w-56">
-              🍕
+        {fulfillmentLabel || preparationLabel || (!product && availabilityLabel) ? (
+          <div
+            aria-label="Ordering information"
+            className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-[var(--color-text-secondary)] md:mt-5 md:text-[0.8125rem] max-[359px]:grid max-[359px]:grid-cols-1 max-[359px]:gap-y-1.5"
+          >
+            {fulfillmentLabel ? <StoreFact>{fulfillmentLabel}</StoreFact> : null}
+            {preparationLabel ? <StoreFact>{preparationLabel}</StoreFact> : null}
+            {!product && availabilityLabel ? (
+              <StoreFact>{availabilityLabel}</StoreFact>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
+      {product ? (
+        <div className="orderly-warm-gradient relative mx-[1.125rem] mb-[1.125rem] min-h-[185px] overflow-hidden rounded-[1.125rem] md:m-0 md:min-h-[389px] md:rounded-none md:p-5 lg:min-h-[405px] lg:p-6 max-[359px]:mx-3.5 max-[359px]:mb-3.5 max-[359px]:min-h-40">
+          <div className="absolute inset-0 overflow-hidden rounded-[1.125rem] md:inset-5 lg:inset-6">
+            <ProductImage
+              src={product.imageUrl}
+              alt={product.name}
+              sizes="(min-width: 1152px) 474px, (min-width: 768px) 320px, calc(100vw - 68px)"
+              priority
+            />
+
+            {availabilityLabel ? (
+              <span className="absolute left-3 top-3 inline-flex min-h-8 items-center gap-2 rounded-full border border-[var(--color-brand)]/20 bg-[var(--color-surface-glass)] px-3 text-xs font-semibold text-[var(--color-text-primary)] shadow-sm backdrop-blur">
+                <span
+                  aria-hidden="true"
+                  className="h-2 w-2 rounded-full bg-[var(--color-brand)]"
+                />
+                {availabilityLabel}
+              </span>
+            ) : null}
+
+            <div className="absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 rounded-[0.875rem] bg-[var(--color-surface-glass)] px-3 py-2.5 shadow-sm backdrop-blur md:inset-x-4 md:bottom-4 md:px-4 md:py-3">
+              <strong className="min-w-0 truncate text-sm">
+                {product.name}
+              </strong>
+              <span className="shrink-0 text-xs font-semibold text-[var(--color-text-secondary)] md:text-[0.8125rem]">
+                From {formatMoneyFromCents(product.priceCents)}
+              </span>
             </div>
           </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }
 
-type InfoChipProps = {
-  label: string;
-  value: string;
+type StoreFactProps = {
+  children: React.ReactNode;
 };
 
-function InfoChip({ label, value }: InfoChipProps) {
+function StoreFact({ children }: StoreFactProps) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-[var(--color-background)] px-4 py-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-        {label}
-      </p>
-      <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">
-        {value}
-      </p>
-    </div>
+    <span className="inline-flex items-center gap-2">
+      <span
+        aria-hidden="true"
+        className="h-2 w-2 rounded-full bg-[var(--color-brand)]"
+      />
+      {children}
+    </span>
   );
 }

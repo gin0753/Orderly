@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api-fetch";
+import { customerApiFetch } from "@/features/customer-auth/api/customer-api-fetch";
 
 export type CreateOrderFulfillmentType = "PICKUP" | "DELIVERY";
 
@@ -36,12 +36,11 @@ export type CreateOrderResponse = {
   createdAt: string;
 };
 
-export function createOrder(input: CreateOrderRequest) {
-  return apiFetch<CreateOrderResponse>("/orders", {
+export function createOrder(input: CreateOrderRequest, options: { expectCustomer?: boolean } = {}) {
+  return customerApiFetch<CreateOrderResponse>("/orders", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(input),
+    auth: "optional",
+    headers: options.expectCustomer ? { "X-Orderly-Customer-Intent": "authenticated" } : undefined,
   });
 }

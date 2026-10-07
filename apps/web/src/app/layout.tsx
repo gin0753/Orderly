@@ -3,8 +3,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Orderly",
-  description: "Production-grade restaurant ordering platform.",
+  title: {
+    default: "Orderly Kitchen",
+    template: "%s | Orderly Kitchen",
+  },
+  description:
+    "Order comfort food from Orderly Kitchen for pickup or delivery.",
 };
 
 export default function RootLayout({
@@ -13,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body>
         <Providers>{children}</Providers>
       </body>

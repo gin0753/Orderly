@@ -70,7 +70,7 @@ type ResolvedOrderItem = {
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createOrder(dto: CreateOrderDto) {
+  async createOrder(dto: CreateOrderDto, customerUserId: string | null = null) {
     this.validateOrderFulfillment(dto);
 
     const customerPhone = this.normalizeCustomerPhone(dto.customer.phone);
@@ -131,6 +131,7 @@ export class OrdersService {
           customerName: dto.customer.name.trim(),
           customerPhone,
           customerEmail: dto.customer.email.trim().toLowerCase(),
+          customerUserId,
 
           addressLine1: dto.address?.addressLine1.trim(),
           addressLine2: dto.address?.addressLine2?.trim() || undefined,
@@ -439,24 +440,10 @@ export class OrdersService {
   private async generateOrderNumber(
     tx: Prisma.TransactionClient,
   ): Promise<string> {
-    const latestOrder = await tx.order.findFirst({
-      orderBy: {
-        createdAt: 'desc',
-      },
-      select: {
-        orderNumber: true,
-      },
-    });
-
-    const parsedLatestNumber = latestOrder?.orderNumber
-      ? Number(latestOrder.orderNumber)
-      : 10000;
-
-    const latestNumber = Number.isFinite(parsedLatestNumber)
-      ? parsedLatestNumber
-      : 10000;
-
-    return String(latestNumber + 1);
+    const [allocated] = await tx.$queryRaw<{ orderNumber: string }[]>`
+      SELECT nextval('"Order_orderNumber_seq"')::TEXT AS "orderNumber"
+    `;
+    return allocated.orderNumber;
   }
 
   async findAll(query: ListOrdersQueryDto) {

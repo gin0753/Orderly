@@ -1,12 +1,16 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { lookupGuestOrder } from "../../api/order-tracking-api";
+import {
+  lookupGuestOrder,
+  OrderTrackingLookupError,
+  TRACKING_UNAVAILABLE_MESSAGE,
+} from "../../api/order-tracking-api";
 import type {
   GuestOrderLookupRequest,
   SubmitStatus,
@@ -70,8 +74,15 @@ export function OrderLookupForm({
   const [contact, setContact] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
+  const errorRef = useRef<HTMLDivElement>(null);
 
   const isBusy = submitStatus !== "idle";
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus();
+    }
+  }, [error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -115,9 +126,9 @@ export function OrderLookupForm({
       setSubmitStatus("idle");
 
       setError(
-        err instanceof Error
+        err instanceof OrderTrackingLookupError
           ? err.message
-          : "Unable to track this order. Please try again.",
+          : TRACKING_UNAVAILABLE_MESSAGE,
       );
     }
   }
@@ -166,6 +177,8 @@ export function OrderLookupForm({
 
       {error ? (
         <div
+          ref={errorRef}
+          tabIndex={-1}
           className="rounded-2xl border border-[var(--color-danger-border)] bg-[var(--color-danger-background)] px-4 py-3 text-sm text-[var(--color-danger-foreground)]"
           role="alert"
         >
@@ -188,7 +201,7 @@ export function OrderLookupForm({
 
       {submitStatus === "navigating" ? (
         <p className="text-center text-xs text-[var(--color-text-muted)]">
-          Preparing your live order status...
+          Preparing your order status...
         </p>
       ) : null}
     </form>

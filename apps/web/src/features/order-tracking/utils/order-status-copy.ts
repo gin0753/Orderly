@@ -35,7 +35,7 @@ export function isTerminalOrderStatus(status: OrderStatus) {
   return TERMINAL_ORDER_STATUSES.includes(status);
 }
 
-export function getEstimatedTimeLabel(order: OrderTrackingResponse) {
+export function getOrderStatusSummary(order: OrderTrackingResponse) {
   if (order.status === "COMPLETED") {
     return "Order completed";
   }
@@ -50,7 +50,13 @@ export function getEstimatedTimeLabel(order: OrderTrackingResponse) {
       : "Ready for delivery";
   }
 
-  return order.orderType === "PICKUP"
-    ? "Estimated ready in 20–30 min"
-    : "Estimated delivery in 30–45 min";
+  if (order.status === "PREPARING") {
+    return "Your order is being prepared";
+  }
+
+  if (order.status === "ACCEPTED") {
+    return "The kitchen has accepted your order";
+  }
+
+  return "Your order has been received";
 }

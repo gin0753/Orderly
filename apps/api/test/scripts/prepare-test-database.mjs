@@ -1,22 +1,35 @@
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
+import { PrismaClient } from '@prisma/client';
 
 import { run } from './process-utils.mjs';
 
 const require = createRequire(import.meta.url);
-const { getSafeTestDatabaseUrl } = require('../test-database-url.cjs');
+const { assertDestructiveTestDatabaseAllowed } = require('../test-database-url.cjs');
 
-const { databaseName, parsedUrl } = getSafeTestDatabaseUrl();
+const target = assertDestructiveTestDatabaseAllowed(process.env);
+const databaseUrl = new URL(target.databaseUrl);
+const databaseName = target.databaseName;
 
-if (!['localhost', '127.0.0.1', '::1'].includes(parsedUrl.hostname)) {
-  throw new Error(
-    'Automatic test database creation is restricted to the local Docker PostgreSQL service.',
-  );
+if (process.env.GITHUB_ACTIONS === 'true') {
+  // The workflow's ephemeral PostgreSQL service creates orderly_test for us.
+  // Still verify that the guarded URL connects to that database before reset.
+  const prisma = new PrismaClient();
+  try {
+    const [row] = await prisma.$queryRaw`SELECT current_database() AS name`;
+    if (row?.name !== databaseName) {
+      throw new Error('The CI PostgreSQL service is not the test database.');
+    }
+  } finally {
+    await prisma.$disconnect();
+  }
+  console.log(`Test database ${databaseName} is available.`);
+  process.exit(0);
 }
 
 run('docker', ['compose', 'up', '-d', 'db']);
 
-const postgresUser = decodeURIComponent(parsedUrl.username);
+const postgresUser = decodeURIComponent(databaseUrl.username);
 
 const maxAttempts = 30;
 

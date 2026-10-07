@@ -2,12 +2,18 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
+import type { Express } from 'express';
 
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  // Railway is the only trusted network hop. Express uses the rightmost
+  // forwarded address and ignores any earlier client-supplied XFF entries.
+  const express = app.getHttpAdapter().getInstance() as Express;
+  express.set('trust proxy', 1);
 
   app.use(cookieParser());
 

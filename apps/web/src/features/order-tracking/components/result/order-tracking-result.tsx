@@ -10,6 +10,7 @@ import { OrderTrackingHeader } from "./order-tracking-header";
 import { OrderTrackingLoadingState } from "./order-tracking-loading-state";
 import { OrderTrackingVerificationState } from "./order-tracking-verification-state";
 import { TrackingOrderSummary } from "./tracking-order-summary";
+import { TRACKING_UNAVAILABLE_MESSAGE } from "../../api/order-tracking-api";
 
 type OrderTrackingResultProps = {
   orderNumber: string;
@@ -21,11 +22,11 @@ type OrderTrackingPageShellProps = {
 
 function OrderTrackingPageShell({ children }: OrderTrackingPageShellProps) {
   return (
-    <main className="min-h-screen bg-[var(--color-page-background)] px-4 py-6 text-[var(--color-text-primary)] md:px-8 md:py-10">
+    <div className="bg-[var(--color-page-background)] px-4 py-6 text-[var(--color-text-primary)] md:px-8 md:py-10">
       <div className="mx-auto max-w-6xl">
         {children}
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -37,6 +38,7 @@ export function OrderTrackingResult({ orderNumber }: OrderTrackingResultProps) {
     isRefreshing,
     needsVerification,
     refreshOrder,
+    refreshMessage,
   } = useOrderTracking(orderNumber);
 
   if (isInitialLoading) {
@@ -60,7 +62,8 @@ export function OrderTrackingResult({ orderNumber }: OrderTrackingResultProps) {
       <OrderTrackingPageShell>
         <OrderTrackingErrorState
           orderNumber={orderNumber}
-          error={error}
+          errorKind={error?.kind ?? "unavailable"}
+          message={error?.message ?? TRACKING_UNAVAILABLE_MESSAGE}
           onRetry={refreshOrder}
         />
       </OrderTrackingPageShell>
@@ -69,6 +72,9 @@ export function OrderTrackingResult({ orderNumber }: OrderTrackingResultProps) {
 
   return (
     <OrderTrackingPageShell>
+      <p role="status" aria-live="polite" className="sr-only">
+        {refreshMessage}
+      </p>
       <OrderTrackingHeader
         order={order}
         isRefreshing={isRefreshing}

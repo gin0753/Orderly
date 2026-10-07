@@ -26,14 +26,14 @@ export function AdminOrderCard({
     <button
       onClick={onClick}
       className={[
-        "grid w-full grid-cols-[1fr_auto] gap-4 rounded-2xl border p-4 text-left transition hover:border-[var(--color-border-hover)]",
+        "grid w-full grid-cols-[minmax(0,1fr)_auto] gap-4 rounded-2xl border p-4 text-left transition hover:border-[var(--color-border-hover)]",
         isSelected
           ? "border-[var(--color-brand)] bg-[var(--color-surface)]"
           : "border-[var(--color-border)] bg-[var(--color-surface)]",
       ].join(" ")}
     >
-      <div>
-        <div className="flex items-center gap-3">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-3">
           <p className="font-bold">#{order.orderNumber}</p>
           <OrderStatusBadge status={order.status} />
         </div>

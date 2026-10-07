@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { makeStore } from "@/store/store";
@@ -21,21 +21,28 @@ jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: pushMock }),
   usePathname: () => pathname,
 }));
-jest.mock("@/features/order-tracking/api/order-tracking-api", () => ({ lookupGuestOrder: jest.fn() }));
+jest.mock("@/features/order-tracking/api/order-tracking-api", () => ({
+  lookupGuestOrder: jest.fn(),
+  OrderTrackingLookupError: class OrderTrackingLookupError extends Error {
+    kind = "unavailable";
+  },
+  TRACKING_UNAVAILABLE_MESSAGE:
+    "Tracking is temporarily unavailable. Try again in a moment.",
+}));
 
 beforeEach(() => {
   window.sessionStorage.clear();
   pathname = "/checkout";
 });
 
-it("uses one customer header on tracking with Orders active and a working cart", async () => {
+it("uses one customer header on tracking with Track order active and a working cart", async () => {
   pathname = "/track-order";
   const page = await TrackOrderPage({ searchParams: Promise.resolve({ orderNumber: "ORD-123" }) });
   const store = makeStore();
   render(<Provider store={store}><CustomerLayout>{page}</CustomerLayout></Provider>);
   expect(screen.getAllByRole("banner")).toHaveLength(1);
-  expect(screen.getByRole("link", { name: "Orders" })).toHaveAttribute("aria-current", "page");
-  expect(screen.getByRole("link", { name: "Menu" })).toHaveAttribute("href", "/");
+  expect(within(screen.getByRole("navigation", { name: "Primary navigation" })).getByRole("link", { name: "Track order" })).toHaveAttribute("aria-current", "page");
+  expect(screen.getAllByRole("link", { name: "Menu" })).toHaveLength(2);
   expect(screen.queryByRole("link", { name: "Back to menu" })).not.toBeInTheDocument();
   expect(screen.getByDisplayValue("ORD-123")).toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: "Open cart" }));
@@ -59,13 +66,43 @@ it("edits the cart in checkout while preserving entered customer details", async
   }] }));
   render(<Provider store={store}><CheckoutPageClient /><CartDrawer /></Provider>);
   await userEvent.type(screen.getByRole("textbox", { name: "Full name" }), "Sam Customer");
-  await userEvent.click(screen.getByRole("button", { name: "Edit cart" }));
+  await userEvent.click(screen.getAllByRole("button", { name: "Edit cart" })[0]);
   expect(store.getState().cart.isCartOpen).toBe(true);
-  await userEvent.click(screen.getByRole("button", { name: "Close cart drawer" }));
+  await userEvent.click(screen.getByRole("button", { name: "Close cart" }));
   expect(screen.getByRole("textbox", { name: "Full name" })).toHaveValue("Sam Customer");
   expect(pushMock).not.toHaveBeenCalled();
   expect(screen.queryByText("Review")).not.toBeInTheDocument();
   expect(screen.getByText("Confirmed")).toBeInTheDocument();
+});
+
+it("keeps checkout review and fees available while preserving delivery details across fulfillment changes", async () => {
+  const store = makeStore();
+  store.dispatch(hydrateCart({ items: [{
+    key: "pizza", product: { id: "pizza", name: "Pizza", priceCents: 1500 },
+    quantity: 2, selectedOptions: [{
+      id: "large", optionGroupId: "size", optionGroupName: "Size",
+      kind: "SIZE", name: "Large", priceDeltaCents: 200,
+    }], unitPriceCents: 1700,
+  }] }));
+  render(<Provider store={store}><CheckoutPageClient /></Provider>);
+  const review = within(screen.getByRole("complementary", { name: "Order review" }));
+  expect(review.getByText("Pizza")).toBeInTheDocument();
+  expect(review.getByText("Large")).toBeInTheDocument();
+  expect(review.getByText("Qty: 2")).toBeInTheDocument();
+  expect(review.getByText("Subtotal")).toBeInTheDocument();
+  expect(review.getByText("Service fee")).toBeInTheDocument();
+  expect(review.getByText("$35.20")).toBeInTheDocument();
+  expect(review.getByRole("button", { name: "Edit cart" })).toBeInTheDocument();
+  expect(review.queryByRole("button", { name: "Place Order" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("textbox", { name: "Address" })).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: /Have your order delivered/ }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Address" }), "10 Example Street");
+  expect(review.getByText("$3.99")).toBeInTheDocument();
+  expect(review.getByText("$39.19")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: /Collect your order/ }));
+  expect(screen.queryByRole("textbox", { name: "Address" })).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: /Have your order delivered/ }));
+  expect(screen.getByRole("textbox", { name: "Address" })).toHaveValue("10 Example Street");
 });
 
 it("requires contact verification and preserves the order number on recovery", async () => {
@@ -87,7 +124,7 @@ it("preserves the order number when a verified lookup fails", async () => {
 it("exposes only implemented customer and admin header destinations", () => {
   const store = makeStore();
   const view = render(<Provider store={store}><SiteHeader /></Provider>);
-  expect(screen.getByRole("link", { name: "Orders" })).toHaveAttribute("href", "/track-order");
+  expect(screen.getByRole("link", { name: "Track order" })).toHaveAttribute("href", "/track-order");
   expect(screen.getByRole("link", { name: "Menu" })).toHaveAttribute("href", "/");
   for (const name of ["Deals", "Catering", "About"]) {
     expect(screen.queryByRole("link", { name })).not.toBeInTheDocument();

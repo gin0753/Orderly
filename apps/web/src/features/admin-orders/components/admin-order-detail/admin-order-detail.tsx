@@ -1,4 +1,4 @@
-import { Package, Phone, Truck, X } from "lucide-react";
+import { Package, Truck, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +24,7 @@ type AdminOrderDetailProps = {
 };
 
 function getDeliveryAddress(order: AdminOrder) {
-  return [order.deliveryAddress, order.deliverySuburb, order.deliveryPostcode]
+  return [order.addressLine1, order.addressLine2, order.city, order.state, order.postcode]
     .filter(Boolean)
     .join(", ");
 }
@@ -104,15 +104,6 @@ export function AdminOrderDetail({
               ) : null}
             </div>
 
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              aria-label="Call customer"
-              className="shrink-0"
-            >
-              <Phone className="size-4" />
-            </Button>
           </div>
         </section>
 

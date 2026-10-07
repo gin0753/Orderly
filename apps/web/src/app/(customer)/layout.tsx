@@ -1,16 +1,9 @@
-import { SiteHeader } from "@/components/layout/site-header";
-import { CartDrawer } from "@/features/cart/components/cart-drawer/cart-drawer";
+import { CustomerShell } from "@/components/layout/customer-shell";
 
 export default function CustomerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <>
-      <SiteHeader />
-      {children}
-      <CartDrawer />
-    </>
-  );
+  return <CustomerShell>{children}</CustomerShell>;
 }

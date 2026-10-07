@@ -126,6 +126,23 @@ describe('AuthService', () => {
   let jwtService: JwtServiceMock;
   let configService: ConfigServiceMock;
 
+  it('rejects short Admin JWT secrets in production at construction', () => {
+    const config = {
+      get: jest.fn().mockReturnValue('production'),
+      getOrThrow: jest.fn((key: string) =>
+        key === 'JWT_ACCESS_SECRET' ? 'short-access' : 'short-refresh',
+      ),
+    };
+    expect(
+      () =>
+        new AuthService(
+          {} as PrismaService,
+          {} as JwtService,
+          config as unknown as ConfigService,
+        ),
+    ).toThrow('Admin JWT secrets must be distinct');
+  });
+
   beforeEach(async () => {
     jest.resetAllMocks();
     jest.useFakeTimers();

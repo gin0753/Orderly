@@ -17,10 +17,19 @@ Supply configuration at runtime through ECS environment variables and secrets:
 
 - `DATABASE_URL`: reachable PostgreSQL database with the appropriate TLS settings.
 - `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, and `JWT_REFRESH_TTL_DAYS`: the
-  existing authentication configuration.
+  existing authentication configuration. The two secrets must differ and
+  contain at least 32 characters in production; missing or unsafe secrets
+  fail API startup.
 - `JWT_ACCESS_TTL` and `JWT_REFRESH_TTL`: durations such as `15m` and `7d`;
   the refresh duration must match `JWT_REFRESH_TTL_DAYS` (for example, `7`).
 - `WEB_ORIGIN`: the production frontend origin.
+- `CUSTOMER_JWT_ACCESS_SECRET` and `CUSTOMER_JWT_REFRESH_SECRET`: independent
+  random secrets of at least 32 characters, distinct from each other and both
+  Admin JWT secrets. The optional customer issuer, audience, access/refresh
+  TTLs, and absolute session TTL are documented in `apps/api/.env.example`.
+- Optional Google OAuth: set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and
+  `GOOGLE_CALLBACK_URL` together. The callback must be the exact HTTPS
+  `WEB_ORIGIN/api/customer/auth/google/callback` URL registered with Google.
 - `PORT`: listening port; falls back to `API_PORT`, then `4000`.
 - `OPENAI_API_KEY` and `OPENAI_MODEL` if using the existing AI menu feature.
 
@@ -44,6 +53,8 @@ permissions. It does not seed the database. Wait for a successful task exit
 before deploying API tasks that require the new schema. API startup does not
 automatically apply migrations. Existing databases need migration history
 compatible with the committed migrations.
+The Stage 13.8 order-number sequence migration must precede deployment of API
+code that allocates numbers from it.
 
 No `.env` files are sent to Docker. The final image contains production
 dependencies, compiled code, the package manifest, schema, and migrations.

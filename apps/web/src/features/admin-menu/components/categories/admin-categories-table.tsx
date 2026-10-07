@@ -245,6 +245,7 @@ export function AdminCategoriesTableSkeleton() {
   return (
     <div
       aria-label="Loading categories"
+      aria-busy="true"
       className={[
         "overflow-hidden rounded-lg",
         "border border-[var(--color-border)]",

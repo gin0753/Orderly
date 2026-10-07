@@ -120,7 +120,7 @@ export function MobileNavigation({
             <nav aria-label={label} className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
               {links.map((link) => {
                 const exact = pathname === link.href;
-                const active = exact || (link.href !== "/" && pathname.startsWith(`${link.href}/`));
+                const active = exact || (link.href !== "/" && !(link.href === "/account" && pathname.startsWith("/account/orders")) && pathname.startsWith(`${link.href}/`));
                 return (
                   <Link key={link.href} href={link.href}
                     aria-current={active ? (exact ? "page" : "location") : undefined}

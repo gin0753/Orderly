@@ -72,7 +72,7 @@ it("exposes customer ARIA state, isolated links and current destination", async 
   expect(trigger).toHaveAttribute("aria-controls", dialog.id);
   expect(dialog).toHaveAttribute("aria-modal", "true");
   const links = within(dialog).getAllByRole("link");
-  expect(links.map(link => [link.textContent, link.getAttribute("href")])).toEqual([["Menu", "/"], ["Orders", "/track-order"]]);
+  expect(links.map(link => [link.textContent, link.getAttribute("href")])).toEqual([["Menu", "/"], ["Track order", "/track-order"], ["Sign in", "/login?returnTo=%2Ftrack-order"]]);
   expect(links[1]).toHaveAttribute("aria-current", "page");
   expect(links[0]).not.toHaveAttribute("aria-current");
   expect(within(dialog).queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
@@ -99,7 +99,7 @@ it.each(["close", "escape", "backdrop", "link", "cancel"])("closes via %s and re
   if (method === "escape") await userEvent.keyboard("{Escape}");
   if (method === "backdrop") fireEvent.click(dialog);
   if (method === "link") {
-    const link = within(dialog).getByRole("link", { name: "Orders" });
+    const link = within(dialog).getByRole("link", { name: "Track order" });
     // Exercise the close handler without jsdom attempting a document navigation.
     link.addEventListener("click", event => event.preventDefault());
     await userEvent.click(link);
@@ -120,7 +120,7 @@ it("does not close on interior clicks and cycles keyboard focus", async () => {
   const close = within(dialog).getByRole("button", { name: "Close customer navigation" });
   close.focus();
   await userEvent.tab({ shift: true });
-  expect(within(dialog).getByRole("link", { name: "Orders" })).toHaveFocus();
+  expect(within(dialog).getByRole("link", { name: "Sign in" })).toHaveFocus();
   await userEvent.tab();
   expect(close).toHaveFocus();
   await userEvent.tab();
@@ -143,7 +143,7 @@ it("closes when resizing to desktop and leaves desktop links available", async (
   expect(trigger).toHaveAttribute("aria-expanded", "false");
   const nav = screen.getByRole("navigation", { name: "Primary navigation" });
   expect(within(nav).getByRole("link", { name: "Menu" })).toHaveAttribute("href", "/");
-  expect(within(nav).getByRole("link", { name: "Orders" })).toHaveAttribute("href", "/track-order");
+  expect(within(nav).getByRole("link", { name: "Track order" })).toHaveAttribute("href", "/track-order");
 });
 
 it("keeps the cart badge and closes an existing cart before opening navigation", async () => {

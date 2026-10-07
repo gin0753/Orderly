@@ -1,6 +1,8 @@
 /// <reference types="jest" />
 
 import { INestApplication } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'node:crypto';
 import {
   OptionGroupType,
   PrismaClient,
@@ -35,7 +37,7 @@ describe('Guest orders API (e2e)', () => {
   let prisma: PrismaClient;
 
   beforeAll(async () => {
-    app = await createTestApp();
+    app = await createTestApp({ bypassThrottling: true });
     httpServer = app.getHttpServer() as Server;
     prisma = app.get(PrismaService);
   });
@@ -46,7 +48,34 @@ describe('Guest orders API (e2e)', () => {
 
   beforeEach(async () => {
     await clearOrderFixtures(prisma);
+    await prisma.customerSession.deleteMany();
+    await prisma.customerUser.deleteMany();
   });
+
+  async function passwordCustomer() {
+    const response = await request(httpServer)
+      .post('/api/customer/auth/register')
+      .set('Origin', 'http://localhost:3000')
+      .set('X-Orderly-Client', 'customer-web')
+      .send({
+        email: 'owner@example.test',
+        name: 'Order Owner',
+        password: 'An owner password 123!',
+      })
+      .expect(201);
+    const setCookies = response.headers['set-cookie'] as unknown as string[];
+    const access = setCookies
+      .find((value) => value.startsWith('orderly_customer_access='))!
+      .split(';')[0];
+    const refresh = setCookies
+      .find((value) => value.startsWith('orderly_customer_refresh='))!
+      .split(';')[0];
+    return {
+      id: (response.body as { user: { id: string } }).user.id,
+      access,
+      refresh,
+    };
+  }
 
   it('creates and persists a guest delivery order using server prices and snapshots', async () => {
     const fixture = await createCheckoutFixture(prisma);
@@ -93,6 +122,7 @@ describe('Guest orders API (e2e)', () => {
     });
 
     expect(order).toMatchObject({
+      customerUserId: null,
       customerName: 'Ada Lovelace',
       customerPhone: '610255550100',
       customerEmail: 'ada@example.com',
@@ -124,6 +154,223 @@ describe('Guest orders API (e2e)', () => {
         priceDeltaCentsSnapshot: 250,
       }),
     ]);
+  });
+
+  it('allocates distinct order numbers for concurrent checkouts', async () => {
+    const fixture = await createCheckoutFixture(prisma);
+    const requestBody = createPickupRequest(fixture.productId, [
+      fixture.smallOptionId,
+    ]);
+
+    const responses = await Promise.all(
+      Array.from({ length: 8 }, () =>
+        request(httpServer).post('/api/orders').send(requestBody),
+      ),
+    );
+    expect(responses.map((response) => response.status)).toEqual(
+      Array(8).fill(201),
+    );
+    const numbers = responses.map(
+      (response) => (response.body as CreatedOrderBody).orderNumber,
+    );
+    expect(new Set(numbers).size).toBe(8);
+    expect(numbers.every((number) => /^\d+$/.test(number))).toBe(true);
+    expect(await prisma.order.count()).toBe(8);
+  });
+
+  it('binds an authenticated order to the session while keeping submitted contact snapshots', async () => {
+    const fixture = await createCheckoutFixture(prisma);
+    const owner = await passwordCustomer();
+    const body = createPickupRequest(fixture.productId, [
+      fixture.smallOptionId,
+    ]);
+    body.customer.email = 'different-work-address@example.test';
+    const response = await request(httpServer)
+      .post('/api/orders')
+      .set('Cookie', owner.access)
+      .send(body)
+      .expect(201);
+    const order = await prisma.order.findUniqueOrThrow({
+      where: { id: (response.body as CreatedOrderBody).orderId },
+    });
+    expect(order.customerUserId).toBe(owner.id);
+    expect(order.customerEmail).toBe('different-work-address@example.test');
+    expect(response.body).not.toHaveProperty('customerUserId');
+    expect(
+      (await prisma.customerUser.findUniqueOrThrow({ where: { id: owner.id } }))
+        .email,
+    ).toBe('owner@example.test');
+
+    await prisma.product.update({
+      where: { id: fixture.productId },
+      data: { name: 'Renamed pizza', archivedAt: new Date() },
+    });
+    await prisma.productOption.update({
+      where: { id: fixture.smallOptionId },
+      data: { name: 'Renamed size', priceDelta: '9.00' },
+    });
+    const history = await request(httpServer)
+      .get(`/api/customer/orders/${order.id}`)
+      .set('Cookie', owner.access)
+      .expect(200);
+    const historicalItem = (history.body as { items: unknown[] }).items[0];
+    expect(historicalItem).toMatchObject({
+      name: 'Integration Pizza',
+      sizeName: 'Small',
+      sizePriceCents: 0,
+    });
+  });
+
+  it.each(['customerUserId', 'customerId', 'userId'])(
+    'rejects a browser-supplied %s ownership field',
+    async (field) => {
+      const fixture = await createCheckoutFixture(prisma);
+      const owner = await passwordCustomer();
+      await request(httpServer)
+        .post('/api/orders')
+        .set('Cookie', owner.access)
+        .send({
+          ...createPickupRequest(fixture.productId, [fixture.smallOptionId]),
+          [field]: owner.id,
+        })
+        .expect(400);
+      expect(await prisma.order.count()).toBe(0);
+    },
+  );
+
+  it('rejects stale customer credentials without creating an unowned order', async () => {
+    const fixture = await createCheckoutFixture(prisma);
+    const owner = await passwordCustomer();
+    const body = createPickupRequest(fixture.productId, [
+      fixture.smallOptionId,
+    ]);
+    const jwt = app.get(JwtService);
+    const session = await prisma.customerSession.findFirstOrThrow({
+      where: { customerUserId: owner.id },
+    });
+    const expired = await jwt.signAsync(
+      {
+        sub: owner.id,
+        sid: session.id,
+        tokenType: 'customer_access',
+        jti: randomUUID(),
+      },
+      {
+        algorithm: 'HS256',
+        secret: process.env.CUSTOMER_JWT_ACCESS_SECRET,
+        issuer: process.env.CUSTOMER_JWT_ISSUER,
+        audience: process.env.CUSTOMER_JWT_AUDIENCE,
+        expiresIn: -1,
+      },
+    );
+    for (const cookies of [
+      [`orderly_customer_access=${expired}`, owner.refresh],
+      ['orderly_customer_access=malformed'],
+      [owner.refresh],
+    ]) {
+      await request(httpServer)
+        .post('/api/orders')
+        .set('Cookie', cookies)
+        .send(body)
+        .expect(401);
+      expect(await prisma.order.count()).toBe(0);
+    }
+    await prisma.customerSession.deleteMany({
+      where: { customerUserId: owner.id },
+    });
+    await request(httpServer)
+      .post('/api/orders')
+      .set('Cookie', owner.access)
+      .send(body)
+      .expect(401);
+    expect(await prisma.order.count()).toBe(0);
+    const newSession = await passwordCustomerAfterRevocation();
+    await prisma.customerUser.update({
+      where: { id: owner.id },
+      data: { isActive: false },
+    });
+    await request(httpServer)
+      .post('/api/orders')
+      .set('Cookie', newSession)
+      .send(body)
+      .expect(401);
+    expect(await prisma.order.count()).toBe(0);
+
+    async function passwordCustomerAfterRevocation() {
+      const login = await request(httpServer)
+        .post('/api/customer/auth/login')
+        .set('Origin', 'http://localhost:3000')
+        .set('X-Orderly-Client', 'customer-web')
+        .send({
+          email: 'owner@example.test',
+          password: 'An owner password 123!',
+        })
+        .expect(200);
+      const cookies = login.headers['set-cookie'] as unknown as string[];
+      return cookies
+        .find((value) => value.startsWith('orderly_customer_access='))!
+        .split(';')[0];
+    }
+  });
+
+  it('leaves admin-only and historical orders unowned and clears ownership on customer deletion', async () => {
+    const fixture = await createCheckoutFixture(prisma);
+    const body = createPickupRequest(fixture.productId, [
+      fixture.smallOptionId,
+    ]);
+    const guest = await request(httpServer)
+      .post('/api/orders')
+      .set('Cookie', [
+        'orderly_admin_access=admin-token',
+        'orderly_admin_refresh=admin-refresh',
+      ])
+      .send(body)
+      .expect(201);
+    expect(
+      (
+        await prisma.order.findUniqueOrThrow({
+          where: { id: (guest.body as CreatedOrderBody).orderId },
+        })
+      ).customerUserId,
+    ).toBeNull();
+    const owner = await passwordCustomer();
+    const owned = await request(httpServer)
+      .post('/api/orders')
+      .set('Cookie', owner.access)
+      .send(body)
+      .expect(201);
+    await prisma.customerUser.delete({ where: { id: owner.id } });
+    expect(
+      (
+        await prisma.order.findUniqueOrThrow({
+          where: { id: (owned.body as CreatedOrderBody).orderId },
+        })
+      ).customerUserId,
+    ).toBeNull();
+  });
+
+  it('has the ownership indexes needed for customer history queries', async () => {
+    const indexes = await prisma.$queryRaw<Array<{ indexname: string }>>`
+      SELECT indexname FROM pg_indexes
+      WHERE schemaname = 'public' AND tablename = 'Order'
+    `;
+    expect(indexes.map((index) => index.indexname)).toEqual(
+      expect.arrayContaining([
+        'Order_customerUserId_createdAt_id_idx',
+        'Order_customerUserId_status_createdAt_id_idx',
+        'Order_customerUserId_totalCents_createdAt_id_idx',
+      ]),
+    );
+  });
+
+  it('rejects an authenticated checkout when customer cookies vanish before the request', async () => {
+    const fixture = await createCheckoutFixture(prisma);
+    await request(httpServer)
+      .post('/api/orders')
+      .set('X-Orderly-Customer-Intent', 'authenticated')
+      .send(createPickupRequest(fixture.productId, [fixture.smallOptionId]))
+      .expect(401);
+    expect(await prisma.order.count()).toBe(0);
   });
 
   it.each(['an unknown property', 'duplicate option selections'])(

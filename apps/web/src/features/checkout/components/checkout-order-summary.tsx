@@ -13,6 +13,7 @@ import {
 } from "../checkout-utils";
 import type { FulfillmentType } from "../checkout-types";
 import { Button } from "@/components/ui/button";
+import { setCartOpener } from "@/features/cart/utils/cart-focus";
 
 type CheckoutOrderSummaryProps = {
   items: CartItem[];
@@ -22,6 +23,8 @@ type CheckoutOrderSummaryProps = {
   onSubmitLabel?: string;
   disabled?: boolean;
   onSubmit?: () => void;
+  isAcceptingOrders?: boolean;
+  compact?: boolean;
 };
 
 export function CheckoutOrderSummary({
@@ -32,6 +35,8 @@ export function CheckoutOrderSummary({
   onSubmitLabel = "Place Order",
   disabled = false,
   onSubmit,
+  isAcceptingOrders = true,
+  compact = false,
 }: CheckoutOrderSummaryProps) {
   const dispatch = useAppDispatch();
   const deliveryFeeCents = getDeliveryFeeCents(subtotalCents, fulfillmentType);
@@ -48,7 +53,10 @@ export function CheckoutOrderSummary({
   );
 
   return (
-    <aside className="sticky top-6 rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-sm">
+    <aside
+      aria-label={compact ? "Order review" : "Order summary"}
+      className={`${compact ? "" : "sticky top-24"} rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-sm`}
+    >
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
@@ -62,7 +70,10 @@ export function CheckoutOrderSummary({
         <Button
           type="button"
           variant="ghost"
-          onClick={() => dispatch(openCart())}
+          onClick={(event) => {
+            setCartOpener(event.currentTarget);
+            dispatch(openCart());
+          }}
           className="text-sm font-semibold text-[var(--color-brand-text)] hover:text-[var(--color-brand-text-hover)]"
         >
           Edit cart
@@ -77,7 +88,7 @@ export function CheckoutOrderSummary({
 
           return (
             <div key={item.key} className="flex gap-4 py-4 first:pt-0">
-              <div className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--color-surface-hover)]">
+              <div className={`${compact ? "hidden" : "relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--color-surface-hover)]"}`}>
                 <ProductImage
                   src={item.product.imageUrl}
                   alt={item.product.name}
@@ -86,14 +97,14 @@ export function CheckoutOrderSummary({
               </div>
 
               <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="line-clamp-1 font-semibold text-[var(--color-text-primary)]">
+                    <h3 className="break-words font-semibold text-[var(--color-text-primary)]">
                       {item.product.name}
                     </h3>
 
                     {optionSummary ? (
-                      <p className="mt-1 line-clamp-2 text-sm text-[var(--color-text-secondary)]">
+                      <p className="mt-1 break-words text-sm text-[var(--color-text-secondary)]">
                         {optionSummary}
                       </p>
                     ) : null}
@@ -143,7 +154,7 @@ export function CheckoutOrderSummary({
       </div>
 
       {fulfillmentType === "delivery" && amountAwayFromFreeDelivery > 0 ? (
-        <div className="mt-5 rounded-2xl bg-[var(--color-danger-surface)] p-4">
+        <div className="mt-5 rounded-2xl bg-[var(--color-brand-soft)] p-4">
           <p className="text-sm text-[var(--color-text-secondary)]">
             You&apos;re{" "}
             <span className="font-semibold text-[var(--color-brand-text)]">
@@ -180,18 +191,25 @@ export function CheckoutOrderSummary({
         </div>
       ) : null}
 
-      <Button
-        type="button"
-        disabled={disabled}
-        onClick={onSubmit}
-        className="mt-6 h-[52px] w-full rounded-2xl bg-[var(--color-brand)] px-5 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-brand-hover)] disabled:cursor-not-allowed disabled:bg-[var(--color-surface-disabled)] disabled:text-[var(--color-text-disabled)]"
-      >
-        {onSubmitLabel}
-      </Button>
+      {!compact ? (
+        <Button
+          type="button"
+          disabled={disabled || !isAcceptingOrders}
+          onClick={onSubmit}
+          className="mt-6 h-[52px] w-full rounded-2xl"
+        >
+          {isAcceptingOrders ? onSubmitLabel : "Ordering paused"}
+        </Button>
+      ) : null}
 
-      <p className="mt-4 text-center text-xs text-[var(--color-text-muted)]">
-        🔒 Your information is secure and encrypted
-      </p>
+      {!isAcceptingOrders ? (
+        <p
+          role="status"
+          className="mt-4 text-center text-xs leading-5 text-[var(--color-warning-strong)]"
+        >
+          You can edit your cart and details while ordering is paused.
+        </p>
+      ) : null}
     </aside>
   );
 }

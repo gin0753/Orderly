@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { lookupGuestOrder } from "../api/order-tracking-api";
+import {
+  lookupGuestOrder,
+  OrderTrackingLookupError,
+  TRACKING_UNAVAILABLE_MESSAGE,
+  type OrderTrackingErrorKind,
+} from "../api/order-tracking-api";
 import { TRACKING_LOOKUP_STORAGE_KEY } from "../constants/order-tracking-storage";
 import type {
   GuestOrderLookupRequest,
@@ -23,10 +28,14 @@ function normaliseOrderNumber(value: string) {
 
 export function useOrderTracking(orderNumber: string) {
   const [order, setOrder] = useState<OrderTrackingResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{
+    kind: OrderTrackingErrorKind;
+    message: string;
+  } | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [needsVerification, setNeedsVerification] = useState(false);
+  const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
   const isPollingRef = useRef(false);
 
   const normalisedOrderNumber = useMemo(
@@ -69,7 +78,10 @@ export function useOrderTracking(orderNumber: string) {
     }, [normalisedOrderNumber]);
 
   const loadOrder = useCallback(
-    async (mode: "initial" | "refresh" = "initial") => {
+    async (
+      mode: "initial" | "refresh" = "initial",
+      announceRefresh = false,
+    ) => {
       const payload = getStoredLookupPayload();
 
       if (!payload) {
@@ -86,17 +98,28 @@ export function useOrderTracking(orderNumber: string) {
       }
 
       setError(null);
+      if (announceRefresh) {
+        setRefreshMessage(null);
+      }
 
       try {
         const nextOrder = await lookupGuestOrder(payload);
         setOrder(nextOrder);
         setNeedsVerification(false);
+        if (announceRefresh) {
+          setRefreshMessage("Order status refreshed.");
+        }
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Unable to load this order. Please try again.",
-        );
+        setError({
+          kind:
+            err instanceof OrderTrackingLookupError
+              ? err.kind
+              : "unavailable",
+          message:
+            err instanceof OrderTrackingLookupError
+              ? err.message
+              : TRACKING_UNAVAILABLE_MESSAGE,
+        });
       } finally {
         setIsInitialLoading(false);
         setIsRefreshing(false);
@@ -106,7 +129,7 @@ export function useOrderTracking(orderNumber: string) {
   );
 
   const refreshOrder = useCallback(() => {
-    void loadOrder("refresh");
+    void loadOrder("refresh", true);
   }, [loadOrder]);
 
   useEffect(() => {
@@ -146,5 +169,6 @@ export function useOrderTracking(orderNumber: string) {
     isRefreshing,
     needsVerification,
     refreshOrder,
+    refreshMessage,
   };
 }
