@@ -2,7 +2,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
-import type { Express } from 'express';
 
 import { AppModule } from './app.module';
 
