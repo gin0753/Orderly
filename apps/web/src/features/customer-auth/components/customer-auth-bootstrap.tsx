@@ -11,9 +11,11 @@ import { bootstrapCustomer, customerSessionChanged, customerSessionExpired } fro
 export function CustomerAuthBootstrap() {
   const dispatch = useAppDispatch();
   const customer = useAppSelector((state) => state.customerAuth.customer);
+  const status = useAppSelector((state) => state.customerAuth.status);
   const knownCustomer = useRef(customer);
+  const knownStatus = useRef(status);
   const queryClient = useQueryClient();
-  useEffect(() => { knownCustomer.current = customer; }, [customer]);
+  useEffect(() => { knownCustomer.current = customer; knownStatus.current = status; }, [customer, status]);
   useEffect(() => registerCustomerPrivateQueryClient(queryClient), [queryClient]);
   useEffect(() => {
     const unsubscribe = customerClient.onSessionFailure(() => {
@@ -32,7 +34,14 @@ export function CustomerAuthBootstrap() {
       window.history.replaceState(window.history.state, "", `${completion.pathname}${completion.search}${completion.hash}`);
       publishCustomerSessionEvent("changed");
     }
-    function recheck() { if (document.visibilityState === "visible") void dispatch(bootstrapCustomer()); }
+    function recheck() {
+      // Known guests rely on explicit session-change broadcasts or a new mount.
+      // Keep focus validation as a fallback where BroadcastChannel is unavailable.
+      if (document.visibilityState === "visible" &&
+        (knownStatus.current !== "unauthenticated" || !("BroadcastChannel" in window))) {
+        void dispatch(bootstrapCustomer());
+      }
+    }
     window.addEventListener("focus", recheck);
     document.addEventListener("visibilitychange", recheck);
     void dispatch(bootstrapCustomer());
