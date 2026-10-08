@@ -62,10 +62,25 @@ test("matching password email blocks anonymous Google linking, then explicit lin
   await page.getByRole("button", { name: "Sign out" }).click();
   await page.goto("/login");
   await page.getByRole("button", { name: "Continue with Google" }).click();
+  await expect(page.getByRole("heading", { name: "Controlled Google provider" })).toBeVisible();
+  const rejectedState = new URL(page.url()).searchParams.get("state");
   await page.getByRole("link", { name: "Continue as web-conflict" }).click();
   await expect(page).toHaveURL(/\/login\?google=conflict$/);
   await expect(page.getByText(/Sign in with your password, then connect Google/)).toBeVisible();
   expect(await customerIds(linkedEmail)).toEqual(original);
+
+  await page.getByRole("button", { name: "Continue with Google" }).click();
+  await expect(page.getByRole("heading", { name: "Controlled Google provider" })).toBeVisible();
+  const retryState = new URL(page.url()).searchParams.get("state");
+  expect(rejectedState).toBeTruthy();
+  expect(retryState).toBeTruthy();
+  expect(retryState).not.toBe(rejectedState);
+  await page.getByRole("link", { name: "Continue as new", exact: true }).click();
+  await expect(page).toHaveURL(/\/account$/);
+  await expect(page.getByLabel("Email")).toHaveValue("google.browser@example.com");
+  expect(await customerIds(linkedEmail)).toEqual(original);
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.goto("/login");
 
   await page.getByLabel("Email").fill(linkedEmail);
   await page.getByLabel("Password", { exact: true }).fill(password);

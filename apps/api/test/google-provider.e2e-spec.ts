@@ -88,6 +88,7 @@ describe('Google OIDC provider validation', () => {
     provider = new GoogleProvider({
       enabled: true,
       fixture: false,
+      callbackUrl: 'http://localhost:3000/api/customer/auth/google/callback',
     } as GoogleOAuthConfig);
     Object.defineProperty(provider, 'client', {
       value: () => Promise.resolve(configuration),
@@ -124,6 +125,33 @@ describe('Google OIDC provider validation', () => {
       'expected-verifier',
     );
   }
+
+  it('requests account selection without a login hint and preserves OIDC parameters on each attempt', async () => {
+    const library = await loadOpenIdClient();
+    for (const suffix of ['initial', 'retry']) {
+      const url = new URL(
+        await provider.authorizationUrl(
+          `state-${suffix}`,
+          `nonce-${suffix}`,
+          `verifier-${suffix}`,
+        ),
+      );
+      expect(url.origin).toBe(issuer);
+      expect(url.searchParams.get('prompt')).toBe('select_account');
+      expect(url.searchParams.has('login_hint')).toBe(false);
+      expect(url.searchParams.get('redirect_uri')).toBe(
+        'http://localhost:3000/api/customer/auth/google/callback',
+      );
+      expect(url.searchParams.get('response_type')).toBe('code');
+      expect(url.searchParams.get('scope')).toBe('openid email profile');
+      expect(url.searchParams.get('state')).toBe(`state-${suffix}`);
+      expect(url.searchParams.get('nonce')).toBe(`nonce-${suffix}`);
+      expect(url.searchParams.get('code_challenge_method')).toBe('S256');
+      expect(url.searchParams.get('code_challenge')).toBe(
+        await library.calculatePKCECodeChallenge(`verifier-${suffix}`),
+      );
+    }
+  });
 
   it('validates a signed Google identity and sends the PKCE verifier', async () => {
     await expect(exchange()).resolves.toEqual({
