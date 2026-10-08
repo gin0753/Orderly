@@ -132,6 +132,21 @@ describe('Customer Google OAuth', () => {
     expect(await prisma.customerOAuthTransaction.count()).toBe(0);
   });
 
+  it('consumes a declined sign-in without creating a customer or session', async () => {
+    const started = await start('/checkout');
+    const response = await request(server)
+      .get('/api/customer/auth/google/callback')
+      .query({ state: started.state, error: 'access_denied' })
+      .set('Cookie', started.binding)
+      .expect(303);
+    expect(response.headers.location).toBe(
+      'http://localhost:3000/login?google=cancelled',
+    );
+    expect(await prisma.customerOAuthTransaction.count()).toBe(0);
+    expect(await prisma.customerUser.count()).toBe(0);
+    expect(await prisma.customerSession.count()).toBe(0);
+  });
+
   it('sends malformed callbacks through the controlled failure redirect even if purpose lookup fails', async () => {
     const google = app.get(CustomerGoogleOAuthService);
     const lookup = jest

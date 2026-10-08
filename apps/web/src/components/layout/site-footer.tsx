@@ -15,7 +15,7 @@ export function SiteFooter() {
           </p>
         </div>
 
-        <nav aria-label="Footer navigation" className="-ml-3 flex items-center gap-1 sm:ml-0">
+        <nav aria-label="Footer navigation" className="-ml-3 flex flex-wrap items-center gap-1 sm:ml-0">
           <Link
             href="/"
             className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)]"
@@ -27,6 +27,12 @@ export function SiteFooter() {
             className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)]"
           >
             Track order
+          </Link>
+          <Link href="/privacy" className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)]">
+            Privacy Policy
+          </Link>
+          <Link href="/terms" className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)]">
+            Terms of Service
           </Link>
         </nav>
 
