@@ -85,11 +85,15 @@ it("renders one customer banner, main and content-info landmark with only approv
     name: "Footer navigation",
   });
   const links = within(footerNavigation).getAllByRole("link");
-  expect(links).toHaveLength(2);
-  expect(links[0]).toHaveTextContent("Menu");
-  expect(links[0]).toHaveAttribute("href", "/");
-  expect(links[1]).toHaveTextContent("Track order");
-  expect(links[1]).toHaveAttribute("href", "/track-order");
+  expect(links).toHaveLength(4);
+  for (const [name, href] of [
+    ["Menu", "/"],
+    ["Track order", "/track-order"],
+    ["Privacy Policy", "/privacy"],
+    ["Terms of Service", "/terms"],
+  ]) {
+    expect(within(footerNavigation).getByRole("link", { name })).toHaveAttribute("href", href);
+  }
 });
 
 it("focuses the customer error heading and retries through the route reset callback", async () => {
