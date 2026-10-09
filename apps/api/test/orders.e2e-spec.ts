@@ -77,6 +77,35 @@ describe('Guest orders API (e2e)', () => {
     };
   }
 
+  it('rejects missing contact data and blank required fields without persisting an order', async () => {
+    const fixture = await createCheckoutFixture(prisma);
+    const valid = createPickupRequest(fixture.productId, [
+      fixture.smallOptionId,
+    ]);
+    const { customer: omitted, ...withoutCustomer } = valid;
+    void omitted;
+    const address = {
+      addressLine1: '1 Test Street',
+      city: 'Sydney',
+      state: 'NSW',
+      postcode: '2000',
+    };
+    const invalidRequests = [
+      withoutCustomer,
+      { ...valid, customer: null },
+      { ...valid, customer: { ...valid.customer, name: '   ' } },
+      ...Object.keys(address).map((field) => ({
+        ...valid,
+        fulfillmentType: 'DELIVERY',
+        address: { ...address, [field]: '   ' },
+      })),
+    ];
+    for (const body of invalidRequests) {
+      await request(httpServer).post('/api/orders').send(body).expect(400);
+    }
+    expect(await prisma.order.count()).toBe(0);
+  });
+
   it('creates and persists a guest delivery order using server prices and snapshots', async () => {
     const fixture = await createCheckoutFixture(prisma);
 

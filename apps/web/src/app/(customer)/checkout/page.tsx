@@ -14,6 +14,14 @@ export default async function CheckoutPage() {
   return (
     <CheckoutPageClient
       initialIsAcceptingOrders={menu.store?.isAcceptingOrders ?? false}
+      pickupEnabled={menu.store?.pickupEnabled ?? false}
+      deliveryEnabled={menu.store?.deliveryEnabled ?? false}
+      minimumOrderAmountCents={Math.round(
+        Number(menu.store?.minimumOrderAmount ?? 0) * 100,
+      )}
+      configuredDeliveryFeeCents={Math.round(
+        Number(menu.store?.deliveryFee ?? 0) * 100,
+      )}
     />
   );
 }

@@ -6,7 +6,10 @@ import { RequireAdmin } from '../../../auth/decorators/require-admin.decorator';
 import { AdminMenuAiService } from './admin-menu-ai.service';
 import { ContentSuggestionDto } from './dto/content-suggestion.dto';
 
+import { PrivateResponse } from '../../../../http/private-response.interceptor';
+
 @RequireAdmin()
+@PrivateResponse()
 @Controller('admin/menu/ai')
 export class AdminMenuAiController {
   constructor(private readonly adminMenuAiService: AdminMenuAiService) {}

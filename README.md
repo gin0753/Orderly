@@ -629,6 +629,11 @@ Install:
 pnpm install
 ```
 
+Copy `apps/api/.env.example` to `apps/api/.env` and
+`apps/web/.env.example` to `apps/web/.env.local`. Replace the four API JWT
+secret placeholders with independent random values before starting the API.
+Generate Prisma Client with `pnpm db:generate` after installation.
+
 Start PostgreSQL:
 
 ```bash

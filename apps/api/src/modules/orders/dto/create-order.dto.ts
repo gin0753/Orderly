@@ -4,6 +4,7 @@ import {
   ArrayMinSize,
   ArrayUnique,
   IsArray,
+  IsDefined,
   IsEmail,
   IsEnum,
   IsInt,
@@ -12,6 +13,7 @@ import {
   IsUUID,
   Max,
   MaxLength,
+  Matches,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -23,6 +25,7 @@ export enum CreateOrderFulfillmentType {
 
 class CreateOrderCustomerDto {
   @IsString()
+  @Matches(/\S/, { message: 'name must not be blank' })
   @MaxLength(120)
   name!: string;
 
@@ -37,6 +40,7 @@ class CreateOrderCustomerDto {
 
 class CreateOrderAddressDto {
   @IsString()
+  @Matches(/\S/, { message: 'addressLine1 must not be blank' })
   @MaxLength(180)
   addressLine1!: string;
 
@@ -46,14 +50,17 @@ class CreateOrderAddressDto {
   addressLine2?: string;
 
   @IsString()
+  @Matches(/\S/, { message: 'city must not be blank' })
   @MaxLength(80)
   city!: string;
 
   @IsString()
+  @Matches(/\S/, { message: 'state must not be blank' })
   @MaxLength(80)
   state!: string;
 
   @IsString()
+  @Matches(/\S/, { message: 'postcode must not be blank' })
   @MaxLength(20)
   postcode!: string;
 }
@@ -78,6 +85,7 @@ export class CreateOrderDto {
   @IsEnum(CreateOrderFulfillmentType)
   fulfillmentType!: CreateOrderFulfillmentType;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => CreateOrderCustomerDto)
   customer!: CreateOrderCustomerDto;

@@ -20,6 +20,9 @@ import {
 } from './dto/customer-account.dto';
 import { CustomerMutationGuard } from './guards/customer-mutation.guard';
 
+import { PrivateResponse } from '../../http/private-response.interceptor';
+
+@PrivateResponse()
 @Controller('customer/account')
 @UseGuards(CustomerMutationGuard)
 @RequireCustomer()

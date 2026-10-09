@@ -132,6 +132,21 @@ describe('Customer Google OAuth', () => {
     expect(await prisma.customerOAuthTransaction.count()).toBe(0);
   });
 
+  it('consumes a declined sign-in without creating a customer or session', async () => {
+    const started = await start('/checkout');
+    const response = await request(server)
+      .get('/api/customer/auth/google/callback')
+      .query({ state: started.state, error: 'access_denied' })
+      .set('Cookie', started.binding)
+      .expect(303);
+    expect(response.headers.location).toBe(
+      'http://localhost:3000/login?google=cancelled',
+    );
+    expect(await prisma.customerOAuthTransaction.count()).toBe(0);
+    expect(await prisma.customerUser.count()).toBe(0);
+    expect(await prisma.customerSession.count()).toBe(0);
+  });
+
   it('sends malformed callbacks through the controlled failure redirect even if purpose lookup fails', async () => {
     const google = app.get(CustomerGoogleOAuthService);
     const lookup = jest
@@ -222,6 +237,42 @@ describe('Customer Google OAuth', () => {
       (await prisma.customerUser.findUniqueOrThrow({ where: { email } }))
         .googleSubject,
     ).toBeNull();
+  });
+
+  it('allows a fresh sign-in with another identity after a password-account collision', async () => {
+    await register();
+    const first = await start();
+    const rejectedUrl = await providerCallback(first.state, 'conflict');
+    const rejected = await callback(rejectedUrl, [first.binding]).expect(303);
+    expect(rejected.headers.location).toBe(
+      'http://localhost:3000/login?google=conflict',
+    );
+    expect(await prisma.customerOAuthTransaction.count()).toBe(0);
+    const retry = await start('/checkout');
+    expect(retry.state).not.toBe(first.state);
+    expect(retry.binding).not.toBe(first.binding);
+    const accepted = await callback(
+      await providerCallback(retry.state, 'new'),
+      [retry.binding],
+    ).expect(303);
+    expect(accepted.headers.location).toBe(
+      'http://localhost:3000/checkout?orderlyOAuth=complete',
+    );
+    const identity = await request(server)
+      .get('/api/customer/auth/me')
+      .set('Cookie', cookie(accepted, 'orderly_customer_access'))
+      .expect(200);
+    expect((identity.body as { user: { email: string } }).user.email).toBe(
+      'google.browser@example.com',
+    );
+    expect(
+      (await prisma.customerUser.findUniqueOrThrow({ where: { email } }))
+        .googleSubject,
+    ).toBeNull();
+    expect(await prisma.customerUser.count()).toBe(2);
+    expect(await prisma.customerOAuthTransaction.count()).toBe(0);
+    await callback(rejectedUrl, [first.binding]).expect(303);
+    expect(await prisma.customerUser.count()).toBe(2);
   });
 
   it('requires password reauthentication and links only the same verified account', async () => {

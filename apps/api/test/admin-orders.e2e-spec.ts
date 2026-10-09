@@ -8,7 +8,9 @@ import request from 'supertest';
 
 import { BCRYPT_SALT_ROUNDS } from '../src/modules/auth/auth.constants';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { OrdersService } from '../src/modules/orders/orders.service';
 import { createTestApp } from './support/create-test-app';
+import { expectPrivateCache } from './support/cache-policy';
 
 const ADMIN_EMAIL = 'orders.admin@orderly.test';
 const ADMIN_PASSWORD = 'CorrectPassword123!';
@@ -48,7 +50,7 @@ describe('Admin orders API (e2e)', () => {
   let prisma: PrismaService;
 
   beforeAll(async () => {
-    app = await createTestApp();
+    app = await createTestApp({ bypassThrottling: true });
     httpServer = app.getHttpServer() as Server;
     prisma = app.get(PrismaService);
   });
@@ -64,7 +66,10 @@ describe('Admin orders API (e2e)', () => {
   it('lists authenticated orders newest first with status summaries', async () => {
     const fixture = await createAdminOrdersFixture(prisma, httpServer);
 
-    const response = await fixture.agent.get('/api/orders').expect(200);
+    const response = await fixture.agent
+      .get('/api/orders')
+      .expect(200)
+      .expect(expectPrivateCache);
     const body = response.body as unknown as OrdersListBody;
 
     expect(body.data.map((order) => order.id)).toEqual([
@@ -171,6 +176,34 @@ describe('Admin orders API (e2e)', () => {
         lineTotalCents: 1400,
       }),
     ]);
+  });
+
+  it('does not overwrite a cancellation committed after action validation reads the order', async () => {
+    const fixture = await createAdminOrdersFixture(prisma, httpServer);
+    const orderId = fixture.orders[0].orderId;
+    const service = app.get<OrdersService>(OrdersService);
+    const findOne = (id: string) => service.findOne(id);
+    const read = jest
+      .spyOn(service, 'findOne')
+      .mockImplementationOnce(async (id) => {
+        const snapshot = await findOne(id);
+        await prisma.order.update({
+          where: { id },
+          data: { status: OrderStatus.CANCELLED },
+        });
+        return snapshot;
+      });
+    try {
+      await fixture.agent
+        .patch(`/api/orders/${orderId}/action`)
+        .send({ action: 'ACCEPT' })
+        .expect(409);
+      expect(
+        await prisma.order.findUniqueOrThrow({ where: { id: orderId } }),
+      ).toMatchObject({ status: OrderStatus.CANCELLED });
+    } finally {
+      read.mockRestore();
+    }
   });
 
   it('persists a valid action, keeps it idempotent, and rejects an invalid transition', async () => {

@@ -97,8 +97,8 @@ it("keeps checkout review and fees available while preserving delivery details a
   expect(screen.queryByRole("textbox", { name: "Address" })).not.toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: /Have your order delivered/ }));
   await userEvent.type(screen.getByRole("textbox", { name: "Address" }), "10 Example Street");
-  expect(review.getByText("$3.99")).toBeInTheDocument();
-  expect(review.getByText("$39.19")).toBeInTheDocument();
+  expect(review.getByText("$5.00")).toBeInTheDocument();
+  expect(review.getByText("$40.20")).toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: /Collect your order/ }));
   expect(screen.queryByRole("textbox", { name: "Address" })).not.toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: /Have your order delivered/ }));

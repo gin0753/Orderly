@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { createRequire } from "node:module";
 
 const requireFromTest = createRequire(__filename);
@@ -21,6 +21,22 @@ async function customerIds(email: string) {
   finally { await prisma.$disconnect(); }
 }
 
+async function signOut(page: Page) {
+  const access = (await page.context().cookies()).find((cookie) => cookie.name === "orderly_customer_access");
+  if (!access) throw new Error("Expected a signed-in customer before logout.");
+  const response = page.waitForResponse((result) =>
+    result.request().method() === "POST" && new URL(result.url()).pathname === "/api/customer/auth/logout",
+  );
+  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  expect((await response).status()).toBe(204);
+  await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
+  expect((await page.context().cookies()).filter((cookie) =>
+    ["orderly_customer_access", "orderly_customer_refresh"].includes(cookie.name),
+  )).toEqual([]);
+  const revoked = await page.request.get("/api/customer/auth/me", { headers: { Cookie: `${access.name}=${access.value}` } });
+  expect(revoked.status()).toBe(401);
+}
+
 test("new Google customer keeps a session across reload and returns to checkout", async ({ page }) => {
   const peer = await page.context().newPage();
   await peer.goto("/");
@@ -38,7 +54,7 @@ test("new Google customer keeps a session across reload and returns to checkout"
   await expect(page.getByLabel("Email")).toHaveValue("google.browser@example.com");
   const before = await customerIds("google.browser@example.com");
   expect(before).toHaveLength(1);
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await signOut(page);
   await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
   await expect(peer.getByRole("link", { name: "Sign in" })).toBeVisible();
   await page.goto("/login");
@@ -59,13 +75,28 @@ test("matching password email blocks anonymous Google linking, then explicit lin
   await expect(page).toHaveURL(/\/account$/);
   const original = await customerIds(linkedEmail);
   expect(original).toHaveLength(1);
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await signOut(page);
   await page.goto("/login");
   await page.getByRole("button", { name: "Continue with Google" }).click();
+  await expect(page.getByRole("heading", { name: "Controlled Google provider" })).toBeVisible();
+  const rejectedState = new URL(page.url()).searchParams.get("state");
   await page.getByRole("link", { name: "Continue as web-conflict" }).click();
   await expect(page).toHaveURL(/\/login\?google=conflict$/);
   await expect(page.getByText(/Sign in with your password, then connect Google/)).toBeVisible();
   expect(await customerIds(linkedEmail)).toEqual(original);
+
+  await page.getByRole("button", { name: "Continue with Google" }).click();
+  await expect(page.getByRole("heading", { name: "Controlled Google provider" })).toBeVisible();
+  const retryState = new URL(page.url()).searchParams.get("state");
+  expect(rejectedState).toBeTruthy();
+  expect(retryState).toBeTruthy();
+  expect(retryState).not.toBe(rejectedState);
+  await page.getByRole("link", { name: "Continue as new", exact: true }).click();
+  await expect(page).toHaveURL(/\/account$/);
+  await expect(page.getByLabel("Email")).toHaveValue("google.browser@example.com");
+  expect(await customerIds(linkedEmail)).toEqual(original);
+  await signOut(page);
+  await page.goto("/login");
 
   await page.getByLabel("Email").fill(linkedEmail);
   await page.getByLabel("Password", { exact: true }).fill(password);
@@ -77,13 +108,40 @@ test("matching password email blocks anonymous Google linking, then explicit lin
   await expect(page).toHaveURL(/\/account\?google=connected$/);
   await expect(page.getByText("Google is connected to your account.")).toBeVisible();
   expect(await customerIds(linkedEmail)).toEqual([{ id: original[0].id, googleSubject: "google-web-link" }]);
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await signOut(page);
   await page.goto("/login");
   await page.getByRole("button", { name: "Continue with Google" }).click();
   await page.getByRole("link", { name: "Continue as web-link" }).click();
   await expect(page).toHaveURL(/\/account$/);
   await expect(page.getByLabel("Email")).toHaveValue(linkedEmail);
   expect(await customerIds(linkedEmail)).toEqual([{ id: original[0].id, googleSubject: "google-web-link" }]);
+});
+
+test("logout settles before another login even when revocation is pending", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByRole("button", { name: "Continue with Google" }).click();
+  await page.getByRole("link", { name: "Continue as new", exact: true }).click();
+  await expect(page.getByLabel("Email")).toHaveValue("google.browser@example.com");
+  let release!: () => void;
+  let observed!: () => void;
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  const requested = new Promise<void>((resolve) => { observed = resolve; });
+  await page.route("**/api/customer/auth/logout", async (route) => {
+    observed();
+    await gate;
+    await route.continue();
+  }, { times: 1 });
+  const completed = signOut(page);
+  try {
+    await requested;
+    await expect(page.getByRole("button", { name: "Signing out…" })).toBeDisabled();
+    await expect(page.getByLabel("Email")).toHaveValue("google.browser@example.com");
+    await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveCount(0);
+  } finally { release(); }
+  await completed;
+  await page.goto("/login");
+  await expect(page.getByLabel("Email")).toBeEditable();
+  await expect(page.getByLabel("Password", { exact: true })).toBeEditable();
 });
 
 for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }, { width: 320, height: 568 }]) {

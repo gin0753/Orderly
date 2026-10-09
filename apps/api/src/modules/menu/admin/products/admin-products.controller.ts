@@ -17,7 +17,10 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductAvailabilityDto } from './dto/update-product-availability.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
+import { PrivateResponse } from '../../../../http/private-response.interceptor';
+
 @RequireAdmin()
+@PrivateResponse()
 @Controller('admin/menu/products')
 export class AdminProductsController {
   constructor(private readonly adminProductsService: AdminProductsService) {}

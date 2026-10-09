@@ -66,6 +66,7 @@ export class GoogleProvider {
       redirect_uri: this.config.callbackUrl,
       response_type: 'code',
       scope: 'openid email profile',
+      prompt: 'select_account',
       state,
       nonce,
       code_challenge: challenge,

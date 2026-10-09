@@ -115,3 +115,17 @@ it("shows the password-account conflict without exposing account details", () =>
   renderForm("login");
   expect(screen.getByRole("alert")).toHaveTextContent("Sign in with your password, then connect Google");
 });
+
+it.each(["login", "register"] as const)("hides Google on %s when the provider is disabled", async (mode) => {
+  renderForm(mode);
+  await waitFor(() => expect(api.googleStatus).toHaveBeenCalled());
+  expect(screen.queryByRole("button", { name: "Continue with Google" })).not.toBeInTheDocument();
+  expect(api.googleStart).not.toHaveBeenCalled();
+});
+
+it.each(["cancelled", "failed"])("explains a %s Google sign-in callback", async (outcome) => {
+  searchParams = new URLSearchParams(`google=${outcome}`);
+  renderForm("login");
+  expect(screen.getByRole("alert")).toHaveTextContent("Google sign-in did not complete");
+  await waitFor(() => expect(api.googleStatus).toHaveBeenCalled());
+});

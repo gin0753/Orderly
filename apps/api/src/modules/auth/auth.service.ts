@@ -164,14 +164,16 @@ export class AuthService {
       return;
     }
 
+    let payload: RefreshTokenPayload;
     try {
-      const payload = await this.verifyRefreshToken(refreshToken);
-
-      await this.deleteSession(payload.sid);
-    } catch {
+      payload = await this.verifyRefreshToken(refreshToken);
+    } catch (error) {
       // Logout should remain idempotent.
       // Invalid or expired refresh cookies are still cleared by controller.
+      if (error instanceof UnauthorizedException) return;
+      throw error;
     }
+    await this.deleteSession(payload.sid);
   }
 
   setAuthCookies(response: Response, tokens: AuthTokens): void {

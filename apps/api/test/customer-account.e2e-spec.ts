@@ -8,6 +8,7 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { CustomerAuthService } from '../src/modules/customer-auth/customer-auth.service';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { expectPrivateCache } from './support/cache-policy';
 
 const email = 'account-management@example.test';
 const oldPassword = 'A correct password 123!';
@@ -102,6 +103,7 @@ describe('Customer account management', () => {
       { name: '  New Name  ', phone: ' +61 400 123 456 ' },
       cookies(first),
     )
+      .expect(expectPrivateCache)
       .expect(200)
       .expect(({ body }: request.Response) => {
         const user = (body as { user: Record<string, unknown> }).user;
@@ -116,6 +118,7 @@ describe('Customer account management', () => {
     const current = await request(server)
       .get('/api/customer/auth/me')
       .set('Cookie', cookie(first, 'orderly_customer_access'))
+      .expect(expectPrivateCache)
       .expect(200);
     expect((current.body as { user: { phone: string } }).user.phone).toBe(
       '+61 400 123 456',

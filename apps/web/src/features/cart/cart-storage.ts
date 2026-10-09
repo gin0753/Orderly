@@ -113,8 +113,11 @@ export function readCartFromStorage(): PersistedCartState {
       items: parsedValue.items,
     };
   } catch {
-    window.localStorage.removeItem(CART_STORAGE_KEY);
-
+    try {
+      window.localStorage.removeItem(CART_STORAGE_KEY);
+    } catch {
+      // Storage may be unavailable even for cleanup.
+    }
     return {
       items: [],
     };
@@ -126,7 +129,10 @@ export function writeCartToStorage(state: PersistedCartState) {
     return;
   }
 
-  clearLegacyCart();
-
-  window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state));
+  try {
+    clearLegacyCart();
+    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // Storage may be blocked or full. Keep the in-memory cart usable.
+  }
 }

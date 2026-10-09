@@ -11,13 +11,17 @@ export function saveTrackingLookup(payload: GuestOrderLookupRequest) {
     return;
   }
 
-  window.sessionStorage.setItem(
-    TRACKING_LOOKUP_STORAGE_KEY,
-    JSON.stringify({
-      ...payload,
-      verifiedAt: Date.now(),
-    }),
-  );
+  try {
+    window.sessionStorage.setItem(
+      TRACKING_LOOKUP_STORAGE_KEY,
+      JSON.stringify({
+        ...payload,
+        verifiedAt: Date.now(),
+      }),
+    );
+  } catch {
+    // Order creation must still reach success when browser storage is unavailable.
+  }
 }
 
 export function getTrackingLookup(): StoredTrackingLookup | null {
@@ -25,13 +29,9 @@ export function getTrackingLookup(): StoredTrackingLookup | null {
     return null;
   }
 
-  const rawValue = window.sessionStorage.getItem(TRACKING_LOOKUP_STORAGE_KEY);
-
-  if (!rawValue) {
-    return null;
-  }
-
   try {
+    const rawValue = window.sessionStorage.getItem(TRACKING_LOOKUP_STORAGE_KEY);
+    if (!rawValue) return null;
     const parsed = JSON.parse(rawValue) as StoredTrackingLookup;
 
     if (!parsed.orderNumber || (!parsed.email && !parsed.phone)) {
@@ -49,5 +49,9 @@ export function clearTrackingLookup() {
     return;
   }
 
-  window.sessionStorage.removeItem(TRACKING_LOOKUP_STORAGE_KEY);
+  try {
+    window.sessionStorage.removeItem(TRACKING_LOOKUP_STORAGE_KEY);
+  } catch {
+    // Tracking verification remains available without persisted contact details.
+  }
 }

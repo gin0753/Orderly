@@ -15,6 +15,8 @@ import { CheckoutOrderSummary } from "./checkout-order-summary";
 import type { CheckoutFormState } from "../checkout-types";
 import {
   getCheckoutFieldErrors,
+  DELIVERY_FEE_CENTS,
+  getDeliveryFeeCents,
   getCheckoutTotalCents,
   hasCheckoutFieldErrors,
 } from "../checkout-utils";
@@ -47,10 +49,18 @@ const initialFormState: CheckoutFormState = {
 
 type CheckoutPageClientProps = {
   initialIsAcceptingOrders?: boolean;
+  configuredDeliveryFeeCents?: number;
+  pickupEnabled?: boolean;
+  deliveryEnabled?: boolean;
+  minimumOrderAmountCents?: number;
 };
 
 export function CheckoutPageClient({
   initialIsAcceptingOrders = true,
+  configuredDeliveryFeeCents = DELIVERY_FEE_CENTS,
+  pickupEnabled = true,
+  deliveryEnabled = true,
+  minimumOrderAmountCents = 0,
 }: CheckoutPageClientProps) {
   const [checkout, setCheckout] = useState(() => readCheckoutReturnDraft() ?? {
     form: initialFormState,
@@ -70,7 +80,26 @@ export function CheckoutPageClient({
   const customer = useAppSelector((state) => state.customerAuth.customer);
   const authNotice = useAppSelector((state) => state.customerAuth.notice);
   const requiresSessionRecovery = needsSessionRecovery || authNotice === "Your session expired. Sign in again to continue.";
-  const form = withCustomerPrefill(checkout.form, checkout.touched, customer);
+  const [unavailableMethods, setUnavailableMethods] = useState({
+    pickup: false,
+    delivery: false,
+  });
+  const canPickup = pickupEnabled && !unavailableMethods.pickup;
+  const canDeliver = deliveryEnabled && !unavailableMethods.delivery;
+  const prefilledForm = withCustomerPrefill(checkout.form, checkout.touched, customer);
+  const selectedMethodEnabled =
+    prefilledForm.fulfillmentType === "pickup" ? canPickup : canDeliver;
+  const form = {
+    ...prefilledForm,
+    fulfillmentType: selectedMethodEnabled
+      ? prefilledForm.fulfillmentType
+      : canPickup
+        ? "pickup" as const
+        : canDeliver
+          ? "delivery" as const
+          : prefilledForm.fulfillmentType,
+  };
+  const orderingAvailable = isAcceptingOrders && (canPickup || canDeliver);
   const fieldErrors = getCheckoutFieldErrors(form);
   const hasFieldErrors = hasCheckoutFieldErrors(fieldErrors);
   const visibleErrors = hasSubmitted ? fieldErrors : {};
@@ -92,9 +121,11 @@ export function CheckoutPageClient({
   const totalCents = getCheckoutTotalCents({
     subtotalCents,
     fulfillmentType: form.fulfillmentType,
+    configuredDeliveryFeeCents,
   });
 
   const isCartEmpty = cartItems.length === 0;
+  const minimumRemainingCents = Math.max(minimumOrderAmountCents - subtotalCents, 0);
 
   useEffect(() => {
     if (submitError) {
@@ -146,7 +177,12 @@ export function CheckoutPageClient({
       return;
     }
 
-    if (isSubmitting || !isAcceptingOrders || requiresSessionRecovery) {
+    if (
+      isSubmitting ||
+      !orderingAvailable ||
+      minimumRemainingCents > 0 ||
+      requiresSessionRecovery
+    ) {
       return;
     }
 
@@ -177,15 +213,23 @@ export function CheckoutPageClient({
         )}&totalCents=${order.totalCents}&orderType=${order.orderType}`,
       );
     } catch (error) {
-      const availabilityChanged =
+      const storePaused =
         error instanceof ApiError &&
         error.status === 400 &&
-        /not currently (accepting|available)/i.test(error.message);
+        /store is not currently accepting orders/i.test(error.message);
+      const restrictedMethod =
+        error instanceof ApiError && error.status === 400
+          ? /^(Pickup|Delivery) is not currently available\./i
+              .exec(error.message)?.[1]?.toLowerCase() as CheckoutFormState["fulfillmentType"] | undefined
+          : undefined;
 
       if (error instanceof ApiError && error.status === 401) {
         setNeedsSessionRecovery(true);
         setSubmitError("Your customer session expired before this order was placed. Your cart and entered details are still here.");
-      } else if (availabilityChanged) {
+      } else if (restrictedMethod) {
+        setUnavailableMethods((current) => ({ ...current, [restrictedMethod]: true }));
+        setSubmitError(`${restrictedMethod === "delivery" ? "Delivery" : "Pickup"} is currently unavailable. Review the available fulfillment method before trying again.`);
+      } else if (storePaused) {
         setIsAcceptingOrders(false);
         setSubmitError(
           "Ordering is paused. Your details are still here, and you can try again when the kitchen is accepting orders.",
@@ -254,7 +298,7 @@ export function CheckoutPageClient({
           </div>
         </div>
 
-        {!isAcceptingOrders ? (
+        {!orderingAvailable ? (
           <section
             role="status"
             className="mt-6 rounded-2xl border border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] p-4"
@@ -266,6 +310,13 @@ export function CheckoutPageClient({
               Your cart and details are preserved. Checkout will be available
               when the kitchen is accepting orders again.
             </p>
+          </section>
+        ) : null}
+
+        {minimumRemainingCents > 0 ? (
+          <section role="status" className="mt-6 rounded-2xl border border-[var(--color-warning-border)] bg-[var(--color-warning-surface)] p-4">
+            <h2 className="font-bold text-[var(--color-warning-strong)]">Minimum order {formatMoneyFromCents(minimumOrderAmountCents)}</h2>
+            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Add {formatMoneyFromCents(minimumRemainingCents)} more to your cart to order. The minimum applies to the subtotal for pickup and delivery, before fees.</p>
           </section>
         ) : null}
 
@@ -286,6 +337,9 @@ export function CheckoutPageClient({
               <Button type="button" variant="secondary" disabled={isRecovering} onClick={() => { void continueAsGuest(); }}>{isRecovering ? "Clearing session…" : "Continue as guest"}</Button>
             </div> : null}
             <FulfillmentSelector
+              pickupEnabled={canPickup}
+              deliveryEnabled={canDeliver}
+              deliveryFeeCents={getDeliveryFeeCents(subtotalCents, "delivery", configuredDeliveryFeeCents)}
               value={form.fulfillmentType}
               onChange={(fulfillmentType) => updateForm({ fulfillmentType })}
             />
@@ -311,8 +365,9 @@ export function CheckoutPageClient({
                 compact
                 items={cartItems}
                 subtotalCents={subtotalCents}
+                configuredDeliveryFeeCents={configuredDeliveryFeeCents}
                 fulfillmentType={form.fulfillmentType}
-                isAcceptingOrders={isAcceptingOrders}
+                isAcceptingOrders={orderingAvailable}
               />
             </div>
           </div>
@@ -321,12 +376,13 @@ export function CheckoutPageClient({
             <CheckoutOrderSummary
               items={cartItems}
               subtotalCents={subtotalCents}
+              configuredDeliveryFeeCents={configuredDeliveryFeeCents}
               fulfillmentType={form.fulfillmentType}
               validationErrors={summaryErrors}
-              disabled={isSubmitting || requiresSessionRecovery}
+              disabled={isSubmitting || minimumRemainingCents > 0 || requiresSessionRecovery}
               onSubmitLabel={isSubmitting ? "Placing order..." : "Place Order"}
               onSubmit={handleContinue}
-              isAcceptingOrders={isAcceptingOrders}
+              isAcceptingOrders={orderingAvailable}
             />
           </div>
         </div>
@@ -343,11 +399,11 @@ export function CheckoutPageClient({
 
           <Button
             type="button"
-            disabled={isSubmitting || !isAcceptingOrders || requiresSessionRecovery}
+            disabled={isSubmitting || !orderingAvailable || minimumRemainingCents > 0 || requiresSessionRecovery}
             onClick={handleContinue}
             className="h-12 rounded-2xl px-6 text-sm font-semibold"
           >
-            {!isAcceptingOrders
+            {!orderingAvailable
               ? "Ordering paused"
               : isSubmitting
                 ? "Placing..."

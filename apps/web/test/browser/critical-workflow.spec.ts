@@ -368,13 +368,17 @@ for (const viewport of [
     const footerNavigation = page.getByRole("navigation", {
       name: "Footer navigation",
     });
-    await expect(footerNavigation.getByRole("link")).toHaveCount(2);
-    await expect(
-      footerNavigation.getByRole("link", { name: "Menu" }),
-    ).toHaveAttribute("href", "/");
-    await expect(
-      footerNavigation.getByRole("link", { name: "Track order" }),
-    ).toHaveAttribute("href", "/track-order");
+    await expect(footerNavigation.getByRole("link")).toHaveCount(4);
+    for (const [name, href] of [
+      ["Menu", "/"],
+      ["Track order", "/track-order"],
+      ["Privacy Policy", "/privacy"],
+      ["Terms of Service", "/terms"],
+    ]) {
+      await expect(
+        footerNavigation.getByRole("link", { name, exact: true }),
+      ).toHaveAttribute("href", href);
+    }
     expect(await hasHorizontalOverflow(page)).toBe(false);
     expect(runtimeErrors).toEqual([]);
 

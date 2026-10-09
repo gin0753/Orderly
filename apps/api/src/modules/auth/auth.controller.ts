@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
   Post,
   Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
@@ -16,6 +18,9 @@ import { RequireAdmin } from './decorators/require-admin.decorator';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 
+import { PrivateResponse } from '../../http/private-response.interceptor';
+
+@PrivateResponse()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -30,8 +35,12 @@ export class AuthController {
   })
   async login(
     @Body() loginDto: LoginDto,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    if (!request.is('application/json')) {
+      throw new ForbiddenException('Admin login requires a JSON request.');
+    }
     const result = await this.authService.login(loginDto);
 
     this.authService.setAuthCookies(response, result);
@@ -58,7 +67,9 @@ export class AuthController {
         user: result.user,
       };
     } catch (error) {
-      this.authService.clearAuthCookies(response);
+      if (error instanceof UnauthorizedException) {
+        this.authService.clearAuthCookies(response);
+      }
 
       throw error;
     }
@@ -70,13 +81,10 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    try {
-      await this.authService.logout(
-        this.authService.getRefreshTokenFromRequest(request),
-      );
-    } finally {
-      this.authService.clearAuthCookies(response);
-    }
+    await this.authService.logout(
+      this.authService.getRefreshTokenFromRequest(request),
+    );
+    this.authService.clearAuthCookies(response);
   }
 
   @Get('me')

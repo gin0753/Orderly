@@ -33,20 +33,25 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 Production builds use `/api` for all browser API requests, including admin auth
 and guest order tracking. The rewrite in `next.config.ts` proxies `/api/:path*`
-to `https://orderly-production-1ac4.up.railway.app/api/:path*`, preserving one
+to `${ORDERLY_API_ORIGIN}/api/:path*`, preserving one
 `/api` prefix. Authenticated requests continue to include cookie credentials.
 
 Set Vercel's `NEXT_PUBLIC_API_BASE_URL` to `/api` (or remove it); production
 builds enforce `/api` even if an old Railway URL remains configured. A new build
 and deployment are needed to apply these code changes. No Railway settings need
-to change for this frontend routing change.
+to change for this frontend routing change. Set server-only `ORDERLY_API_ORIGIN`
+to the exact HTTPS Railway origin and set `ORDERLY_PROXY_IDENTITY_SECRET` to
+the same independent high-entropy value on Vercel and Railway (at least 32 UTF-8
+bytes). Neither variable should use the `NEXT_PUBLIC_` prefix.
 
 Server-rendered menu requests use the absolute Railway API URL because server
 `fetch` requires an absolute URL. Browser requests use the same-origin proxy.
 
 For `pnpm dev`, keep `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api` in
 `.env.local`; this is also the development fallback when the variable is absent.
-Local production builds (`pnpm build` / `pnpm start`) use the Railway proxy.
+Local production builds (`pnpm build` / `pnpm start`) require an explicitly
+configured HTTPS `ORDERLY_API_ORIGIN` and the proxy identity secret. See
+`../../docs/customer-auth.md` for production cookies and Google OAuth setup.
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 

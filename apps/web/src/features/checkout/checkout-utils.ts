@@ -4,7 +4,7 @@ import type {
   FulfillmentType,
 } from "./checkout-types";
 
-export const DELIVERY_FEE_CENTS = 399;
+export const DELIVERY_FEE_CENTS = 500;
 export const SERVICE_FEE_CENTS = 120;
 export const FREE_DELIVERY_THRESHOLD_CENTS = 5000;
 
@@ -58,6 +58,7 @@ const DELIVERY_REQUIRED_FIELDS: RequiredField[] = [
 export function getDeliveryFeeCents(
   subtotalCents: number,
   fulfillmentType: FulfillmentType,
+  configuredDeliveryFeeCents = DELIVERY_FEE_CENTS,
 ) {
   if (fulfillmentType === "pickup") {
     return 0;
@@ -67,19 +68,25 @@ export function getDeliveryFeeCents(
     return 0;
   }
 
-  return DELIVERY_FEE_CENTS;
+  return configuredDeliveryFeeCents;
 }
 
 export function getCheckoutTotalCents({
   subtotalCents,
   fulfillmentType,
+  configuredDeliveryFeeCents = DELIVERY_FEE_CENTS,
 }: {
   subtotalCents: number;
   fulfillmentType: FulfillmentType;
+  configuredDeliveryFeeCents?: number;
 }) {
   return (
     subtotalCents +
-    getDeliveryFeeCents(subtotalCents, fulfillmentType) +
+    getDeliveryFeeCents(
+      subtotalCents,
+      fulfillmentType,
+      configuredDeliveryFeeCents,
+    ) +
     SERVICE_FEE_CENTS
   );
 }
