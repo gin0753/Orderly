@@ -7,7 +7,7 @@ import { CustomerGoogleMethods } from "@/features/customer-auth/components/custo
 import { CustomerPasswordForm } from "@/features/customer-auth/components/customer-password-form";
 
 export default function AccountPage() {
-  return <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:py-12">
+  return <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:py-12">
     <div className="mb-8">
       <p className="text-sm font-semibold text-[var(--color-brand-text)]">Your Orderly account</p>
       <h1 className="mt-1 text-3xl font-bold tracking-tight">Account</h1>
@@ -26,5 +26,5 @@ export default function AccountPage() {
       <Link href="/" className="text-[var(--color-brand-text)] underline underline-offset-4">Browse menu</Link>
       <Link href="/track-order" className="text-[var(--color-brand-text)] underline underline-offset-4">Track an order</Link>
     </nav>
-  </main>;
+  </div>;
 }

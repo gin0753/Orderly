@@ -29,7 +29,7 @@ export function CustomerOrdersPage() {
     retry: 1,
   });
 
-  return <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
+  return <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
         <p className="text-sm font-semibold text-[var(--color-brand-text)]">Your Orderly account</p>
@@ -97,5 +97,5 @@ export function CustomerOrdersPage() {
         {queryParams.page >= orders.data.meta.totalPages ? <span aria-disabled="true" className="rounded-xl border border-[var(--color-border)] px-4 py-2.5 text-sm font-semibold opacity-40">Next</span> : <Link href={customerOrdersHref({ ...queryParams, page: queryParams.page + 1 })} scroll={false} className="rounded-xl border border-[var(--color-border)] px-4 py-2.5 text-sm font-semibold">Next</Link>}
       </nav> : null}
     </> : null}
-  </main>;
+  </div>;
 }

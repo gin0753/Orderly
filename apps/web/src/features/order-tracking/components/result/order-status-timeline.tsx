@@ -162,7 +162,7 @@ export function OrderStatusTimeline({
                     className={cn(
                       "text-sm font-bold",
                       isCurrent
-                        ? "text-[var(--color-brand)]"
+                        ? "text-[var(--color-brand-text)]"
                         : "text-[var(--color-text-primary)]",
                     )}
                   >

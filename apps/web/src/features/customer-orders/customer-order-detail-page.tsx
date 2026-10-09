@@ -19,7 +19,7 @@ export function CustomerOrderDetailPage({ orderId }: { orderId: string }) {
     retry: (failures, error) => !(error instanceof ApiError && error.status === 404) && failures < 1,
   });
 
-  return <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
+  return <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
     <Link href="/account/orders" className="text-sm font-semibold text-[var(--color-brand-text)] underline underline-offset-4">← Back to orders</Link>
     {order.isPending ? <div role="status" className="mt-6 rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8">Loading order…</div> : null}
     {order.isError ? <div role="alert" className="mt-6 rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8">
@@ -72,5 +72,5 @@ export function CustomerOrderDetailPage({ orderId }: { orderId: string }) {
         </section>
       </div>
     </> : null}
-  </main>;
+  </div>;
 }

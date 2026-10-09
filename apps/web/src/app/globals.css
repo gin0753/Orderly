@@ -61,6 +61,109 @@
   --color-danger-foreground: var(--color-danger-strong);
 }
 
+/* Customer-only foundation. Admin continues to inherit the original :root tokens. */
+.customer-theme {
+  --color-background: #faf8f5;
+  --color-surface-muted: #f3f0eb;
+  --color-surface-hover: #f3f0eb;
+  --color-surface-soft: var(--color-surface-muted);
+  --color-page-background: var(--color-background);
+  --color-text-primary: #1c1917;
+  --color-text-secondary: #57534e;
+  --color-text-muted: #69635d;
+  --color-placeholder: #69635d;
+  --color-border: #e7e2da;
+  --color-control-border: #8a8178;
+  --color-brand-soft: #fff1e7;
+  --color-brand-hover: #9a3412;
+  --color-overlay: rgba(0, 0, 0, 0.48);
+  --color-brand-surface: #181818;
+  --color-brand-surface-raised: #242424;
+  --color-on-brand: #ffffff;
+  --color-on-brand-secondary: #d6d3d1;
+  --color-ring-on-brand: #ffb38a;
+
+  --font-family-body: ui-sans-serif, system-ui, sans-serif;
+  --text-display: 2.25rem;
+  --leading-display: 2.5rem;
+  --text-page-title: 1.75rem;
+  --leading-page-title: 2.125rem;
+  --text-section-title: 1.5rem;
+  --leading-section-title: 1.875rem;
+  --text-card-title: 1rem;
+  --leading-card-title: 1.375rem;
+  --text-body: 1rem;
+  --leading-body: 1.5rem;
+  --text-helper: 0.875rem;
+  --leading-helper: 1.25rem;
+  --text-badge: 0.75rem;
+  --leading-badge: 1rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --page-gutter: var(--space-4);
+  --customer-content-width: 72rem;
+  --radius-control: 0.75rem;
+  --radius-card: 1.25rem;
+  --radius-overlay: 1.5rem;
+  --radius-pill: 9999px;
+  --shadow-surface: 0 1px 3px rgba(28, 25, 23, 0.05);
+  --shadow-hover: 0 8px 24px rgba(28, 25, 23, 0.08);
+  --shadow-overlay: 0 24px 64px rgba(0, 0, 0, 0.2);
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --control-height: 3rem;
+  --control-font-size: var(--text-body);
+  --button-height-sm: 2.75rem;
+  --button-height-md: 2.75rem;
+  --button-height-icon: 2.75rem;
+  --button-radius-sm: var(--radius-control);
+  --button-radius-md: var(--radius-control);
+  --button-radius-icon: var(--radius-pill);
+  --motion-feedback: 150ms;
+  --motion-disclosure: 180ms;
+  --motion-fade: 220ms;
+  --motion-enter: 260ms;
+  --motion-drawer: 280ms;
+  --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--font-family-body);
+}
+
+@media (min-width: 640px) {
+  .customer-theme { --page-gutter: var(--space-6); }
+}
+
+@media (min-width: 1024px) {
+  .customer-theme {
+    --page-gutter: var(--space-8);
+    --text-display: 3.5rem;
+    --leading-display: 3.75rem;
+    --text-page-title: 2.25rem;
+    --leading-page-title: 2.625rem;
+  }
+}
+
+/* Also covers existing customer links and custom controls outside the primitives. */
+.customer-theme :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: var(--focus-width) solid var(--color-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.customer-theme .orderly-control:focus {
+  outline: var(--focus-width) solid var(--color-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.customer-theme .orderly-control[aria-invalid="true"] {
+  border-color: var(--color-danger-strong);
+}
+
 .orderly-warm-gradient {
   background: linear-gradient(135deg, #ffedd5, #f5f5f4);
 }
@@ -113,16 +216,16 @@ body {
 }
 
 .animate-orderly-fade-in {
-  animation: orderly-fade-in 220ms ease-out;
+  animation: orderly-fade-in var(--motion-fade, 220ms) ease-out;
 }
 
 .animate-orderly-slide-up {
-  animation: orderly-slide-up 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: orderly-slide-up var(--motion-enter, 260ms) var(--motion-ease, cubic-bezier(0.16, 1, 0.3, 1));
   will-change: transform, opacity;
 }
 
 .animate-orderly-slide-left {
-  animation: orderly-slide-left 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: orderly-slide-left var(--motion-drawer, 280ms) var(--motion-ease, cubic-bezier(0.16, 1, 0.3, 1));
   will-change: transform, opacity;
 }
 

@@ -51,7 +51,7 @@ export function CartItemRow({
             variant="ghost"
             size="icon"
             onClick={onRemove}
-            className="-mr-2 -mt-2 h-8 w-8 shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-danger-strong)]"
+            className="-mr-2 -mt-2 size-11 shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-danger-strong)]"
             aria-label={`Remove ${item.product.name}`}
           >
             <Trash2 className="h-4 w-4" />
@@ -59,7 +59,7 @@ export function CartItemRow({
         </div>
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <QuantityStepper value={item.quantity} onChange={onQuantityChange} />
+          <QuantityStepper value={item.quantity} onChange={onQuantityChange} label={item.product.name} />
 
           <p className="text-sm font-bold text-[var(--color-text-primary)]">
             {formatMoneyFromCents(item.unitPriceCents * item.quantity)}

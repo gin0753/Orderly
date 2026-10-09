@@ -44,7 +44,7 @@ export default async function TrackOrderPage({
           <Card className="overflow-hidden border-[var(--color-border)] bg-[var(--color-surface)] p-0">
             <div className="grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <div className="px-5 py-5 sm:px-6 md:p-8">
-                <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-brand)]">
+                <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-brand-text)]">
                   Track your order
                 </p>
 

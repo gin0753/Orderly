@@ -1,3 +1,6 @@
+"use client";
+
+import { useId, type KeyboardEvent } from "react";
 import { Check } from "lucide-react";
 
 import { formatMoneyFromCents } from "@/lib/format-money";
@@ -14,6 +17,29 @@ export function ProductOptionGroup({
   selectedOptionIds,
   onSelect,
 }: ProductOptionGroupProps) {
+  const requirementId = useId();
+  const availableOptions = group.options.filter((option) => option.isAvailable);
+  const tabStopId = availableOptions.find((option) => selectedOptionIds.includes(option.id))?.id
+    ?? availableOptions[0]?.id;
+
+  function handleRadioKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const keys = ["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"];
+    if (!keys.includes(event.key) || availableOptions.length === 0) return;
+    const current = event.target;
+    if (!(current instanceof HTMLButtonElement) || current.getAttribute("role") !== "radio") return;
+    event.preventDefault();
+    const index = availableOptions.findIndex((option) => option.id === current.dataset.optionId);
+    const direction = event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 1;
+    const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? availableOptions.length - 1
+      : (index + direction + availableOptions.length) % availableOptions.length;
+    const next = availableOptions[nextIndex];
+    const controls = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]'));
+    controls.find((control) => control.dataset.optionId === next.id)?.focus();
+    // Arrow movement selects, but never toggles an optional selected choice off.
+    // Space/Enter/click retain the configurator's existing optional-clear behavior.
+    if (!selectedOptionIds.includes(next.id)) onSelect(next.id);
+  }
+
   const minimumRequired = Math.max(group.minSelect, group.isRequired ? 1 : 0);
 
   const maximumAllowed = group.type === "SINGLE" ? 1 : group.maxSelect;
@@ -38,7 +64,7 @@ export function ProductOptionGroup({
             {group.name}
           </h3>
 
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          <p id={requirementId} className="mt-1 text-xs text-[var(--color-text-muted)]">
             {requirementLabel}
           </p>
         </div>
@@ -54,6 +80,8 @@ export function ProductOptionGroup({
         <div
           role="radiogroup"
           aria-label={group.name}
+          aria-describedby={requirementId}
+          onKeyDown={handleRadioKeyDown}
           className="grid gap-3 sm:grid-cols-3"
         >
           {group.options.map((option) => {
@@ -65,6 +93,8 @@ export function ProductOptionGroup({
                 type="button"
                 role="radio"
                 aria-checked={isSelected}
+                tabIndex={option.id === tabStopId ? 0 : -1}
+                data-option-id={option.id}
                 disabled={!option.isAvailable}
                 onClick={() => onSelect(option.id)}
                 className={[

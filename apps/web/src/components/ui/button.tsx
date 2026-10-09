@@ -50,11 +50,26 @@ const variantClasses: Record<ButtonVariant, string> = {
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "h-9 rounded-full px-4 text-sm",
-  md: "h-10 rounded-full px-5 text-sm",
+  sm: "h-[var(--button-height-sm,2.25rem)] rounded-[var(--button-radius-sm,9999px)] px-4 text-sm",
+  md: "h-[var(--button-height-md,2.5rem)] rounded-[var(--button-radius-md,9999px)] px-5 text-sm",
   lg: "h-12 rounded-xl px-6 text-base",
-  icon: "h-10 w-10 rounded-full p-0",
+  icon: "h-[var(--button-height-icon,2.5rem)] w-[var(--button-height-icon,2.5rem)] rounded-[var(--button-radius-icon,9999px)] p-0",
 };
+
+export function buttonStyles({
+  variant = "brand",
+  size = "md",
+  className,
+}: Pick<ButtonProps, "variant" | "size" | "className"> = {}) {
+  return cn(
+    "cursor-pointer inline-flex items-center justify-center gap-2 font-semibold transition duration-[var(--motion-feedback,150ms)]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2",
+    "disabled:cursor-not-allowed disabled:opacity-50",
+    variantClasses[variant],
+    sizeClasses[size],
+    className,
+  );
+}
 
 export function Button({
   className,
@@ -68,14 +83,7 @@ export function Button({
     <button
       type={type}
       disabled={disabled}
-      className={cn(
-        "cursor-pointer inline-flex items-center justify-center gap-2 font-semibold transition",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        variantClasses[variant],
-        sizeClasses[size],
-        className,
-      )}
+      className={buttonStyles({ variant, size, className })}
       {...props}
     />
   );

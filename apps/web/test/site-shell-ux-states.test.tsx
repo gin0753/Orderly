@@ -79,6 +79,8 @@ it("renders one customer banner, main and content-info landmark with only approv
 
   expect(screen.getAllByRole("banner")).toHaveLength(1);
   expect(screen.getAllByRole("main")).toHaveLength(1);
+  expect(screen.getByRole("link", { name: "Skip to content" })).toHaveAttribute("href", "#main-content");
+  expect(screen.getByRole("main")).toHaveAttribute("tabindex", "-1");
   expect(screen.getAllByRole("contentinfo")).toHaveLength(1);
 
   const footerNavigation = screen.getByRole("navigation", {
