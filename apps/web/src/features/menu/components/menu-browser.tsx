@@ -30,6 +30,11 @@ export function MenuBrowser({
   );
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [productOpener, setProductOpener] = useState<HTMLElement | null>(null);
+  const [cartFeedback, setCartFeedback] = useState("");
+
+  function handleAddedToCart(name: string, quantity: number) {
+    setCartFeedback(`Added ${quantity} × ${name} to your cart.`);
+  }
 
   const visibleCategories = useMemo(() => {
     if (activeCategoryId === "all") {
@@ -69,6 +74,7 @@ export function MenuBrowser({
 
     setCartOpener(opener);
     dispatch(addItem(cartItem));
+    handleAddedToCart(product.name, 1);
     dispatch(openCart());
   }
 
@@ -94,6 +100,10 @@ export function MenuBrowser({
         activeCategoryId={activeCategoryId}
         onCategoryChange={handleCategoryChange}
       />
+
+      <p role="status" aria-live="polite" aria-atomic="true" className="mt-3 line-clamp-2 h-10 text-sm text-[var(--color-text-secondary)] sm:line-clamp-1 sm:h-5">
+        {cartFeedback || "Select a dish to view details and options."}
+      </p>
 
       {!isAcceptingOrders ? (
         <section
@@ -134,6 +144,7 @@ export function MenuBrowser({
           product={selectedProduct}
           isAcceptingOrders={isAcceptingOrders}
           opener={productOpener}
+          onAddedToCart={handleAddedToCart}
           onClose={() => {
             setIsProductModalOpen(false);
             setSelectedProduct(null);

@@ -150,7 +150,7 @@
 }
 
 /* Also covers existing customer links and custom controls outside the primitives. */
-.customer-theme :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+.customer-theme :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: var(--focus-width) solid var(--color-ring);
   outline-offset: var(--focus-offset);
 }
@@ -162,6 +162,89 @@
 
 .customer-theme .orderly-control[aria-invalid="true"] {
   border-color: var(--color-danger-strong);
+}
+
+.customer-theme .customer-disclosure {
+  animation: orderly-fade-in var(--motion-disclosure) ease-out;
+}
+
+/* Stage 15.4: scoped storefront presentation, using the customer foundation. */
+.customer-theme .storefront-hero {
+  background-image: radial-gradient(ellipse at top right, rgba(194, 65, 12, 0.14), transparent 65%);
+}
+
+.customer-theme .storefront-hero-action:focus-visible {
+  outline-color: var(--color-ring-on-brand);
+  --tw-ring-color: var(--color-ring-on-brand);
+  --tw-ring-offset-color: var(--color-brand-surface);
+}
+
+.customer-theme .storefront-product-card {
+  transition: transform var(--motion-fade) var(--motion-ease), box-shadow var(--motion-fade) ease-out;
+}
+
+.customer-theme .storefront-product-image {
+  transition: transform var(--motion-fade) var(--motion-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .customer-theme .storefront-product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+  }
+  .customer-theme .storefront-product-card:hover .storefront-product-image {
+    transform: scale(1.025);
+  }
+}
+
+.customer-theme .storefront-category,
+.customer-theme .storefront-option {
+  transition-duration: var(--motion-feedback);
+  transition-property: background-color, border-color, color, box-shadow;
+}
+
+.customer-theme .storefront-option[aria-checked="true"] {
+  border-color: var(--color-brand-strong);
+  box-shadow: inset 0 0 0 1px var(--color-brand-strong);
+}
+
+.customer-theme .storefront-option:disabled {
+  background-color: var(--color-surface-muted);
+}
+
+.customer-theme .storefront-configurator {
+  animation: storefront-dialog-enter var(--motion-enter) var(--motion-ease);
+}
+
+.customer-theme .storefront-price-feedback {
+  animation: orderly-fade-in var(--motion-feedback) ease-out;
+}
+
+.customer-theme .storefront-purchase-footer {
+  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+}
+
+/* Leave room above focused options for the compact mobile identity heading. */
+.customer-theme .storefront-configurator-content { scroll-padding-top: 6rem; }
+
+@media (min-width: 768px) {
+  .customer-theme .storefront-configurator-content { scroll-padding-top: var(--space-8); }
+}
+
+@keyframes storefront-dialog-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 767px) and (max-height: 600px) {
+  .customer-theme .storefront-configurator-photo { height: 5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-theme .storefront-configurator,
+  .customer-theme .storefront-price-feedback { animation: none; }
+  .customer-theme .storefront-product-card:hover,
+  .customer-theme .storefront-product-card:hover .storefront-product-image { transform: none; }
 }
 
 .orderly-warm-gradient {
@@ -247,7 +330,8 @@ body {
   .animate-spin,
   .animate-orderly-fade-in,
   .animate-orderly-slide-up,
-  .animate-orderly-slide-left {
+  .animate-orderly-slide-left,
+  .customer-theme .customer-disclosure {
     animation: none !important;
   }
 }

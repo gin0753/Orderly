@@ -29,6 +29,27 @@ function Configurator({ optionGroup }: { optionGroup: MenuProductOptionGroup }) 
   </>;
 }
 
+it("identifies defaults and unavailable choices without changing initial selection", () => {
+  const sizes = group();
+  sizes.options[0].isDefault = true;
+  render(<Configurator optionGroup={sizes} />);
+  expect(screen.getByRole("radio", { name: /Small.*Default/ })).toHaveAttribute("aria-checked", "true");
+  expect(screen.getByRole("radio", { name: /Medium.*Unavailable/ })).toBeDisabled();
+  expect(screen.getByRole("radio", { name: /Medium/ })).not.toHaveTextContent("Default");
+});
+
+it("presents negative adjustments and minimum multiple selections accurately", async () => {
+  const user = userEvent.setup();
+  const extras: MenuProductOptionGroup = { ...group(), type: "MULTIPLE", kind: "ADD_ON", minSelect: 2, maxSelect: 2 };
+  extras.options[0].priceDeltaCents = -100;
+  render(<Configurator optionGroup={extras} />);
+  expect(screen.getByRole("group", { name: "Size" })).toHaveAccessibleDescription("Choose 2–2");
+  expect(screen.getByRole("checkbox", { name: /Small/ })).toHaveTextContent("-$1.00");
+  expect(screen.getByRole("checkbox", { name: /Small/ })).not.toHaveTextContent("+-$1.00");
+  await user.click(screen.getByRole("checkbox", { name: /Small/ }));
+  expect(screen.getByLabelText("Item total")).toHaveTextContent("1400");
+});
+
 it("uses one Tab stop, skips unavailable choices, wraps arrows, and preserves totals", async () => {
   const user = userEvent.setup();
   render(<Configurator optionGroup={group()} />);

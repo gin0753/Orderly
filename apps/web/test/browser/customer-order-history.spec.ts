@@ -81,6 +81,7 @@ test("password customer sees an owned checkout in history and historical detail"
   const persisted = await database((prisma) => prisma.order.findUniqueOrThrow({ where: { orderNumber: number }, select: { id: true, customerUserId: true } }));
   ownedId = persisted.id;
   expect(persisted.customerUserId).toBe(ownerId);
+  await page.getByRole("button", { name: "Account options" }).click();
   await page.getByRole("link", { name: "Orders", exact: true }).click();
   await expect(page).toHaveURL(/\/account\/orders$/);
   await expect(page.getByRole("heading", { name: `Order #${number}` })).toBeVisible();

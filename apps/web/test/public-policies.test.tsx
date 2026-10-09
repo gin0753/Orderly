@@ -24,6 +24,6 @@ it("links both public policies from the existing customer footer", () => {
   const footer = within(screen.getByRole("navigation", { name: "Footer navigation" }));
   expect(footer.getByRole("link", { name: "Privacy Policy" })).toHaveAttribute("href", "/privacy");
   expect(footer.getByRole("link", { name: "Terms of Service" })).toHaveAttribute("href", "/terms");
-  expect(footer.getByRole("link", { name: "Menu" })).toHaveAttribute("href", "/");
+  expect(footer.queryByRole("link", { name: "Menu" })).not.toBeInTheDocument();
   expect(footer.getByRole("link", { name: "Track order" })).toHaveAttribute("href", "/track-order");
 });

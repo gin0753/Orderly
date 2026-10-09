@@ -87,9 +87,8 @@ it("renders one customer banner, main and content-info landmark with only approv
     name: "Footer navigation",
   });
   const links = within(footerNavigation).getAllByRole("link");
-  expect(links).toHaveLength(4);
+  expect(links).toHaveLength(3);
   for (const [name, href] of [
-    ["Menu", "/"],
     ["Track order", "/track-order"],
     ["Privacy Policy", "/privacy"],
     ["Terms of Service", "/terms"],
@@ -237,4 +236,20 @@ it("moves focus from the product dialog into the cart and restores the product o
   expect(screen.getByRole("button", { name: "Close cart" })).toHaveFocus();
   await userEvent.click(screen.getByRole("button", { name: "Close cart" }));
   expect(opener).toHaveFocus();
+  expect(screen.getByText("Added 1 × Test Pizza to your cart.")).toHaveAttribute("role", "status");
+});
+
+it("announces quantity price changes and preserves quick-add totals", async () => {
+  const user = userEvent.setup();
+  const { store } = renderWithStore(<MenuBrowser categories={categories} isAcceptingOrders />);
+  await user.click(screen.getByRole("button", { name: "View Test Pizza" }));
+  const dialog = screen.getByRole("dialog", { name: "Test Pizza" });
+  const total = within(dialog).getByRole("status");
+  expect(total).toHaveAttribute("aria-atomic", "true");
+  expect(total).toHaveTextContent("Item total$15.00");
+  await user.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
+  expect(total).toHaveTextContent("Item total$30.00");
+  await user.click(within(dialog).getByRole("button", { name: /^Add to cart/ }));
+  expect(store.getState().cart.items[0]).toMatchObject({ quantity: 2, unitPriceCents: 1500 });
+  expect(screen.getByText("Added 2 × Test Pizza to your cart.")).toHaveAttribute("role", "status");
 });

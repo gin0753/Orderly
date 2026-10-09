@@ -173,6 +173,7 @@ test("logout clears untouched account prefills while keeping typed details and c
   await expect(page).toHaveURL(/\/account$/);
   await addPizza(page);
   await page.getByLabel("Phone number").fill("0400 777 666");
+  await page.getByRole("button", { name: "Account options" }).click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page.getByLabel("Full name")).toHaveValue("");
   await expect(page.getByLabel("Email address")).toHaveValue("");

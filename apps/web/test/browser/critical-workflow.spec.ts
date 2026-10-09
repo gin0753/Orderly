@@ -171,9 +171,10 @@ test("customer registration survives reload and logout preserves public browsing
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page).toHaveURL(/\/account$/);
   await expect(page.getByRole("heading", { name: "Account", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Account" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Account options" })).toBeVisible();
   await page.reload();
   await expect(page.getByLabel("Email")).toHaveValue(ACCOUNT_EMAIL);
+  await page.getByRole("button", { name: "Account options" }).click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
   await page.goto("/");
@@ -188,6 +189,7 @@ test("customer login survives reload and restores a protected return path", asyn
   await expect(page).toHaveURL(/\/account$/);
   await page.reload();
   await expect(page.getByLabel("Email")).toHaveValue(ACCOUNT_EMAIL);
+  await page.getByRole("button", { name: "Account options" }).click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
 
@@ -368,9 +370,8 @@ for (const viewport of [
     const footerNavigation = page.getByRole("navigation", {
       name: "Footer navigation",
     });
-    await expect(footerNavigation.getByRole("link")).toHaveCount(4);
+    await expect(footerNavigation.getByRole("link")).toHaveCount(3);
     for (const [name, href] of [
-      ["Menu", "/"],
       ["Track order", "/track-order"],
       ["Privacy Policy", "/privacy"],
       ["Terms of Service", "/terms"],

@@ -89,41 +89,40 @@ export function MenuHero({ store, product }: MenuHeroProps) {
     <section
       aria-labelledby="homepage-hero-title"
       className={[
-        "grid overflow-hidden rounded-3xl",
-        "border border-[var(--color-border)]",
-        "bg-[var(--color-surface)] shadow-sm",
+        "storefront-hero grid overflow-hidden rounded-[var(--radius-overlay)]",
+        "bg-[var(--color-brand-surface)] text-[var(--color-on-brand)]",
         product ? "md:grid-cols-[1.04fr_0.96fr]" : "",
       ].join(" ")}
     >
       <div className="flex flex-col justify-center px-6 pb-[1.125rem] pt-[1.375rem] sm:p-8 md:min-h-[389px] md:px-8 md:py-7 lg:min-h-[405px] lg:px-10 lg:py-9 max-[359px]:px-[1.125rem] max-[359px]:pb-4 max-[359px]:pt-5">
         {storeName ? (
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-brand-text-hover)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-ring-on-brand)]">
             {storeName}
           </p>
         ) : null}
 
         <h1
           id="homepage-hero-title"
-          className={`${storeName ? "mt-2.5 md:mt-3.5" : ""} max-w-xl text-[2.375rem] font-bold leading-[1.02] tracking-[-0.045em] text-[var(--color-text-primary)] md:text-[2.5rem] lg:text-[3.5rem] lg:leading-[0.98] max-[359px]:text-[2.125rem]`}
+          className={`${storeName ? "mt-3 md:mt-4" : ""} max-w-xl text-balance text-[length:var(--text-display)] font-bold leading-[1.08] tracking-[-0.04em] text-[var(--color-on-brand)] md:text-[2.5rem] lg:text-[length:var(--text-display)] max-[359px]:text-[2rem]`}
         >
           Fresh comfort food, ready when you are.
         </h1>
 
-        <p className="mt-3 max-w-xl text-[0.9375rem] leading-6 text-[var(--color-text-secondary)] md:mt-[1.125rem] md:text-base md:leading-7 max-[359px]:text-sm">
+        <p className="mt-4 max-w-md text-pretty text-[0.9375rem] leading-6 text-[var(--color-on-brand-secondary)] md:mt-5 md:text-base md:leading-7 max-[359px]:text-sm">
           Pizza, pasta and sides made for easy pickup or delivery.
         </p>
 
         <div className="mt-[1.125rem] grid grid-cols-2 gap-2.5 md:mt-6 md:flex md:flex-wrap md:gap-3">
           <a
             href="#menu"
-            className={`${actionClassName} bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)] shadow-sm hover:bg-[var(--color-text-primary)]`}
+            className={`${actionClassName} storefront-hero-action bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)] shadow-sm hover:bg-[var(--color-brand-hover)]`}
           >
             Browse menu
           </a>
 
           <Link
             href="/track-order"
-            className={`${actionClassName} border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]`}
+            className={`${actionClassName} storefront-hero-action bg-[var(--color-brand-surface-raised)] text-[var(--color-on-brand)] hover:bg-white/15`}
           >
             Track order
           </Link>
@@ -132,7 +131,7 @@ export function MenuHero({ store, product }: MenuHeroProps) {
         {fulfillmentLabel || preparationLabel || (!product && availabilityLabel) ? (
           <div
             aria-label="Ordering information"
-            className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-[var(--color-text-secondary)] md:mt-5 md:text-[0.8125rem] max-[359px]:grid max-[359px]:grid-cols-1 max-[359px]:gap-y-1.5"
+            className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-[var(--color-on-brand-secondary)] md:mt-5 md:text-[0.8125rem] max-[359px]:grid max-[359px]:grid-cols-1 max-[359px]:gap-y-1.5"
           >
             {fulfillmentLabel ? <StoreFact>{fulfillmentLabel}</StoreFact> : null}
             {preparationLabel ? <StoreFact>{preparationLabel}</StoreFact> : null}
@@ -144,7 +143,7 @@ export function MenuHero({ store, product }: MenuHeroProps) {
       </div>
 
       {product ? (
-        <div className="orderly-warm-gradient relative mx-[1.125rem] mb-[1.125rem] min-h-[185px] overflow-hidden rounded-[1.125rem] md:m-0 md:min-h-[389px] md:rounded-none md:p-5 lg:min-h-[405px] lg:p-6 max-[359px]:mx-3.5 max-[359px]:mb-3.5 max-[359px]:min-h-40">
+        <div className="relative mx-[1.125rem] mb-[1.125rem] min-h-[185px] overflow-hidden rounded-[var(--radius-card)] md:m-0 md:min-h-[389px] md:rounded-none md:p-5 lg:min-h-[405px] lg:p-6 max-[359px]:mx-3.5 max-[359px]:mb-3.5 max-[359px]:min-h-40">
           <div className="absolute inset-0 overflow-hidden rounded-[1.125rem] md:inset-5 lg:inset-6">
             <ProductImage
               src={product.imageUrl}
@@ -164,7 +163,7 @@ export function MenuHero({ store, product }: MenuHeroProps) {
             ) : null}
 
             <div className="absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 rounded-[0.875rem] bg-[var(--color-surface-glass)] px-3 py-2.5 shadow-sm backdrop-blur md:inset-x-4 md:bottom-4 md:px-4 md:py-3">
-              <strong className="min-w-0 truncate text-sm">
+              <strong className="min-w-0 truncate text-sm text-[var(--color-text-primary)]">
                 {product.name}
               </strong>
               <span className="shrink-0 text-xs font-semibold text-[var(--color-text-secondary)] md:text-[0.8125rem]">

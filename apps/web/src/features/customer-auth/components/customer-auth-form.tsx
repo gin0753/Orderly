@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { GoogleAuthButton } from "./google-brand";
 import { safeCustomerReturnPath } from "../lib/return-path";
 import { customerAuthApi } from "../api/customer-auth-api";
 import { navigateToGoogle } from "../lib/google-navigation";
@@ -105,7 +106,7 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
       </form>
       {googleAvailable ? <div className="mt-6">
         <div className="flex items-center gap-3 text-xs text-[var(--color-text-secondary)]" aria-hidden="true"><span className="h-px flex-1 bg-[var(--color-border)]" />or<span className="h-px flex-1 bg-[var(--color-border)]" /></div>
-        <Button type="button" variant="secondary" className="mt-5 w-full" disabled={googleBusy || busy || unresolved || auth.status === "authenticated"} onClick={() => { void startGoogle(); }}>{googleBusy ? "Connecting to Google…" : "Continue with Google"}</Button>
+        <GoogleAuthButton busy={googleBusy} disabled={googleBusy || busy || unresolved || auth.status === "authenticated"} onClick={() => { void startGoogle(); }} />
       </div> : null}
       {googleError ? <p role="alert" className="mt-3 text-sm text-[var(--color-danger-strong)]">{googleError}</p> : null}
       <p className="mt-5 text-center text-sm">{registering ? "Already have an account? " : "New to Orderly? "}<Link className="font-semibold text-[var(--color-brand-text)] underline underline-offset-4" href={`${registering ? "/login" : "/register"}?returnTo=${encodeURIComponent(returnTo)}`}>{registering ? "Sign in" : "Create an account"}</Link></p>

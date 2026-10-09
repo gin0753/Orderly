@@ -10,6 +10,7 @@ import { hydrateCart, openCart } from "@/features/cart/cart-slice";
 import { loginAdmin } from "@/features/auth/store/auth-slice";
 import { authApi } from "@/features/auth/api/auth-api";
 import { makeStore } from "@/store/store";
+import { bootstrapCustomer } from "@/features/customer-auth/store/customer-auth-slice";
 
 let pathname = "/track-order";
 const replaceMock = jest.fn();
@@ -86,6 +87,19 @@ it("exposes only admin links, with nested Menu active and bottom Sign out", asyn
   expect(links.map(link => [link.textContent, link.getAttribute("href")])).toEqual([["Orders", "/admin/orders"], ["Menu", "/admin/menu"]]);
   expect(links[1]).toHaveAttribute("aria-current", "location");
   expect(within(dialog).getByRole("button", { name: "Sign out" })).toBeInTheDocument();
+});
+
+it("keeps tracking and account sections available to authenticated mobile customers", async () => {
+  const { store } = renderHeader();
+  act(() => {
+    store.dispatch(bootstrapCustomer.pending("customer", undefined));
+    store.dispatch(bootstrapCustomer.fulfilled({ id: "one", email: "customer@example.test", name: "Customer", phone: null, authMethods: { password: true, google: false } }, "customer", undefined));
+  });
+  const { dialog, trigger } = await openNavigation();
+  expect(within(dialog).getAllByRole("link").map((link) => link.textContent)).toEqual(["Menu", "Track order", "Profile", "Orders", "Sign-in & Security"]);
+  expect(within(dialog).getByRole("button", { name: "Sign out" })).toBeInTheDocument();
+  await userEvent.keyboard("{Escape}");
+  expect(trigger).toHaveFocus();
 });
 
 it.each(["close", "escape", "backdrop", "link", "cancel"])("closes via %s and restores focus and scrolling", async (method) => {

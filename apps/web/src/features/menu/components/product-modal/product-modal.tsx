@@ -23,6 +23,7 @@ type ProductModalProps = {
   isAcceptingOrders: boolean;
   opener: HTMLElement | null;
   onClose: () => void;
+  onAddedToCart?: (name: string, quantity: number) => void;
 };
 
 export function ProductModal({
@@ -30,6 +31,7 @@ export function ProductModal({
   isAcceptingOrders,
   opener,
   onClose,
+  onAddedToCart,
 }: ProductModalProps) {
   const dispatch = useAppDispatch();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -94,6 +96,7 @@ export function ProductModal({
     shouldRestoreFocusRef.current = false;
     setCartOpener(opener);
     dispatch(addItem(cartItem));
+    onAddedToCart?.(product.name, quantity);
     onClose();
     dispatch(openCart());
   }
@@ -120,59 +123,57 @@ export function ProductModal({
       className="fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none border-0 bg-transparent p-0 text-[var(--color-text-primary)] backdrop:bg-[var(--color-overlay)] backdrop:backdrop-blur-sm"
     >
       <div
-        className="flex h-full items-end justify-center px-4 py-6 md:items-center"
+        className="flex h-full items-end justify-center md:items-center md:px-4 md:py-6"
         onClick={(event) => {
           if (event.target === event.currentTarget) {
             onClose();
           }
         }}
       >
-        <div className="relative flex h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl bg-[var(--color-surface)] shadow-2xl md:grid md:h-[calc(100vh-3rem)] md:max-h-[760px] md:grid-cols-[0.95fr_1.05fr] md:rounded-3xl">
-          <div className="relative h-40 shrink-0 overflow-hidden bg-[var(--color-surface-muted)] md:h-full max-[359px]:h-32">
+        <div className="storefront-configurator relative flex h-[calc(100dvh-1rem)] w-full max-w-4xl flex-col overflow-hidden rounded-t-[var(--radius-overlay)] bg-[var(--color-background)] shadow-[var(--shadow-overlay)] md:grid md:h-[calc(100dvh-3rem)] md:max-h-[680px] md:grid-cols-2 md:rounded-[var(--radius-overlay)]">
+          <Button
+            ref={closeRef}
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="absolute right-3 top-3 z-10 size-11 bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-sm"
+            aria-label="Close product details"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+          <div className="storefront-configurator-photo relative h-28 shrink-0 overflow-hidden bg-[var(--color-surface-muted)] md:h-full max-[359px]:h-24">
             <ProductImage
               src={product.imageUrl}
               alt={product.name}
-              sizes="(min-width: 928px) 426px, (min-width: 768px) calc((100vw - 32px) * 0.475), calc(100vw - 32px)"
+              sizes="(min-width: 928px) 448px, (min-width: 768px) calc((100vw - 32px) / 2), 100vw"
               className="object-contain"
               priority
             />
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col md:h-full">
-            <div className="min-h-0 flex-1 overflow-y-auto p-5 md:p-8">
-              <div className="mb-6 flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-brand-text)]">
-                    Customize your item
-                  </p>
-                  <h2
-                    id={titleId}
-                    className="mt-2 text-2xl font-bold tracking-tight text-[var(--color-text-primary)]"
-                  >
-                    {product.name}
-                  </h2>
-                  <p className="mt-2 text-lg font-semibold text-[var(--color-text-primary)]">
-                    {formatMoneyFromCents(product.priceCents)}
-                  </p>
-                  {product.description ? (
-                    <p className="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">
-                      {product.description}
-                    </p>
-                  ) : null}
-                </div>
-
-                <Button
-                  ref={closeRef}
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="-mr-2 -mt-2 size-11 shrink-0 bg-[var(--color-surface-glass)] text-[var(--color-text-muted)] backdrop-blur hover:text-[var(--color-text-primary)]"
-                  aria-label="Close product details"
+            <div className="storefront-configurator-content min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 md:p-8">
+              <div className="storefront-product-heading sticky -top-5 z-[1] -mx-5 border-b border-[var(--color-border)] bg-[var(--color-background)] px-5 pb-3 md:static md:mx-0 md:border-0 md:px-0 md:pr-10">
+                <p className="hidden text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-brand-text)] md:block">
+                  Customize your item
+                </p>
+                <h2
+                  id={titleId}
+                  className="text-[length:var(--text-section-title)] font-bold leading-tight tracking-tight text-[var(--color-text-primary)] md:mt-2"
                 >
-                  <X className="h-5 w-5" />
-                </Button>
+                  {product.name}
+                </h2>
+                <p className="mt-1 text-base font-semibold text-[var(--color-text-primary)] md:mt-2 md:text-lg">
+                  <span className="mr-2 text-sm font-normal text-[var(--color-text-secondary)]">Base price</span>
+                  {formatMoneyFromCents(product.priceCents)}
+                </p>
               </div>
+              {product.description ? (
+                <p className="mt-1 text-sm leading-6 text-[var(--color-text-secondary)]">
+                  {product.description}
+                </p>
+              ) : null}
 
               {product.optionGroups.map((group) => (
                 <ProductOptionGroup
@@ -198,12 +199,12 @@ export function ProductModal({
               </section>
             </div>
 
-            <div className="shrink-0 border-t border-[var(--color-border-soft)] bg-[var(--color-surface)] p-5 md:p-6">
-              <div className="mb-4 flex items-center justify-between gap-4">
+            <div className="storefront-purchase-footer shrink-0 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-5 md:p-6">
+              <div role="status" aria-live="polite" aria-atomic="true" className="mb-3 flex items-center justify-between gap-4">
                 <span className="text-sm text-[var(--color-text-secondary)]">
                   Item total
                 </span>
-                <span className="text-lg font-bold text-[var(--color-text-primary)]">
+                <span key={itemTotalCents} className="storefront-price-feedback text-xl font-bold tracking-tight text-[var(--color-text-primary)]">
                   {formatMoneyFromCents(itemTotalCents)}
                 </span>
               </div>
