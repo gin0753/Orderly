@@ -183,10 +183,12 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
     await capture(page, "checkout-delivery", viewport.width);
     if (refined && viewport.width < 1024) {
       await page.getByRole("complementary", { name: "Order review" }).scrollIntoViewIfNeeded();
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-      const summary = await page.getByRole("complementary", { name: "Order review" }).boundingBox();
-      const bar = await page.locator(".transaction-checkout-action").boundingBox();
-      expect(summary!.y + summary!.height).toBeLessThanOrEqual(bar!.y);
+      await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" }));
+      await expect.poll(async () => {
+        const summary = await page.getByRole("complementary", { name: "Order review" }).boundingBox();
+        const bar = await page.locator(".transaction-checkout-action").boundingBox();
+        return summary!.y + summary!.height - bar!.y;
+      }).toBeLessThanOrEqual(0);
       await expect(submit).toBeInViewport();
       await capture(page, "checkout-scrolled", viewport.width);
     }

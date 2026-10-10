@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import { useOrderTracking } from "../../hooks/use-order-tracking";
 import { OrderStatusTimeline } from "./order-status-timeline";
@@ -22,7 +22,7 @@ type OrderTrackingPageShellProps = {
 
 function OrderTrackingPageShell({ children }: OrderTrackingPageShellProps) {
   return (
-    <div className="bg-[var(--color-page-background)] px-4 py-6 text-[var(--color-text-primary)] md:px-8 md:py-10">
+    <div className="bg-[var(--color-page-background)] px-4 py-8 text-[var(--color-text-primary)] sm:px-6 sm:py-12">
       <div className="mx-auto max-w-6xl">
         {children}
       </div>
@@ -40,6 +40,13 @@ export function OrderTrackingResult({ orderNumber }: OrderTrackingResultProps) {
     refreshOrder,
     refreshMessage,
   } = useOrderTracking(orderNumber);
+  const focusedResult = useRef(false);
+  useEffect(() => {
+    if (order && !error && !isInitialLoading && !focusedResult.current) {
+      focusedResult.current = true;
+      document.getElementById("tracking-order-heading")?.focus({ preventScroll: true });
+    }
+  }, [order, error, isInitialLoading]);
 
   if (isInitialLoading) {
     return (
@@ -72,7 +79,7 @@ export function OrderTrackingResult({ orderNumber }: OrderTrackingResultProps) {
 
   return (
     <OrderTrackingPageShell>
-      <p role="status" aria-live="polite" className="sr-only">
+      <p role="status" className="sr-only">
         {refreshMessage}
       </p>
       <OrderTrackingHeader

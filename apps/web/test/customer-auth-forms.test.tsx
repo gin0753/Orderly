@@ -57,6 +57,15 @@ it("uses a generic login error regardless of backend credential detail", async (
   await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("Invalid email or password.");
   expect(screen.getByRole("alert")).not.toHaveTextContent("No customer exists");
+  expect(screen.getByRole("alert")).toHaveFocus();
+});
+
+it("keeps password policy and validation associated together", async () => {
+  renderForm("register");
+  const password = screen.getByLabelText("Password", { exact: true });
+  await userEvent.type(password, "short");
+  await userEvent.click(screen.getByRole("button", { name: "Create account" }));
+  expect(password).toHaveAccessibleDescription(/At least 15 characters.*Use at least 15 characters/);
 });
 
 it("validates registration against the API character and UTF-8 byte constraints", async () => {

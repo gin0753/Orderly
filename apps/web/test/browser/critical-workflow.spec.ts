@@ -142,8 +142,9 @@ test("customer checkout to admin acceptance to guest tracking", async ({
   ).toBeVisible();
   await expect(page.getByText("Accepted", { exact: true })).toBeVisible();
   await expect(
-    page.getByText("Restaurant confirmed your order", { exact: true }),
+    page.getByText("Current status: Accepted", { exact: true }),
   ).toBeVisible();
+  await expect(page.getByRole("list", { name: "Order progress" }).locator('[aria-current="step"]')).toContainText("Placed");
 
   expect(runtimeErrors).toEqual([]);
 });

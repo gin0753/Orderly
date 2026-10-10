@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ShieldCheck } from "lucide-react";
 
 export function OrderTrackingVerificationState({
   orderNumber,
@@ -14,9 +15,9 @@ export function OrderTrackingVerificationState({
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center">
-        <Card className="border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
+        <Card variant="surface" className="w-full max-w-xl p-5 text-center sm:p-8">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-notice-background)] text-2xl">
-            🔒
+            <ShieldCheck aria-hidden="true" className="size-6 text-[var(--color-brand-text)]" />
           </div>
 
           <h1 className="mt-5 text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">

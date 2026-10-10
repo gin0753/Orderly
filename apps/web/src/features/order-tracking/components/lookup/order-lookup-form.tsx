@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -73,16 +73,21 @@ export function OrderLookupForm({
   const [orderNumber, setOrderNumber] = useState(initialOrderNumber);
   const [contact, setContact] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [invalidField, setInvalidField] = useState<"orderNumber" | "contact" | null>(null);
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
   const errorRef = useRef<HTMLDivElement>(null);
 
   const isBusy = submitStatus !== "idle";
 
-  useEffect(() => {
-    if (error) {
-      errorRef.current?.focus();
-    }
-  }, [error]);
+  function showError(message: string, field: "orderNumber" | "contact" | null = null) {
+    setError(message);
+    setInvalidField(field);
+    requestAnimationFrame(() => {
+      const target = field ? document.getElementById(field) : errorRef.current;
+      target?.focus();
+      target?.scrollIntoView?.({ block: "center", behavior: "instant" });
+    });
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -91,23 +96,24 @@ export function OrderLookupForm({
     const cleanContact = contact.trim();
 
     if (!cleanOrderNumber) {
-      setError("Please enter your order number.");
+      showError("Please enter your order number.", "orderNumber");
       return;
     }
 
     if (!cleanContact) {
-      setError("Please enter the email or phone number used at checkout.");
+      showError("Please enter the email or phone number used at checkout.", "contact");
       return;
     }
 
     const payload = buildLookupPayload(orderNumber, contact);
 
     if (!payload.email && (!payload.phone || payload.phone.length < 6)) {
-      setError("Please enter a valid phone number.");
+      showError("Please enter a valid phone number.", "contact");
       return;
     }
 
     setError(null);
+    setInvalidField(null);
     setSubmitStatus("submitting");
 
     try {
@@ -125,7 +131,7 @@ export function OrderLookupForm({
     } catch (err) {
       setSubmitStatus("idle");
 
-      setError(
+      showError(
         err instanceof OrderTrackingLookupError
           ? err.message
           : TRACKING_UNAVAILABLE_MESSAGE,
@@ -134,7 +140,7 @@ export function OrderLookupForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5" aria-busy={isBusy}>
+    <form onSubmit={handleSubmit} noValidate aria-label="Find your order" className="space-y-5" aria-busy={isBusy}>
       <div className="space-y-2">
         <label
           htmlFor="orderNumber"
@@ -146,11 +152,14 @@ export function OrderLookupForm({
         <Input
           id="orderNumber"
           value={orderNumber}
-          onChange={(event) => setOrderNumber(event.target.value)}
+          onChange={(event) => { setOrderNumber(event.target.value); if (invalidField === "orderNumber") { setError(null); setInvalidField(null); } }}
           placeholder="e.g. #10045"
           autoComplete="off"
           disabled={isBusy}
+          aria-invalid={invalidField === "orderNumber"}
+          aria-describedby={invalidField === "orderNumber" ? "tracking-number-error" : undefined}
         />
+        {invalidField === "orderNumber" ? <p id="tracking-number-error" className="text-sm text-[var(--color-danger-strong)]">{error}</p> : null}
       </div>
 
       <div className="space-y-2">
@@ -164,18 +173,21 @@ export function OrderLookupForm({
         <Input
           id="contact"
           value={contact}
-          onChange={(event) => setContact(event.target.value)}
+          onChange={(event) => { setContact(event.target.value); if (invalidField === "contact") { setError(null); setInvalidField(null); } }}
           placeholder="you@email.com or phone number"
           autoComplete="off"
           disabled={isBusy}
+          aria-invalid={invalidField === "contact"}
+          aria-describedby={`tracking-contact-help${invalidField === "contact" ? " tracking-contact-error" : ""}`}
         />
 
-        <p className="text-xs text-[var(--color-text-muted)]">
+        <p id="tracking-contact-help" className="text-sm text-[var(--color-text-muted)]">
           Use the same contact detail you entered at checkout.
         </p>
+        {invalidField === "contact" ? <p id="tracking-contact-error" className="text-sm text-[var(--color-danger-strong)]">{error}</p> : null}
       </div>
 
-      {error ? (
+      {error && !invalidField ? (
         <div
           ref={errorRef}
           tabIndex={-1}
@@ -186,7 +198,7 @@ export function OrderLookupForm({
         </div>
       ) : null}
 
-      <Button type="submit" className="w-full" disabled={isBusy}>
+      <Button type="submit" size="lg" className="w-full" disabled={isBusy}>
         <span className="inline-flex items-center justify-center gap-2">
           {isBusy ? (
             <span
@@ -198,6 +210,7 @@ export function OrderLookupForm({
           {getSubmitButtonLabel(submitStatus)}
         </span>
       </Button>
+      <p role="status" className="sr-only">{isBusy ? getSubmitButtonLabel(submitStatus) : ""}</p>
 
       {submitStatus === "navigating" ? (
         <p className="text-center text-xs text-[var(--color-text-muted)]">
