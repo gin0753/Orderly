@@ -101,7 +101,7 @@ export function MenuBrowser({
         onCategoryChange={handleCategoryChange}
       />
 
-      <p role="status" aria-live="polite" aria-atomic="true" className="mt-3 line-clamp-2 h-10 text-sm text-[var(--color-text-secondary)] sm:line-clamp-1 sm:h-5">
+      <p className="mt-3 line-clamp-2 h-10 text-sm text-[var(--color-text-secondary)] sm:line-clamp-1 sm:h-5">
         {cartFeedback || "Select a dish to view details and options."}
       </p>
 

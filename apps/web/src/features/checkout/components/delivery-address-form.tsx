@@ -32,14 +32,14 @@ export function DeliveryAddressForm({
   return (
     <section
       className={[
-        "rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition",
+        "rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] transition sm:p-6",
         disabled ? "opacity-60" : "",
       ].join(" ")}
     >
       <div>
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-            3. Delivery Address
+            Delivery Address
           </h2>
 
           {disabled ? (

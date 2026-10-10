@@ -15,10 +15,10 @@ export function CustomerDetailsForm({
 }: CustomerDetailsFormProps) {
   const prefix = useId();
   return (
-    <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+    <section className="rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-6">
       <div>
         <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-          2. Customer Details
+          Customer Details
         </h2>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
           We&apos;ll use this to send updates about your order.

@@ -17,21 +17,21 @@ export function CartDrawerHeader({
   closeButtonRef,
 }: CartDrawerHeaderProps) {
   return (
-    <div className="flex items-center justify-between border-b border-[var(--color-border-soft)] px-5 py-4">
+    <div className="flex shrink-0 items-center justify-between gap-4 bg-[var(--color-brand-surface)] px-5 py-4 text-[var(--color-on-brand)]">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-brand-text)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-ring-on-brand)]">
           Orderly
         </p>
 
         <h2
           id="cart-drawer-title"
-          className="mt-1 text-lg font-bold text-[var(--color-text-primary)]"
+          className="mt-1 text-[length:var(--text-section-title)] font-bold tracking-tight"
         >
           Your Cart
         </h2>
 
         {!isEmpty ? (
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-1 text-xs text-[var(--color-on-brand-secondary)]">
             {itemCount} {itemCount === 1 ? "item" : "items"} ready to review
           </p>
         ) : null}
@@ -43,7 +43,7 @@ export function CartDrawerHeader({
         variant="ghost"
         size="icon"
         onClick={onClose}
-        className="size-11 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+        className="transaction-cart-close size-11 shrink-0 bg-[var(--color-brand-surface-raised)] text-[var(--color-on-brand)] hover:bg-[var(--color-brand-surface-raised)]"
         aria-label="Close cart"
       >
         <X className="h-5 w-5" />

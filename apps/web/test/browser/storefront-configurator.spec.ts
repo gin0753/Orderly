@@ -85,7 +85,7 @@ test("storefront and configurator at desktop, mobile and short viewports", async
     await expect(page.getByRole("dialog", { name: "Your Cart" })).toBeVisible();
     await page.getByRole("button", { name: "Close cart" }).click();
     await expect(page.getByRole("button", { name: "View Golden Path Pizza" })).toBeFocused();
-    await expect(page.getByRole("status").filter({ hasText: "Added 1 × Golden Path Pizza" })).toBeVisible();
+    await expect(page.getByText("Added 1 × Golden Path Pizza to your cart.", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: /^Browser Test Pizza/ }).click();
     await expect(page.getByRole("button", { name: /^Browser Test Pizza/ })).toHaveAttribute("aria-pressed", "true");
     await page.getByRole("button", { name: /^All/ }).click();

@@ -3,12 +3,20 @@
 import { render, screen } from "@testing-library/react";
 import { CustomerDetailsForm } from "@/features/checkout/components/customer-details-form";
 import { DeliveryAddressForm } from "@/features/checkout/components/delivery-address-form";
+import { OrderNotesField } from "@/features/checkout/components/order-notes-field";
 import type { CheckoutFormState } from "@/features/checkout/checkout-types";
 
 const form: CheckoutFormState = {
   fulfillmentType: "delivery", fullName: "", phone: "", email: "", address: "", apartment: "",
   city: "", state: "", postcode: "", orderNotes: "",
 };
+
+it("names optional notes and associates its instructions and character limit", () => {
+  render(<OrderNotesField form={form} onChange={jest.fn()} />);
+  const notes = screen.getByRole("textbox", { name: "Order notes" });
+  expect(notes).toHaveAccessibleDescription(/special instructions.*0\/200 characters/);
+  expect(notes).toHaveAttribute("maxlength", "200");
+});
 
 it("keeps contact names stable and associates each invalid field with its own error", () => {
   const onChange = jest.fn();

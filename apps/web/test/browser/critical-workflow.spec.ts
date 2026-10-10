@@ -66,7 +66,7 @@ test("customer checkout to admin acceptance to guest tracking", async ({
   await productDialog.getByRole("checkbox", { name: "Extra Cheese" }).click();
   await productDialog.getByRole("button", { name: /^Add to cart/ }).click();
 
-  await page.getByRole("link", { name: "View Cart & Checkout" }).click();
+  await page.getByRole("link", { name: "Continue to checkout" }).click();
   await expect(page.getByRole("heading", { name: "Checkout" })).toBeVisible();
   await page.getByRole("button", { name: /Delivery/ }).click();
   await page.getByLabel("Full name").fill(CUSTOMER_NAME);
@@ -272,7 +272,7 @@ test.describe("mobile customer smoke", () => {
     await page.getByRole("button", { name: "Close cart", exact: true }).click();
     await expect(page.getByRole("button", { name: /View cart/ })).toBeVisible();
     await page.getByRole("button", { name: /View cart/ }).click();
-    await page.getByRole("link", { name: "View Cart & Checkout" }).click();
+    await page.getByRole("link", { name: "Continue to checkout" }).click();
 
     await expect(page.getByRole("heading", { name: "Checkout" })).toBeVisible();
     await expect(page.getByLabel("Full name")).toBeVisible();

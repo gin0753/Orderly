@@ -247,6 +247,35 @@
   .customer-theme .storefront-product-card:hover .storefront-product-image { transform: none; }
 }
 
+/* Transaction surfaces opt into the existing customer foundation. */
+.customer-theme .transaction-cart-panel {
+  animation: transaction-drawer-enter var(--motion-drawer) var(--motion-ease);
+}
+.customer-theme .transaction-cart-close:focus-visible {
+  outline-color: var(--color-ring-on-brand);
+}
+.customer-theme .transaction-checkout {
+  padding-bottom: calc(var(--checkout-action-height, 6rem) + var(--space-8));
+}
+.customer-theme .transaction-checkout :where(input, select, textarea, [tabindex="-1"]) {
+  scroll-margin-top: 6rem;
+  scroll-margin-bottom: calc(var(--checkout-action-height, 6rem) + var(--space-4));
+}
+.customer-theme .transaction-confirmation-mark {
+  animation: orderly-fade-in var(--motion-fade) var(--motion-ease);
+}
+@keyframes transaction-drawer-enter {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@media (min-width: 1024px) {
+  .customer-theme .transaction-checkout { padding-bottom: var(--space-12); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .customer-theme .transaction-cart-panel,
+  .customer-theme .transaction-confirmation-mark { animation: none; }
+}
+
 .orderly-warm-gradient {
   background: linear-gradient(135deg, #ffedd5, #f5f5f4);
 }

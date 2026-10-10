@@ -26,23 +26,26 @@ export function CheckoutSkeletonCard({
 
 export function CheckoutSkeleton() {
   return (
-    <div className="bg-[var(--color-background)] px-4 py-6 pb-10 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 shadow-sm sm:px-8">
+    <div role="status" aria-busy="true" aria-label="Loading checkout" className="bg-[var(--color-background)] px-[var(--page-gutter)] py-6 pb-10 lg:py-10">
+      <span className="sr-only">Loading checkout…</span>
+      <div aria-hidden="true" className="mx-auto max-w-[var(--customer-content-width)]">
+        <div className="mb-8">
           <div className="flex items-center justify-between gap-4">
             <SkeletonLine className="h-8 w-36" />
           </div>
+          <SkeletonLine className="mt-3 h-6 w-80 max-w-full" />
+          <SkeletonLine className="mt-2 h-6 w-64 max-w-full" />
 
-          <div className="mt-8 flex items-center justify-center gap-6">
-            <div className="flex flex-col items-center gap-2">
-              <SkeletonCircle className="size-9" />
+          <div className="mt-6 flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <SkeletonCircle className="size-7" />
               <SkeletonLine className="h-3 w-12" />
             </div>
 
-            <SkeletonLine className="hidden h-px w-24 sm:block" />
+            <SkeletonLine className="h-px w-8" />
 
-            <div className="flex flex-col items-center gap-2">
-              <SkeletonCircle className="size-9" />
+            <div className="flex items-center gap-2">
+              <SkeletonCircle className="size-7" />
               <SkeletonLine className="h-3 w-12" />
             </div>
 
