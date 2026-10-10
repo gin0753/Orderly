@@ -46,6 +46,7 @@ export function SiteHeader() {
       navLinks={navLinks}
       mobileNavLinks={mobileLinks}
       mobileLabel="Customer navigation"
+      mobileCycleTabStops
       onBeforeMobileOpen={() => dispatch(closeCart())}
       mobileFooter={authenticated ? <CustomerSignOut /> : undefined}
       rightSlot={

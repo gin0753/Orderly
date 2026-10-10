@@ -149,6 +149,20 @@ it("restores scrolling on unmount", async () => {
   expect(document.documentElement.style.overflow).toBe("scroll");
 });
 
+it("moves through every customer destination without relying on native link tabbing", async () => {
+  renderHeader();
+  const { dialog } = await openNavigation();
+  const close = within(dialog).getByRole("button", { name: "Close customer navigation" });
+  for (const name of ["Menu", "Track order", "Sign in"]) {
+    expect(fireEvent.keyDown(document.activeElement!, { key: "Tab" })).toBe(false);
+    expect(within(dialog).getByRole("link", { name })).toHaveFocus();
+  }
+  fireEvent.keyDown(document.activeElement!, { key: "Tab" });
+  expect(close).toHaveFocus();
+  fireEvent.keyDown(close, { key: "Tab", shiftKey: true });
+  expect(within(dialog).getByRole("link", { name: "Sign in" })).toHaveFocus();
+});
+
 it("closes when resizing to desktop and leaves desktop links available", async () => {
   renderHeader();
   const { trigger } = await openNavigation();

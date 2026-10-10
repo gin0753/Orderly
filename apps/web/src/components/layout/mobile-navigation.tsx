@@ -17,6 +17,7 @@ type MobileNavigationProps = {
   identitySuffix?: string;
   footer?: ReactNode;
   onBeforeOpen?: () => void;
+  cycleTabStops?: boolean;
 };
 
 export function MobileNavigation({
@@ -25,6 +26,7 @@ export function MobileNavigation({
   identitySuffix,
   footer,
   onBeforeOpen,
+  cycleTabStops = false,
 }: MobileNavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dialogId = useId();
@@ -98,6 +100,17 @@ export function MobileNavigation({
           ));
           const first = controls[0];
           const last = controls[controls.length - 1];
+          // Some WebKit configurations skip links during native Tab navigation.
+          // Customer navigation must keep every destination keyboard reachable.
+          if (cycleTabStops && controls.length) {
+            event.preventDefault();
+            const current = controls.indexOf(document.activeElement as HTMLElement);
+            const next = current < 0
+              ? (event.shiftKey ? controls.length - 1 : 0)
+              : (current + (event.shiftKey ? -1 : 1) + controls.length) % controls.length;
+            controls[next].focus();
+            return;
+          }
           if (event.shiftKey && document.activeElement === first) {
             event.preventDefault();
             last?.focus();
