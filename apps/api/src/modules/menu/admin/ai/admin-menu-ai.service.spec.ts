@@ -104,6 +104,22 @@ describe('AdminMenuAiService', () => {
     await moduleRef.close();
   });
 
+  it('exposes only availability without contacting the provider', () => {
+    expect(service.getCapability()).toEqual({ available: true });
+    expect(openAiMock).not.toHaveBeenCalled();
+  });
+
+  it.each(['OPENAI_API_KEY', 'OPENAI_MODEL'])(
+    'reports unavailable when %s is missing or blank',
+    (missingKey) => {
+      configService.get.mockImplementation((key: string) =>
+        key === missingKey ? '   ' : 'test-value',
+      );
+      expect(service.getCapability()).toEqual({ available: false });
+      expect(openAiMock).not.toHaveBeenCalled();
+    },
+  );
+
   it('generates a description when the current description is empty', async () => {
     responsesCreate.mockResolvedValue(
       createProviderResponse({

@@ -22,6 +22,18 @@ type ContentSuggestion = {
 export class AdminMenuAiService {
   constructor(private readonly configService: ConfigService) {}
 
+  getCapability(): { available: boolean } {
+    const { apiKey, model } = this.getProviderConfiguration();
+    return { available: Boolean(apiKey && model) };
+  }
+
+  private getProviderConfiguration() {
+    return {
+      apiKey: this.configService.get<string>('OPENAI_API_KEY')?.trim(),
+      model: this.configService.get<string>('OPENAI_MODEL')?.trim(),
+    };
+  }
+
   async createContentSuggestion(
     dto: ContentSuggestionDto,
   ): Promise<ContentSuggestion> {
@@ -35,8 +47,7 @@ export class AdminMenuAiService {
       );
     }
 
-    const apiKey = this.configService.get<string>('OPENAI_API_KEY')?.trim();
-    const model = this.configService.get<string>('OPENAI_MODEL')?.trim();
+    const { apiKey, model } = this.getProviderConfiguration();
 
     if (!apiKey || !model) {
       throw new ServiceUnavailableException(
