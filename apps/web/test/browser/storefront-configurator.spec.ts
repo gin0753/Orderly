@@ -2,18 +2,31 @@ import { expect, test } from "@playwright/test";
 import { createRequire } from "node:module";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
+import { assertRequiredImageReady, diagnoseOtherImages } from "./image-readiness";
 
 const require = createRequire(__filename);
 const { assertDestructiveTestDatabaseAllowed } = require("../../../api/test/test-database-url.cjs");
 const { PrismaClient } = require("../../../api/node_modules/@prisma/client");
 
-test("storefront and configurator at desktop, mobile and short viewports", async ({ page }) => {
+test("storefront and configurator at desktop, mobile and short viewports", async ({ page }, testInfo) => {
   test.setTimeout(120_000);
   const { databaseUrl } = assertDestructiveTestDatabaseAllowed(process.env);
   const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
   const product = await prisma.product.findFirstOrThrow({ where: { name: "Golden Path Pizza" } });
   const captureDirectory = process.env.ORDERLY_STOREFRONT_CAPTURE_DIR;
   const visualProductIds: string[] = [];
+  const imageRequests: { path: string; status?: number; failure?: string }[] = [];
+  const imagePath = (value: string) => {
+    const url = new URL(value);
+    const asset = url.searchParams.get("url");
+    return asset?.startsWith("/images/menu/") ? new URL(asset, url).pathname : url.pathname;
+  };
+  page.on("response", (response) => {
+    if (response.request().resourceType() === "image") imageRequests.push({ path: imagePath(response.url()), status: response.status() });
+  });
+  page.on("requestfailed", (request) => {
+    if (request.resourceType() === "image") imageRequests.push({ path: imagePath(request.url()), failure: request.failure()?.errorText.match(/^net::[A-Z_]+/)?.[0] ?? "request-failed" });
+  });
   if (captureDirectory) await mkdir(path.resolve(captureDirectory), { recursive: true });
   try {
     // Use the same existing food photography before and after; restore the guarded test fixture.
@@ -32,9 +45,14 @@ test("storefront and configurator at desktop, mobile and short viewports", async
       await expect(page.locator("#homepage-hero-title")).toHaveCSS("font-size", viewport.width >= 1024 ? "56px" : viewport.width < 359 ? "32px" : "36px");
       await expect(page.getByRole("link", { name: "Browse menu" })).toBeInViewport();
       await expect(page.getByRole("heading", { name: "Golden Path Pizza" })).toBeVisible();
-      await page.locator("img").evaluateAll(async (images) => {
-        await Promise.all(images.map((image) => (image as HTMLImageElement).decode().catch(() => undefined)));
-      });
+      await assertRequiredImageReady(page.locator(".storefront-hero img"), testInfo, `hero-${viewport.width}`);
+      // Explicitly bring each fixture photo into view, including native lazy images.
+      // Every fixture is required: fallback/404/zero dimensions or stalled decode fails.
+      for (const name of ["Golden Path Pizza", "Pepperoni photo sample", "Carbonara photo sample", "Wings photo sample"]) {
+        await assertRequiredImageReady(page.getByRole("button", { name: `View ${name}`, exact: true }).locator("img"), testInfo, `${name}-${viewport.width}`);
+      }
+      await diagnoseOtherImages(page, testInfo);
+      await page.evaluate(() => window.scrollTo(0, 0));
       if (captureDirectory) await page.screenshot({ path: path.resolve(captureDirectory, `storefront-${viewport.width}.png`), fullPage: true });
       const opener = page.getByRole("button", { name: "View Golden Path Pizza" });
       await opener.click();
@@ -44,7 +62,7 @@ test("storefront and configurator at desktop, mobile and short viewports", async
       const identity = dialog.locator(".storefront-product-heading");
       await expect(identity.getByText(/Base price.*\$14\.00/)).toBeInViewport();
       await expect(dialog.getByRole("img", { name: "Golden Path Pizza", exact: true })).toHaveCSS("object-fit", "contain");
-      await dialog.getByRole("img", { name: "Golden Path Pizza", exact: true }).evaluate((image: HTMLImageElement) => image.decode());
+      await assertRequiredImageReady(dialog.locator("img[alt='Golden Path Pizza']"), testInfo, `configurator-${viewport.width}`);
       if (captureDirectory) await page.screenshot({ path: path.resolve(captureDirectory, `configurator-initial-${viewport.width}.png`) });
       await dialog.getByRole("radio", { name: /^Small/ }).focus();
       await page.keyboard.press("ArrowRight");
@@ -91,10 +109,68 @@ test("storefront and configurator at desktop, mobile and short viewports", async
     await page.getByRole("button", { name: /^All/ }).click();
     await expect(page.getByRole("button", { name: /^All/ })).toHaveAttribute("aria-pressed", "true");
   } finally {
+    await testInfo.attach("storefront-image-requests", { body: JSON.stringify(imageRequests), contentType: "application/json" });
     await prisma.product.deleteMany({ where: { id: { in: visualProductIds } } });
     await prisma.product.update({ where: { id: product.id }, data: { imageUrl: product.imageUrl } });
     await prisma.$disconnect();
   }
+});
+
+const diagnosticSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect width="16" height="16" fill="orange"/></svg>';
+
+test("image readiness: offscreen lazy photo loads when explicitly inspected", async ({ page }, testInfo) => {
+  await page.route("https://image-readiness.test/lazy.svg", (route) => route.fulfill({ contentType: "image/svg+xml", body: diagnosticSvg }));
+  await page.setContent('<div style="height:6000px"></div><img loading="lazy" width="16" height="16" src="https://image-readiness.test/lazy.svg">');
+  const image = page.locator("img");
+  // Reproduce the old assumption without leaving the test itself unbounded.
+  const oldWait = await image.evaluate((node: HTMLImageElement) => Promise.race([
+    node.decode().then(() => "decoded"),
+    new Promise<string>((resolve) => setTimeout(() => resolve("pending"), 100)),
+  ]));
+  expect(oldWait).toBe("pending");
+  await assertRequiredImageReady(image, testInfo, "offscreen-fixture", 2_000);
+  await expect(image).toBeInViewport();
+});
+
+test("image readiness: broken required photo fails instead of passing", async ({ page }, testInfo) => {
+  await page.route("https://image-readiness.test/broken.svg", (route) => route.fulfill({ status: 404, body: "Missing image" }));
+  await page.setContent('<img width="16" height="16" src="https://image-readiness.test/broken.svg">');
+  await expect(assertRequiredImageReady(page.locator("img"), testInfo, "broken-fixture", 500)).rejects.toThrow("load-failed");
+});
+
+test("image readiness: stalled required decode fails within its deadline", async ({ page }, testInfo) => {
+  await page.setContent(`<img src="data:image/svg+xml,${encodeURIComponent(diagnosticSvg)}">`);
+  await page.locator("img").evaluate((image: HTMLImageElement) => {
+    image.decode = () => new Promise<void>(() => {});
+  });
+  await expect(assertRequiredImageReady(page.locator("img"), testInfo, "stalled-fixture", 250)).rejects.toThrow("decode-timeout");
+});
+
+test("image readiness: optional decode failure and stall produce explicit diagnostics", async ({ page }, testInfo) => {
+  await page.setContent(`<img src="data:image/svg+xml,${encodeURIComponent(diagnosticSvg)}"><img src="data:image/svg+xml,${encodeURIComponent(diagnosticSvg)}">`);
+  await page.locator("img").nth(0).evaluate((image: HTMLImageElement) => { image.decode = () => new Promise<void>(() => {}); });
+  await page.locator("img").nth(1).evaluate((image: HTMLImageElement) => { image.decode = () => Promise.reject(new Error("Controlled decode failure")); });
+  const results = await diagnoseOtherImages(page, testInfo, 100);
+  expect(results.map((entry) => entry.outcome)).toEqual(["decode-timeout", "decode-rejected"]);
+  expect(testInfo.annotations.filter((entry) => entry.type === "image-warning")).toHaveLength(2);
+});
+
+test("image readiness: required decode rejection is not swallowed", async ({ page }, testInfo) => {
+  await page.setContent(`<img src="data:image/svg+xml,${encodeURIComponent(diagnosticSvg)}">`);
+  await page.locator("img").evaluate((image: HTMLImageElement) => { image.decode = () => Promise.reject(new Error("Controlled decode failure")); });
+  await expect(assertRequiredImageReady(page.locator("img"), testInfo, "rejected-fixture", 500)).rejects.toThrow("decode-rejected");
+});
+
+test("image readiness: visible pending and broken photos warn while offscreen lazy load is deferred", async ({ page }, testInfo) => {
+  await page.route("https://image-readiness.test/slow.svg", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await route.fulfill({ contentType: "image/svg+xml", body: diagnosticSvg });
+  });
+  await page.route("https://image-readiness.test/missing.svg", (route) => route.fulfill({ status: 404, body: "Missing image" }));
+  await page.setContent('<img width="16" height="16" src="https://image-readiness.test/slow.svg"><img width="16" height="16" src="https://image-readiness.test/missing.svg"><div style="height:6000px"></div><img loading="lazy" width="16" height="16" src="https://image-readiness.test/lazy.svg">', { waitUntil: "domcontentloaded" });
+  const results = await diagnoseOtherImages(page, testInfo, 100);
+  expect(results.map((entry) => entry.outcome)).toEqual(["load-timeout", "load-failed", "deferred-lazy-offscreen"]);
+  expect(testInfo.annotations.filter((entry) => entry.type === "image-warning")).toHaveLength(2);
 });
 
 test("charcoal hero text, actions and keyboard focus meet contrast goals", async ({ page }) => {
