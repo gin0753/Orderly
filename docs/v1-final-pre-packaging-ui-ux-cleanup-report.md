@@ -286,3 +286,102 @@ Seven native runs produced seven full-page axe scans with **zero violations**. P
 For manual reproduction, use a safe synthetic/local account, set the **content area** to 1440 × 900 or 1280 × 900 at 100%, then use Chromium's native zoom menu to select 400%. Confirm `innerWidth` is respectively 360 or 320 and CSS `zoom` is 1; navigate to Security, open both disclosures, Tab through fields and actions, retry Google with a controlled failure and scroll vertically to read feedback/labels. Do not set `html.style.zoom` for this native check.
 
 **Packaging impact and limits.** The retained CSS simulation failure does not establish a native Chromium reflow defect and is not a P1 release blocker. Recommend **PASS WITH CONDITIONS for this zoom triage**, recording the P3 observation. This does not certify overall production readiness: headed browser chrome/OS scaling, real-device zoom, Safari/Firefox, screen-reader output and existing release/operations conditions still require their own acceptance. Only this report, ten new synthetic-evidence PNGs under `docs/v1-zoom-triage-evidence/`, and ignored diagnostic artifacts were added/updated in this task. The original four failure-evidence files were checksum-verified unchanged. No application/test-source changes, dependencies, commits, push, deployment or Packaging execution.
+
+### Order Progress connector regression — 11 October 2026
+
+**Root cause and deployment distinction.** Public GET-only inspection of the synthetic route `/track-order/ORDERLY-VISUAL-FIXTURE` on `https://orderly-web-gamma.vercel.app` identified the served timeline asset `/_next/static/chunks/0gu5f9p6c7u4r.js`: it contains the timeline labels and recorded-status explanation but **no `data-progress-connector` JSX**. The older Stage 15.6 source similarly rendered only circles/descriptions. Current local HEAD `b3476c43c7cc9865c982901c5e16eddaf92bb121` already includes the previously approved three connectors. The production symptom is therefore consistent with an older deployed presentation, not removal of connectors from current local source. The actual deployed commit SHA/provider configuration was not established. No production order was fetched, no browser authentication was attempted and no API write was performed. The sanitized static inspection result and asset hash are retained in `audit-artifacts/timeline-regression/production-static-check.json`.
+
+**Confirmed local robustness defects and minimal patch.** Existing connector JSX uses fixed `19px` offsets beside rem-sized circles/thickness. At a 32px root font, a retained baseline geometry audit measured **19px center misalignment** on both mobile and desktop. A compound translated-label stress fixture also overflowed at every requested width. The component now uses matching `1.1875rem` center offsets, explicitly layers connectors at z-index 0 behind the existing z-index 10 circles, and permits label wrapping with zero minimum-width items. Existing orange completed-segment and neutral future-segment tokens remain unchanged. The intentional vertical timeline below 768px is preserved; at/above 768px connectors remain horizontal. No status mapping, active highlighting, checkmarks, recorded dates, pickup/delivery descriptions, cancelled-order presentation, ARIA announcements or backend behavior changed.
+
+**Exact changed files:**
+
+- `apps/web/src/features/order-tracking/components/result/order-status-timeline.tsx` — three focused class changes only.
+- `apps/web/test/order-timeline-connectors.test.tsx` — adds layer/offset/token and recorded timestamp-count assertions to the existing six-status coverage.
+- `apps/web/test/browser/timeline-rendering.audit.ts` — new network-isolated, production-CSS audit of all six statuses at 320/390/768/1440px; checks normal/enlarged text, compound/wrapped labels, connector endpoints, decorative semantics, token color and actual hit-tested paint visibility, plus axe scans.
+- `apps/web/playwright.timeline.config.ts` — opt-in selection of the new audit and separate configurable evidence output; preserves the original audit.
+- This report and ten PNGs under `docs/v1-timeline-regression-evidence/`. Original Stage 15/timeline evidence was not overwritten.
+
+**Before/after evidence.** “Before” below is a fresh isolated capture of the retained historical node-only fixture matching the deployed connector omission; it is **not** a screenshot of a real production customer's order. “After” is the edited local component with built production CSS and synthetic timestamps. These captures establish normal-size visible lines; enlarged-text closure is pending the blocked rerun.
+
+| Preparing / width | Deployment-equivalent before | Local after |
+|---|---|---|
+| 320px | [Before](v1-timeline-regression-evidence/before/preparing-320-16.png) | [After](v1-timeline-regression-evidence/after/preparing-320-16.png) |
+| 390px | [Before](v1-timeline-regression-evidence/before/preparing-390-16.png) | [After](v1-timeline-regression-evidence/after/preparing-390-16.png) |
+| 768px | [Before](v1-timeline-regression-evidence/before/preparing-768-16.png) | [After](v1-timeline-regression-evidence/after/preparing-768-16.png) |
+| 1440px | [Before](v1-timeline-regression-evidence/before/preparing-1440-16.png) | [After](v1-timeline-regression-evidence/after/preparing-1440-16.png) |
+
+Local fixed-offset baseline at enlarged text: [390px](v1-timeline-regression-evidence/local-before/preparing-390-32.png), [1440px](v1-timeline-regression-evidence/local-before/preparing-1440-32.png). The rendered fixture uses synthetic dates and a font fallback; it does not certify real-device/deployed typography.
+
+**Commands/results:**
+
+- `ORDERLY_TIMELINE_CAPTURE_PHASE=regression-before pnpm --filter web test --runInBand order-timeline-connectors` — **12 passed**, baseline captures preserved separately.
+- Isolated baseline `pnpm --filter web exec playwright test --config ../../audit-artifacts/timeline-regression/config.ts` — **four failed**, confirming enlarged compound-label overflow; separate `--grep 'enlarged circle'` run — **two failed**, each with 19px alignment error. Both failure sets/traces remain in `audit-artifacts/timeline-regression/{before,before-geometry}/`.
+- `ORDERLY_TIMELINE_CAPTURE_PHASE=regression-after pnpm --filter web test --runInBand order-timeline-connectors premium-tracking-accessibility order-tracking-safety` — **23 passed, three suites**. Covers PENDING/ACCEPTED, PREPARING, READY, COMPLETED and CANCELLED, current/earlier/pending semantics, decorative connectors, completed-segment counts, truthful timestamps and existing tracking error/validation safety.
+- `pnpm --filter web typecheck`; `pnpm --filter web lint` — **passed** after the component/test additions; final checks after the fixture-heading correction are recorded below.
+- `pnpm exec node audit-artifacts/auth-feedback/run.cjs build timeline-regression-build` — **passed** optimized production web build in the existing guard-derived local browser-build environment. No database preparation or application browser-server run was needed for this isolated render audit.
+- `ORDERLY_TIMELINE_REGRESSION=1 pnpm --filter web exec playwright test --config playwright.timeline.config.ts` — **four failed** at the isolated fixture's full-page axe check (`page-has-heading-one`). At each width, normal-size PENDING/ACCEPTED/PREPARING/READY had already passed no-overflow and three painted, aligned, semantically colored connector assertions. This is not a four-case browser pass; enlarged-text, COMPLETED/CANCELLED browser iterations were not reached. The timeline is correctly an h2 inside the application's existing h1 page. The isolated fixture now supplies that surrounding h1, with the axe assertion unchanged. Initial failures and screenshots remain under `audit-artifacts/timeline-regression/verified-after/`.
+- Historical node-only screenshot capture: **one isolated case passed**, generating eight comparison inputs without any network requests.
+
+**Blocked verification and remaining risks.** The corrected browser rerun, with a fresh output directory `C:/dev/Orderly/audit-artifacts/timeline-regression/verified-final`, was rejected by the approval tool (`rejected by user`); no reason was supplied. It was not rerun through another execution path. Approval is required to complete the full enlarged-label, enlarged-font, completed/cancelled rendered and axe assertions. Do not treat this patch as fully browser-verified yet. No existing assertion/time limit was weakened or failing test skipped. The existing component tests and build passed, but their coverage cannot replace browser rendering.
+
+Reproduction after approval: generate the `regression-after` fixtures with the component command above, build with the guarded local browser-build command, set `ORDERLY_TIMELINE_REGRESSION=1` and `ORDERLY_TIMELINE_EVIDENCE_DIRECTORY` to a fresh absolute directory outside previous evidence, then run `pnpm --filter web exec playwright test --config playwright.timeline.config.ts`. All requests are aborted by the isolated audit; no production/test database or customer session is needed for that browser step.
+
+Production will continue displaying its currently served asset until a separately approved deployment includes the existing restoration and this patch; no deployment was performed. Real-device and deployed acceptance remain pending. Recommendation: **implementation complete; browser verification incomplete**, await the blocked rerun/review before release clearance. No commit, push, API/database changes, dependencies, global design-system changes or unrelated refactoring.
+
+Final `pnpm --filter web typecheck`, `pnpm --filter web lint` and `git diff --check` **passed** after adding the fixture h1. No browser rerun was executed after its approval rejection.
+
+### Resumed timeline verification — completed 11 October 2026
+
+The owner confirmed that the preceding rerun rejection was accidental. This addendum **supersedes the browser-verification blocker and incomplete recommendation above**; all original failure evidence remains retained. No further application or test changes were needed.
+
+Executed from repository root:
+
+```powershell
+$env:ORDERLY_TIMELINE_REGRESSION='1'
+$env:ORDERLY_TIMELINE_EVIDENCE_DIRECTORY='C:/dev/Orderly/audit-artifacts/timeline-regression/verified-resumed'
+pnpm --filter web exec playwright test --config playwright.timeline.config.ts
+```
+
+**Result: four Chromium cases passed in 31.2s**, one per requested viewport (320/390/768/1440px), covering **48 combinations** of six recorded statuses and normal/enlarged root font sizes (16px/32px). All chronological cases verified positive connector dimensions, endpoints meeting circle edges within 1px, circle-center alignment, actual painted visibility through hit testing, correct semantic token colors, decorative `aria-hidden`, current-step semantics and no page overflow. Enlarged compound/wrapped labels passed without affecting connector positioning. Completed and cancelled iterations now ran successfully; cancellation renders no chronological connectors. Reduced-motion mode was enabled. All browser requests were aborted; no API, authentication, customer data or database access occurred.
+
+**Eight axe scans passed with zero violations**, checking READY and CANCELLED at every width. The fixture's page h1 corrected the earlier isolated-document failure without changing the application component or disabling an accessibility rule. These automated checks do not replace screen-reader or real-device acceptance.
+
+Final captures from the successful run:
+
+| Viewport | Preparing | Completed | Enlarged text + long labels |
+|---|---|---|---|
+| 320px | [Capture](v1-timeline-regression-evidence/resumed-after/preparing-320-16.png) | [Capture](v1-timeline-regression-evidence/resumed-after/completed-320-16.png) | [Capture](v1-timeline-regression-evidence/resumed-after/preparing-320-32.png) |
+| 390px | [Capture](v1-timeline-regression-evidence/resumed-after/preparing-390-16.png) | [Capture](v1-timeline-regression-evidence/resumed-after/completed-390-16.png) | [Capture](v1-timeline-regression-evidence/resumed-after/preparing-390-32.png) |
+| 768px | [Capture](v1-timeline-regression-evidence/resumed-after/preparing-768-16.png) | [Capture](v1-timeline-regression-evidence/resumed-after/completed-768-16.png) | [Capture](v1-timeline-regression-evidence/resumed-after/preparing-768-32.png) |
+| 1440px | [Capture](v1-timeline-regression-evidence/resumed-after/preparing-1440-16.png) | [Capture](v1-timeline-regression-evidence/resumed-after/completed-1440-16.png) | [Capture](v1-timeline-regression-evidence/resumed-after/preparing-1440-32.png) |
+
+The twelve new PNGs are additional evidence under `docs/v1-timeline-regression-evidence/resumed-after/`; earlier captures were not replaced. Scan JSON and a sanitized result/screenshot SHA-256 summary remain at `audit-artifacts/timeline-regression/verified-resumed/verification-summary.json`. This is isolated component rendering with production CSS and synthetic dates, not authenticated/deployed customer-order acceptance.
+
+The already completed **23 component tests, TypeScript, lint and production build remain passing** for this unchanged implementation. No new changes justified repeating those checks. Tested revision remains HEAD `b3476c43c7cc9865c982901c5e16eddaf92bb121` plus the focused timeline patch. Final recommendation: **PASS WITH CONDITIONS for this visual fix** — local implementation and requested automated verification are complete; the inspected production asset still requires a separately approved deployment of the connector restoration, followed by deployed/real-device confirmation. Firefox/WebKit and assistive-technology verification were not added in this focused Chromium render run. Existing release conditions remain unaffected. No commit, push or deployment performed.
+
+### Final Timeline browser verification — PASS — 11 October 2026
+
+**Tested revision:** HEAD `b3476c43c7cc9865c982901c5e16eddaf92bb121` plus the existing uncommitted focused timeline patch. Component SHA-256 `26f4083d462736843a410d0b4cff9e5426cbe37f032d4c5ff5fe6ca435ace1fb` was unchanged before/after this verification. Source, fixture and production-CSS hashes are recorded in `audit-artifacts/timeline-regression/final-browser-verification/verification-summary.json`; HEAD alone does not identify the tested artifact.
+
+Inspected the corrected fixture: it inserts the surrounding page's screen-reader-only **h1** inside the fixture main landmark while retaining the timeline's h2. No accessibility rule was disabled. Ran the existing audit unchanged with fresh evidence output:
+
+```powershell
+$env:ORDERLY_TIMELINE_REGRESSION='1'
+$env:ORDERLY_TIMELINE_EVIDENCE_DIRECTORY='C:/dev/Orderly/audit-artifacts/timeline-regression/final-browser-verification'
+pnpm --filter web exec playwright test --config playwright.timeline.config.ts
+```
+
+**Actual result: four passed, zero failed/skipped, 28.9s total.** Individual cases: 320px 7.5s; 390px 6.1s; 768px 6.6s; 1440px 6.0s. Bundled Chromium / Playwright 1.62.1; network-isolated component rendering with actual built CSS, synthetic recorded dates, reduced-motion mode, one worker and no retries. All browser requests were aborted; no database, production API, customer session or environment changes were required.
+
+Coverage: **48 status/font combinations** (PENDING/ACCEPTED, PREPARING, READY, COMPLETED, CANCELLED × 16px/32px root text × four widths). Normal layouts retain the original labels/descriptions; enlarged layouts additionally stress a long compound translated label and wrapping. All non-cancelled connectors met adjacent circle edges and centers within 1px, had positive dimensions, correct completed/future semantic colors, decorative semantics and actual visible paint through hit testing. Mobile 320/390px uses vertical connectors; desktop/tablet 768/1440px uses horizontal connectors. Current-step semantics remained present, cancellation rendered no chronological connectors, and the global no-horizontal-overflow assertion passed throughout. **Eight full-fixture axe scans: zero violations**, including resolution of the previous missing-h1 finding. No inaccessible status content was detected by these automated checks; this is not a screen-reader certification.
+
+Fresh screenshots (earlier evidence preserved):
+
+| Width | Normal Preparing | Normal Completed | Enlarged text / long wrapped labels |
+|---|---|---|---|
+| 320px | [Screenshot](v1-timeline-regression-evidence/final-verification/preparing-320-16.png) | [Screenshot](v1-timeline-regression-evidence/final-verification/completed-320-16.png) | [Screenshot](v1-timeline-regression-evidence/final-verification/preparing-320-32.png) |
+| 390px | [Screenshot](v1-timeline-regression-evidence/final-verification/preparing-390-16.png) | [Screenshot](v1-timeline-regression-evidence/final-verification/completed-390-16.png) | [Screenshot](v1-timeline-regression-evidence/final-verification/preparing-390-32.png) |
+| 768px | [Screenshot](v1-timeline-regression-evidence/final-verification/preparing-768-16.png) | [Screenshot](v1-timeline-regression-evidence/final-verification/completed-768-16.png) | [Screenshot](v1-timeline-regression-evidence/final-verification/preparing-768-32.png) |
+| 1440px | [Screenshot](v1-timeline-regression-evidence/final-verification/preparing-1440-16.png) | [Screenshot](v1-timeline-regression-evidence/final-verification/completed-1440-16.png) | [Screenshot](v1-timeline-regression-evidence/final-verification/preparing-1440-32.png) |
+
+**Final Timeline verdict: PASS for the requested local Chromium browser verification.** No remaining failure or permission blocker in this run; previous failures remain historical evidence. Real-device, assistive-technology and deployed-version acceptance remain separate conditions. The earlier production asset observation is not changed by this local test, and no deployment was performed. Application code, assertions and timeouts were unchanged. Only this report, twelve fresh synthetic PNGs and ignored verification metadata were added in this final verification turn. Existing component/TypeScript/lint/build passes remain valid for the unchanged patch. No commit, push or deployment.

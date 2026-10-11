@@ -31,8 +31,13 @@ it.each<[OrderStatus, number]>([
     expect(
       container.querySelectorAll('[data-progress-connector="completed"]'),
     ).toHaveLength(completed);
-    for (const connector of connectors)
+    for (const connector of connectors) {
       expect(connector).toHaveAttribute("aria-hidden", "true");
+      expect(connector).toHaveClass("z-0", "left-[1.1875rem]", "md:top-[1.1875rem]");
+      expect(connector).toHaveClass(connector.getAttribute("data-progress-connector") === "completed"
+        ? "bg-[var(--color-brand-strong)]" : "bg-[var(--color-control-border)]");
+    }
+    expect(container.querySelectorAll("time")).toHaveLength(2);
     expect(screen.getAllByRole("listitem")[completed]).toHaveAttribute(
       "aria-current",
       "step",

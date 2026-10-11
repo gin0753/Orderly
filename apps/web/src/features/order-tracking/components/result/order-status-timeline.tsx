@@ -23,16 +23,16 @@ export function OrderStatusTimeline({ status, orderType, createdAt, updatedAt }:
       {STEPS.map((label, index) => {
         const current = index === activeIndex;
         const earlier = index < activeIndex;
-        return <li key={label} aria-current={current ? "step" : undefined} className="relative flex gap-3 md:block">
+        return <li key={label} aria-current={current ? "step" : undefined} className="relative flex min-w-0 gap-3 md:block">
           {index < STEPS.length - 1 ? <span
             aria-hidden="true"
             data-progress-connector={earlier ? "completed" : "upcoming"}
-            className={cn("absolute -bottom-4 left-[19px] top-10 w-0.5 md:bottom-auto md:left-10 md:right-[-1rem] md:top-[19px] md:h-0.5 md:w-auto", earlier ? "bg-[var(--color-brand-strong)]" : "bg-[var(--color-control-border)]")}
+            className={cn("absolute z-0 -bottom-4 left-[1.1875rem] top-10 w-0.5 md:bottom-auto md:left-10 md:right-[-1rem] md:top-[1.1875rem] md:h-0.5 md:w-auto", earlier ? "bg-[var(--color-brand-strong)]" : "bg-[var(--color-control-border)]")}
           /> : null}
           <span aria-hidden="true" className={cn("relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border text-sm font-bold", current || earlier ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)]" : "border-[var(--color-control-border)] bg-[var(--color-surface-muted)] text-[var(--color-text-secondary)]")}>
             {earlier ? <Check className="size-5" /> : index + 1}
           </span>
-          <div className="min-w-0 md:mt-3">
+          <div className="min-w-0 break-words md:mt-3">
             <p className={cn("text-sm font-bold", current ? "text-[var(--color-brand-text)]" : "text-[var(--color-text-primary)]")}>{label}</p>
             <p className="mt-1 text-xs leading-5 text-[var(--color-text-secondary)]">{current ? status === "ACCEPTED" ? "Current status: Accepted" : status === "READY" ? `Current status: Ready for ${orderType === "PICKUP" ? "pickup" : "delivery"}` : "Current status" : earlier ? "Earlier step" : "Not yet reached"}</p>
             {index === 0 ? <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]"><time dateTime={createdAt}>{formatDateTime(createdAt)}</time></p> : null}
