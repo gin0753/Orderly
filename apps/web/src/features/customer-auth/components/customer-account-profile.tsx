@@ -38,7 +38,15 @@ export function CustomerAccountProfile() {
     const nextErrors = profileErrors(value.name, value.phone, value.name !== baseline.name);
     setErrors(nextErrors);
     setFeedback("");
-    if (Object.keys(nextErrors).length) return;
+    if (Object.keys(nextErrors).length) {
+      const form = event.currentTarget as HTMLFormElement;
+      requestAnimationFrame(() => {
+        const field = form.querySelector<HTMLInputElement>('[aria-invalid="true"]');
+        field?.focus();
+        field?.scrollIntoView?.({ block: "center", behavior: "instant" });
+      });
+      return;
+    }
     const changes = {
       ...(value.name !== baseline.name ? { name: value.name.trim() } : {}),
       ...(value.phone !== baseline.phone ? { phone: value.phone.trim() || null } : {}),

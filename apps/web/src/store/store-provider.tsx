@@ -17,6 +17,9 @@ type StoreProviderProps = {
 
 export function StoreProvider({ children }: StoreProviderProps) {
   const [store] = useState(() => makeStore());
+  // Bootstrap effects can update the store before a streamed boundary hydrates.
+  // Keep its first render consistent with the server's initial store snapshot.
+  const [serverState] = useState(() => store.getState());
   const lastPersistedCartRef = useRef<string>("");
 
   useEffect(() => {
@@ -48,5 +51,5 @@ export function StoreProvider({ children }: StoreProviderProps) {
     return unsubscribe;
   }, [store]);
 
-  return <Provider store={store}>{children}</Provider>;
+  return <Provider store={store} serverState={serverState}>{children}</Provider>;
 }

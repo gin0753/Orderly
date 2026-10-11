@@ -26,6 +26,33 @@ function show(customer: PublicCustomer = base) {
 
 beforeEach(() => { jest.resetAllMocks(); });
 
+it("focuses the first invalid profile field without submitting or losing values", async () => {
+  const user = userEvent.setup(); show();
+  await user.clear(screen.getByLabelText("Name"));
+  await user.clear(screen.getByLabelText(/Phone/));
+  await user.type(screen.getByLabelText(/Phone/), "invalid");
+  await user.click(screen.getByRole("button", { name: "Save profile" }));
+  await waitFor(() => expect(screen.getByLabelText("Name")).toHaveFocus());
+  expect(screen.getByLabelText(/Phone/)).toHaveValue("invalid");
+  expect(api.updateProfile).not.toHaveBeenCalled();
+  await user.type(screen.getByLabelText("Name"), "Valid name");
+  await user.click(screen.getByRole("button", { name: "Save profile" }));
+  await waitFor(() => expect(screen.getByLabelText(/Phone/)).toHaveFocus());
+});
+
+it("focuses password errors in field order without submitting", async () => {
+  const user = userEvent.setup(); show();
+  await user.click(screen.getByRole("button", { name: "Change password" }));
+  await waitFor(() => expect(screen.getByLabelText("Current password")).toHaveFocus());
+  await user.type(screen.getByLabelText("Current password"), "test-current");
+  await user.click(screen.getByRole("button", { name: "Change password" }));
+  await waitFor(() => expect(screen.getByLabelText("New password")).toHaveFocus());
+  await user.type(screen.getByLabelText("New password"), "test-long-new-password");
+  await user.click(screen.getByRole("button", { name: "Change password" }));
+  await waitFor(() => expect(screen.getByLabelText("Confirm new password")).toHaveFocus());
+  expect(api.changePassword).not.toHaveBeenCalled();
+});
+
 it("shows read-only email, saves edited profile, and clears dirty state", async () => {
   const user = userEvent.setup();
   const store = show();

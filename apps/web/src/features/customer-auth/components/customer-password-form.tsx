@@ -26,7 +26,15 @@ export function CustomerPasswordForm({ collapsible = false }: { collapsible?: bo
     if (busy) return;
     const nextErrors = passwordErrors(current, next, confirmation);
     setErrors(nextErrors); setFeedback("");
-    if (Object.keys(nextErrors).length) return;
+    if (Object.keys(nextErrors).length) {
+      const form = event.currentTarget as HTMLFormElement;
+      requestAnimationFrame(() => {
+        const field = form.querySelector<HTMLInputElement>('[aria-invalid="true"]');
+        field?.focus();
+        field?.scrollIntoView?.({ block: "center", behavior: "instant" });
+      });
+      return;
+    }
     setBusy(true);
     try {
       const result = await customerAuthApi.changePassword({ currentPassword: current, newPassword: next });

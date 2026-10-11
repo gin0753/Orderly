@@ -25,7 +25,7 @@ export function CartItemRow({
   const selectedOptionsText = getCartItemOptionSummary(item);
 
   return (
-    <Card variant="surface" className="grid grid-cols-[64px_minmax(0,1fr)] gap-x-3 gap-y-4 p-4 sm:grid-cols-[80px_minmax(0,1fr)]">
+    <Card variant="surface" className="grid grid-cols-[64px_minmax(0,1fr)] gap-x-3 gap-y-2 p-3 sm:grid-cols-[80px_minmax(0,1fr)] sm:gap-y-4 sm:p-4">
       <div className="relative size-16 overflow-hidden rounded-[var(--radius-control)] bg-[var(--color-surface-muted)] sm:size-20">
         <ProductImage
           src={item.product.imageUrl}
@@ -61,7 +61,7 @@ export function CartItemRow({
         </div>
       </div>
       {unavailable ? <p className="col-span-2 rounded-[var(--radius-control)] bg-[var(--color-warning-surface)] p-3 text-sm leading-5 text-[var(--color-warning-strong)]">Item or selected option is currently unavailable. Review your cart; availability is confirmed at checkout.</p> : null}
-      <div className="col-span-2 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-border)] pt-3">
+      <div className="col-span-2 flex flex-wrap items-center justify-between gap-3 sm:border-t sm:border-[var(--color-border)] sm:pt-3">
         <QuantityStepper value={item.quantity} onChange={onQuantityChange} label={item.product.name} />
 
         <p className="text-base font-bold tabular-nums text-[var(--color-text-primary)]">

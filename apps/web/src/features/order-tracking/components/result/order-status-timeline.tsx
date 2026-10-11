@@ -24,6 +24,11 @@ export function OrderStatusTimeline({ status, orderType, createdAt, updatedAt }:
         const current = index === activeIndex;
         const earlier = index < activeIndex;
         return <li key={label} aria-current={current ? "step" : undefined} className="relative flex gap-3 md:block">
+          {index < STEPS.length - 1 ? <span
+            aria-hidden="true"
+            data-progress-connector={earlier ? "completed" : "upcoming"}
+            className={cn("absolute -bottom-4 left-[19px] top-10 w-0.5 md:bottom-auto md:left-10 md:right-[-1rem] md:top-[19px] md:h-0.5 md:w-auto", earlier ? "bg-[var(--color-brand-strong)]" : "bg-[var(--color-control-border)]")}
+          /> : null}
           <span aria-hidden="true" className={cn("relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border text-sm font-bold", current || earlier ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)]" : "border-[var(--color-control-border)] bg-[var(--color-surface-muted)] text-[var(--color-text-secondary)]")}>
             {earlier ? <Check className="size-5" /> : index + 1}
           </span>

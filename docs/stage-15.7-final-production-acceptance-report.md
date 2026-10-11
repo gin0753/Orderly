@@ -2,6 +2,12 @@
 
 Audit date: 10 October 2026 (Australia/Sydney). Final verdict: **PASS WITH CONDITIONS**.
 
+Later verification addendum (11 October 2026): [Final pre-packaging release verification](v1-final-pre-packaging-ui-ux-cleanup-report.md#final-pre-packaging-release-verification--11-october-2026) records the current HEAD plus uncommitted cleanup, missing timeline connector fix and blocked guarded browser environment. Packaging/release verification is **not cleared**; the historical results below remain unchanged. The potential P1 repeated-navigation WebKit issue is still unresolved.
+
+Subsequent approved unblocking: [Timeline connector implementation and results](v1-final-release-unblocking-report.md) supersede the missing-connector finding. Local Docker/schema blockers and the potential P1 WebKit loading condition remain unresolved; Packaging is still not cleared.
+
+Latest resumption: [Final local release verification results](v1-final-release-unblocking-report.md#resumed-final-release-verification--actual-results) record restored guarded infrastructure and passing Chromium/Firefox/WebKit coverage. The historical loading timeout was not reproduced in isolated/combined runs; its root cause is not established. WebKit access-control/hydration diagnostics and native/deployed acceptance remain conditions. Historical Stage 15.7 outcomes below are unchanged.
+
 ## Executive summary
 
 The complete available local customer regression covers guest ordering, account authentication, controlled Google OAuth, security/profile, historical orders, session recovery and Customer/Admin isolation against an optimized production build. Supplemental WebKit testing confirmed a P1 customer-drawer keyboard defect, addressed with a focused customer-only Tab-cycle correction. No P0 was found. This is a local acceptance result, not authorization to deploy or a claim that the live deployed revision passed UAT.
