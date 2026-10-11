@@ -1,4 +1,5 @@
 import { Textarea } from "@/components/ui/textarea";
+import { useId } from "react";
 import type { CheckoutFormState } from "../checkout-types";
 
 type OrderNotesFieldProps = {
@@ -10,23 +11,27 @@ const MAX_NOTES_LENGTH = 200;
 
 export function OrderNotesField({ form, onChange }: OrderNotesFieldProps) {
   const value = form.orderNotes;
+  const notesId = useId();
 
   return (
-    <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+    <section className="rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-6">
       <div>
         <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-          4. Order Notes{" "}
+          Order Notes{" "}
           <span className="font-normal text-[var(--color-text-muted)]">
             (Optional)
           </span>
         </h2>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+        <p id={`${notesId}-help`} className="mt-1 text-sm text-[var(--color-text-secondary)]">
           Add any special instructions for the restaurant.
         </p>
       </div>
 
-      <label className="mt-5 block">
+      <div className="mt-5 grid gap-2">
+        <label htmlFor={notesId} className="sr-only">Order notes</label>
         <Textarea
+          id={notesId}
+          aria-describedby={`${notesId}-help ${notesId}-count`}
           value={value}
           maxLength={MAX_NOTES_LENGTH}
           onChange={(event) => onChange({ orderNotes: event.target.value })}
@@ -34,10 +39,10 @@ export function OrderNotesField({ form, onChange }: OrderNotesFieldProps) {
           className="min-h-32 p-4"
         />
 
-        <span className="mt-2 block text-right text-xs text-[var(--color-text-muted)]">
-          {value.length}/{MAX_NOTES_LENGTH}
+        <span id={`${notesId}-count`} className="block text-right text-xs text-[var(--color-text-muted)]">
+          {value.length}/{MAX_NOTES_LENGTH} characters
         </span>
-      </label>
+      </div>
     </section>
   );
 }

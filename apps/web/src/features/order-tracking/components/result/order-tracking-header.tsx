@@ -9,6 +9,8 @@ import {
   ORDER_STATUS_LABELS,
 } from "../../utils/order-status-copy";
 import { formatDateTime } from "@/lib/format-date-time";
+import Link from "next/link";
+import { buttonStyles } from "@/components/ui/button";
 
 type OrderTrackingHeaderProps = {
   order: OrderTrackingResponse;
@@ -24,17 +26,18 @@ export function OrderTrackingHeader({
   const isTerminalStatus = isTerminalOrderStatus(order.status);
 
   return (
-    <section className="mb-6 rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 md:p-6">
+    <section aria-labelledby="tracking-order-heading" className="mb-6 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-8">
+      <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-[var(--color-brand-text)]">Your order status</p>
       <div className="flex flex-col justify-between gap-5 md:flex-row md:items-start">
-        <div>
+        <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)] md:text-4xl">
+            <h1 id="tracking-order-heading" tabIndex={-1} className="break-all text-[length:var(--text-page-title)] font-bold leading-[var(--leading-page-title)] tracking-tight text-[var(--color-text-primary)]">
               Order #{order.orderNumber}
             </h1>
 
             <span
               className={cn(
-                "rounded-full px-3 py-1 text-xs font-bold",
+                "inline-flex items-center rounded-full px-3 py-1.5 text-sm font-bold",
                 ORDER_STATUS_BADGE_CLASS_NAMES[order.status],
               )}
             >
@@ -47,13 +50,13 @@ export function OrderTrackingHeader({
           </p>
 
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-            Placed {formatDateTime(order.createdAt)}
+            Placed <time dateTime={order.createdAt}>{formatDateTime(order.createdAt)}</time>
           </p>
         </div>
 
-        <Button type="button" onClick={onRefresh} disabled={isRefreshing}>
+        <div className="flex flex-wrap gap-3"><Button variant="brandSoft" type="button" onClick={onRefresh} disabled={isRefreshing} aria-busy={isRefreshing}>
           {isRefreshing ? "Refreshing..." : "Refresh"}
-        </Button>
+        </Button><Link href="/track-order" className={buttonStyles({ variant: "secondary" })}>Track another order</Link></div>
       </div>
 
       {!isTerminalStatus ? (

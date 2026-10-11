@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 export function PolicyPage({ title, children }: { title: string; children: ReactNode }) {
   return (
     <article className="mx-auto w-full max-w-3xl px-4 py-8 text-[var(--color-text-primary)] sm:px-6 md:py-12">
-      <p className="text-sm font-semibold text-[var(--color-brand)]">Orderly portfolio demo</p>
+      <p className="text-sm font-semibold text-[var(--color-brand-text)]">Orderly portfolio demo</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
       <p className="mt-3 text-sm text-[var(--color-text-secondary)]">Last updated: 8 October 2026</p>
       <div className="mt-8 space-y-7 text-sm leading-7 text-[var(--color-text-secondary)] [&_h2]:mb-2 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-[var(--color-text-primary)] [&_p+p]:mt-3">

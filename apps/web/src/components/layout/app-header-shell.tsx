@@ -16,6 +16,7 @@ export type AppHeaderNavLink = {
 type AppHeaderShellProps = {
   logoHref: string;
   navLinks: AppHeaderNavLink[];
+  mobileNavLinks?: AppHeaderNavLink[];
   rightSlot: ReactNode;
   containerClassName?: string;
   mobileRightSlot?: ReactNode;
@@ -23,6 +24,7 @@ type AppHeaderShellProps = {
   mobileLabel?: string;
   mobileIdentitySuffix?: string;
   onBeforeMobileOpen?: () => void;
+  mobileCycleTabStops?: boolean;
 };
 
 function isNavLinkActive(pathname: string, href: string) {
@@ -53,6 +55,7 @@ function getNavLinkClassName(isActive: boolean) {
 export function AppHeaderShell({
   logoHref,
   navLinks,
+  mobileNavLinks,
   rightSlot,
   containerClassName,
   mobileRightSlot,
@@ -60,6 +63,7 @@ export function AppHeaderShell({
   mobileLabel = "Navigation",
   mobileIdentitySuffix,
   onBeforeMobileOpen,
+  mobileCycleTabStops,
 }: AppHeaderShellProps) {
   const pathname = usePathname();
 
@@ -72,9 +76,9 @@ export function AppHeaderShell({
         )}
       >
         <div className="justify-self-start md:hidden">
-          <MobileNavigation links={navLinks} label={mobileLabel}
+          <MobileNavigation links={mobileNavLinks ?? navLinks} label={mobileLabel}
             identitySuffix={mobileIdentitySuffix} footer={mobileFooter}
-            onBeforeOpen={onBeforeMobileOpen} />
+            onBeforeOpen={onBeforeMobileOpen} cycleTabStops={mobileCycleTabStops} />
         </div>
         <Link href={logoHref} className="flex min-h-12 items-center gap-2">
           <OrderlyLogo size="md" />

@@ -6,7 +6,8 @@ import {
 
 export function OrderTrackingLoadingState() {
   return (
-    <div role="status" aria-live="polite">
+    <div role="status">
+      <h1 className="sr-only">Order tracking</h1>
       <span className="sr-only">Loading order.</span>
       <div aria-hidden="true">
         <SkeletonLine className="mb-8 h-10 w-36" />

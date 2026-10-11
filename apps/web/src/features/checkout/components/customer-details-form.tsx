@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { Input } from "@/components/ui/input";
 import type { CheckoutFieldErrors, CheckoutFormState } from "../checkout-types";
 
@@ -12,11 +13,12 @@ export function CustomerDetailsForm({
   errors,
   onChange,
 }: CustomerDetailsFormProps) {
+  const prefix = useId();
   return (
-    <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+    <section className="rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-6">
       <div>
         <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-          2. Customer Details
+          Customer Details
         </h2>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
           We&apos;ll use this to send updates about your order.
@@ -24,11 +26,13 @@ export function CustomerDetailsForm({
       </div>
 
       <div className="mt-5 grid gap-4">
-        <label className="grid gap-2">
-          <span className="text-sm font-medium text-[var(--color-text-primary)]">
+        <div className="grid gap-2">
+          <label htmlFor={`${prefix}-fullName`} className="text-sm font-medium text-[var(--color-text-primary)]">
             Full name
-          </span>
+          </label>
           <Input
+            id={`${prefix}-fullName`}
+            aria-describedby={errors.fullName ? `${prefix}-fullName-error` : undefined}
             value={form.fullName}
             onChange={(event) => onChange({ fullName: event.target.value })}
             placeholder="Enter your full name"
@@ -40,14 +44,16 @@ export function CustomerDetailsForm({
                 : undefined
             }
           />
-          {errors.fullName ? <FieldError>{errors.fullName}</FieldError> : null}
-        </label>
+          {errors.fullName ? <FieldError id={`${prefix}-fullName-error`}>{errors.fullName}</FieldError> : null}
+        </div>
 
-        <label className="grid gap-2">
-          <span className="text-sm font-medium text-[var(--color-text-primary)]">
+        <div className="grid gap-2">
+          <label htmlFor={`${prefix}-phone`} className="text-sm font-medium text-[var(--color-text-primary)]">
             Phone number
-          </span>
+          </label>
           <Input
+            id={`${prefix}-phone`}
+            aria-describedby={errors.phone ? `${prefix}-phone-error` : undefined}
             type="tel"
             value={form.phone}
             onChange={(event) => onChange({ phone: event.target.value })}
@@ -60,14 +66,16 @@ export function CustomerDetailsForm({
                 : undefined
             }
           />
-          {errors.phone ? <FieldError>{errors.phone}</FieldError> : null}
-        </label>
+          {errors.phone ? <FieldError id={`${prefix}-phone-error`}>{errors.phone}</FieldError> : null}
+        </div>
 
-        <label className="grid gap-2">
-          <span className="text-sm font-medium text-[var(--color-text-primary)]">
+        <div className="grid gap-2">
+          <label htmlFor={`${prefix}-email`} className="text-sm font-medium text-[var(--color-text-primary)]">
             Email address
-          </span>
+          </label>
           <Input
+            id={`${prefix}-email`}
+            aria-describedby={errors.email ? `${prefix}-email-error` : undefined}
             type="email"
             value={form.email}
             onChange={(event) => onChange({ email: event.target.value })}
@@ -80,16 +88,16 @@ export function CustomerDetailsForm({
                 : undefined
             }
           />
-          {errors.email ? <FieldError>{errors.email}</FieldError> : null}
-        </label>
+          {errors.email ? <FieldError id={`${prefix}-email-error`}>{errors.email}</FieldError> : null}
+        </div>
       </div>
     </section>
   );
 }
 
-function FieldError({ children }: { children: React.ReactNode }) {
+function FieldError({ id, children }: { id: string; children: React.ReactNode }) {
   return (
-    <span className="text-sm font-medium text-[var(--color-danger-strong)]">
+    <span id={id} className="text-sm font-medium text-[var(--color-danger-strong)]">
       {children}
     </span>
   );

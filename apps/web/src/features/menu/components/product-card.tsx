@@ -25,7 +25,7 @@ export function ProductCard({
   const price = formatMoneyFromCents(product.priceCents);
 
   return (
-    <Card className="group overflow-hidden transition hover:-translate-y-0.5 hover:border-[var(--color-border-hover)] hover:shadow-md">
+    <Card variant="surface" className="storefront-product-card group overflow-hidden">
       <article>
         <button
           type="button"
@@ -33,33 +33,35 @@ export function ProductCard({
           className="block w-full cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-inset"
           aria-label={`View ${product.name}`}
         >
-          <div className="relative aspect-[4/3] overflow-hidden bg-[var(--color-surface-muted)]">
+          <div className="relative aspect-[3/2] overflow-hidden bg-[var(--color-surface-muted)] sm:aspect-[4/3]">
             <ProductImage
               src={product.imageUrl}
               alt={product.name}
               sizes="(min-width: 1152px) 255px, (min-width: 1024px) calc((100vw - 132px) / 4), (min-width: 640px) calc((100vw - 72px) / 2), calc(100vw - 34px)"
+              className="storefront-product-image object-cover"
             />
           </div>
 
-          <div className="space-y-2 p-4 pb-3">
-            <h3 className="line-clamp-1 text-sm font-bold text-[var(--color-text-primary)]">
+          <div className="space-y-1.5 px-4 pb-2 pt-3 sm:space-y-2 sm:pb-3 sm:pt-4">
+            <h3 className="line-clamp-2 text-[length:var(--text-card-title)] font-bold leading-[var(--leading-card-title)] text-[var(--color-text-primary)]">
               {product.name}
             </h3>
 
             {product.description ? (
-              <p className="line-clamp-2 min-h-10 text-sm leading-5 text-[var(--color-text-secondary)]">
+              <p className="line-clamp-2 text-sm leading-5 text-[var(--color-text-secondary)] sm:min-h-10">
                 {product.description}
               </p>
             ) : (
-              <p className="min-h-10 text-sm leading-5 text-[var(--color-text-muted)]">
+              <p className="text-sm leading-5 text-[var(--color-text-muted)] sm:min-h-10">
                 View details and customize your order.
               </p>
             )}
           </div>
         </button>
 
-        <div className="flex items-center justify-between gap-4 px-4 pb-4">
-          <p className="text-sm font-bold text-[var(--color-text-primary)]">
+        <div className="flex items-center justify-between gap-4 px-4 pb-3 sm:pb-4">
+          <p className="text-base font-bold tracking-tight text-[var(--color-text-primary)]">
+            {product.optionGroups.length > 0 ? <span className="mr-1 text-xs font-medium text-[var(--color-text-secondary)]">Base</span> : null}
             {price}
           </p>
 

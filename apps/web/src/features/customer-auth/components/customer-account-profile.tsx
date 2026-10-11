@@ -54,8 +54,8 @@ export function CustomerAccountProfile() {
     } finally { setBusy(false); }
   }
 
-  return <section aria-labelledby="profile-heading" className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-8">
-    <div className="mb-6"><h2 id="profile-heading" className="text-xl font-bold">Profile</h2><p className="mt-1 text-sm text-[var(--color-text-secondary)]">The details you keep with your account.</p></div>
+  return <section id="profile" aria-labelledby="profile-heading" className="scroll-mt-24 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-8">
+    <div className="mb-6"><h2 id="profile-heading" tabIndex={-1} className="text-xl font-bold">Profile</h2><p className="mt-1 text-sm text-[var(--color-text-secondary)]">The details you keep with your account.</p></div>
     <form onSubmit={(event) => { void save(event); }} className="space-y-5" noValidate>
       <div><label htmlFor="account-name" className="mb-2 block text-sm font-semibold">Name</label><Input id="account-name" autoComplete="name" maxLength={120} value={value.name} onChange={(event) => edit("name", event.target.value)} disabled={busy} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? "account-name-error" : undefined} />{errors.name ? <p id="account-name-error" className="mt-1 text-sm text-[var(--color-danger-strong)]">{errors.name}</p> : null}</div>
       <div><label htmlFor="account-email" className="mb-2 block text-sm font-semibold">Email</label><Input id="account-email" type="email" autoComplete="email" value={customer.email} readOnly aria-describedby="account-email-note" className="bg-[var(--color-surface-disabled)]" /><p id="account-email-note" className="mt-1 text-xs text-[var(--color-text-secondary)]">Email changes are not currently supported.</p></div>

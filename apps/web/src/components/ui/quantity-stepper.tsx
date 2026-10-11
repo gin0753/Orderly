@@ -6,6 +6,7 @@ type QuantityStepperProps = {
   max?: number;
   onChange: (nextValue: number) => void;
   className?: string;
+  label?: string;
 };
 
 export function QuantityStepper({
@@ -14,22 +15,23 @@ export function QuantityStepper({
   max = 99,
   onChange,
   className = "",
+  label,
 }: QuantityStepperProps) {
   return (
     <div
-      className={`inline-flex items-center overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] ${className}`}
+      className={`inline-flex shrink-0 items-center overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] ${className}`}
     >
       <button
         type="button"
         onClick={() => onChange(Math.max(min, value - 1))}
         disabled={value <= min}
-        className="cursor-pointer flex h-9 w-10 items-center justify-center text-lg text-[var(--color-text-strong)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]"
-        aria-label="Decrease quantity"
+        className="cursor-pointer flex h-[var(--button-height-sm,2.25rem)] w-[var(--button-height-icon,2.5rem)] items-center justify-center text-lg text-[var(--color-text-strong)] transition duration-[var(--motion-feedback,150ms)] hover:bg-[var(--color-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-ring)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]"
+        aria-label={label ? `Decrease quantity for ${label}` : "Decrease quantity"}
       >
         −
       </button>
 
-      <div className="flex h-9 min-w-10 items-center justify-center px-3 text-sm font-semibold text-[var(--color-text-primary)]">
+      <div className="flex h-[var(--button-height-sm,2.25rem)] min-w-10 items-center justify-center px-3 text-sm font-semibold text-[var(--color-text-primary)]">
         {value}
       </div>
 
@@ -37,8 +39,8 @@ export function QuantityStepper({
         type="button"
         onClick={() => onChange(Math.min(max, value + 1))}
         disabled={value >= max}
-        className="cursor-pointer flex h-9 w-10 items-center justify-center text-lg text-[var(--color-text-strong)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]"
-        aria-label="Increase quantity"
+        className="cursor-pointer flex h-[var(--button-height-sm,2.25rem)] w-[var(--button-height-icon,2.5rem)] items-center justify-center text-lg text-[var(--color-text-strong)] transition duration-[var(--motion-feedback,150ms)] hover:bg-[var(--color-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-ring)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]"
+        aria-label={label ? `Increase quantity for ${label}` : "Increase quantity"}
       >
         +
       </button>

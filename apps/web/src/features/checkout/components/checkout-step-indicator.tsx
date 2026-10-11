@@ -1,46 +1,15 @@
-const steps = [
-  { number: 1, label: "Details" },
-  { number: 2, label: "Confirmed" },
-];
-
 export function CheckoutStepIndicator() {
   return (
-    <div className="flex items-center justify-center gap-4 border-b border-[var(--color-border)] pb-6">
-      {steps.map((step, index) => {
-        const isActive = step.number === 1;
-
-        return (
-          <div key={step.number} className="flex items-center gap-4">
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className={[
-                  "flex size-9 items-center justify-center rounded-full text-sm font-semibold",
-                  isActive
-                    ? "bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)]"
-                    : "bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]",
-                ].join(" ")}
-              >
-                {step.number}
-              </div>
-
-              <span
-                className={[
-                  "text-xs font-medium",
-                  isActive
-                    ? "text-[var(--color-text-primary)]"
-                    : "text-[var(--color-text-muted)]",
-                ].join(" ")}
-              >
-                {step.label}
-              </span>
-            </div>
-
-            {index < steps.length - 1 ? (
-              <div className="hidden h-px w-24 bg-[var(--color-border)] sm:block" />
-            ) : null}
-          </div>
-        );
-      })}
-    </div>
+    <ol aria-label="Order progress" className="flex items-center gap-3 text-sm">
+      <li aria-current="step" className="flex items-center gap-2 font-semibold text-[var(--color-text-primary)]">
+        <span aria-hidden="true" className="flex size-7 items-center justify-center rounded-full bg-[var(--color-brand-surface)] text-xs text-[var(--color-on-brand)]">1</span>
+        Details
+      </li>
+      <li aria-hidden="true" className="h-px w-8 bg-[var(--color-control-border)]" />
+      <li className="flex items-center gap-2 text-[var(--color-text-secondary)]">
+        <span aria-hidden="true" className="flex size-7 items-center justify-center rounded-full bg-[var(--color-surface-muted)] text-xs">2</span>
+        Confirmed
+      </li>
+    </ol>
   );
 }

@@ -1,0 +1,451 @@
+{
+  "browser": "firefox",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "url": "http://localhost:3000/",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [
+    {
+      "id": "aria-prohibited-attr",
+      "impact": "serious",
+      "tags": [
+        "cat.aria",
+        "wcag2a",
+        "wcag412",
+        "EN-301-549",
+        "EN-9.4.1.2",
+        "RGAAv4",
+        "RGAA-7.1.1"
+      ],
+      "description": "Ensure ARIA attributes are not prohibited for an element's role",
+      "help": "Elements must only use permitted ARIA attributes",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-prohibited-attr?application=playwright",
+      "nodes": [
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": {
+                "role": null,
+                "nodeName": "div",
+                "messageKey": "noRoleSingular",
+                "prohibited": [
+                  "aria-label"
+                ]
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+            }
+          ],
+          "impact": "serious",
+          "html": "<div aria-label=\"Ordering information\" class=\"mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-[var(--color-on-brand-secondary)] md:mt-5 md:text-[0.8125rem] max-[359px]:grid max-[359px]:grid-cols-1 max-[359px]:gap-y-1.5\">",
+          "target": [
+            ".gap-x-4"
+          ],
+          "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+        }
+      ]
+    },
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "tags": [
+        "cat.color",
+        "wcag2aa",
+        "wcag143",
+        "TTv5",
+        "TT13.c",
+        "EN-301-549",
+        "EN-9.1.4.3",
+        "ACT",
+        "RGAAv4",
+        "RGAA-3.2.1"
+      ],
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": "bgGradient",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section aria-labelledby=\"homepage-hero-title\" class=\"storefront-hero grid overflow-hidden rounded-[var(--radius-overlay)] bg-[var(--color-brand-surface)] text-[var(--color-on-brand)] md:grid-cols-[1.04fr_0.96fr]\">",
+                  "target": [
+                    ".storefront-hero"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element's background color could not be determined due to a background gradient"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<p class=\"text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-ring-on-brand)]\">Orderly Browser Test</p>",
+          "target": [
+            ".uppercase"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "27.0pt (36px)",
+                "fontWeight": "bold",
+                "messageKey": "bgGradient",
+                "expectedContrastRatio": "3:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section aria-labelledby=\"homepage-hero-title\" class=\"storefront-hero grid overflow-hidden rounded-[var(--radius-overlay)] bg-[var(--color-brand-surface)] text-[var(--color-on-brand)] md:grid-cols-[1.04fr_0.96fr]\">",
+                  "target": [
+                    ".storefront-hero"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element's background color could not be determined due to a background gradient"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<h1 id=\"homepage-hero-title\" class=\"mt-3 md:mt-4 max-w-xl text-balance text-[length:var(--text-display)] font-bold leading-[1.08] tracking-[-0.04em] text-[var(--color-on-brand)] md:text-[2.5rem] lg:text-[length:var(--text-display)] max-[359px]:text-[2rem]\">",
+          "target": [
+            "#homepage-hero-title"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "11.3pt (15px)",
+                "fontWeight": "normal",
+                "messageKey": "bgGradient",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section aria-labelledby=\"homepage-hero-title\" class=\"storefront-hero grid overflow-hidden rounded-[var(--radius-overlay)] bg-[var(--color-brand-surface)] text-[var(--color-on-brand)] md:grid-cols-[1.04fr_0.96fr]\">",
+                  "target": [
+                    ".storefront-hero"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element's background color could not be determined due to a background gradient"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<p class=\"mt-4 max-w-md text-pretty text-[0.9375rem] leading-6 text-[var(--color-on-brand-secondary)] md:mt-5 md:text-base md:leading-7 max-[359px]:text-sm\">Pizza, pasta and sides made for easy pickup or delivery.</p>",
+          "target": [
+            ".max-w-md"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": "bgGradient",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section aria-labelledby=\"homepage-hero-title\" class=\"storefront-hero grid overflow-hidden rounded-[var(--radius-overlay)] bg-[var(--color-brand-surface)] text-[var(--color-on-brand)] md:grid-cols-[1.04fr_0.96fr]\">",
+                  "target": [
+                    ".storefront-hero"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element's background color could not be determined due to a background gradient"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<span class=\"inline-flex items-center gap-2\"><span aria-hidden=\"true\" class=\"h-2 w-2 rounded-full bg-[var(--color-brand)]\"></span>Pickup + delivery</span>",
+          "target": [
+            ".gap-x-4 > .gap-2.inline-flex:nth-child(1)"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": "bgGradient",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section aria-labelledby=\"homepage-hero-title\" class=\"storefront-hero grid overflow-hidden rounded-[var(--radius-overlay)] bg-[var(--color-brand-surface)] text-[var(--color-on-brand)] md:grid-cols-[1.04fr_0.96fr]\">",
+                  "target": [
+                    ".storefront-hero"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element's background color could not be determined due to a background gradient"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<span class=\"inline-flex items-center gap-2\"><span aria-hidden=\"true\" class=\"h-2 w-2 rounded-full bg-[var(--color-brand)]\"></span>Estimated prep · 20 min</span>",
+          "target": [
+            ".gap-x-4 > .gap-2.inline-flex:nth-child(2)"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": "imgNode",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<span class=\"absolute left-3 top-3 inline-flex min-h-8 items-center gap-2 rounded-full border border-[var(--color-brand)]/20 bg-[var(--color-surface-glass)] px-3 text-xs font-semibold text-[var(--color-text-primary)] shadow-sm backdrop-blur\">",
+                  "target": [
+                    ".left-3"
+                  ]
+                },
+                {
+                  "html": "<img alt=\"Golden Path Pizza\" decoding=\"async\" data-nimg=\"fill\" class=\"object-cover\" style=\"position:absolute;he...\" sizes=\"(min-width: 1152px) ...\" srcset=\"/_next/image?url=%2F...\" src=\"http://localhost:300...\">",
+                  "target": [
+                    ".rounded-\\[1\\.125rem\\] > img"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element's background color could not be determined because element contains an image node"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<span class=\"absolute left-3 top-3 inline-flex min-h-8 items-center gap-2 rounded-full border border-[var(--color-brand)]/20 bg-[var(--color-surface-glass)] px-3 text-xs font-semibold text-[var(--color-text-primary)] shadow-sm backdrop-blur\">",
+          "target": [
+            ".left-3"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "bold",
+                "messageKey": "imgNode",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<div class=\"absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 rounded-[0.875rem] bg-[var(--color-surface-glass)] px-3 py-2.5 shadow-sm backdrop-blur md:inset-x-4 md:bottom-4 md:px-4 md:py-3\">",
+                  "target": [
+                    ".inset-x-3"
+                  ]
+                },
+                {
+                  "html": "<img alt=\"Golden Path Pizza\" decoding=\"async\" data-nimg=\"fill\" class=\"object-cover\" style=\"position:absolute;he...\" sizes=\"(min-width: 1152px) ...\" srcset=\"/_next/image?url=%2F...\" src=\"http://localhost:300...\">",
+                  "target": [
+                    ".rounded-\\[1\\.125rem\\] > img"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element's background color could not be determined because element contains an image node"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<strong class=\"min-w-0 truncate text-sm text-[var(--color-text-primary)]\">Golden Path Pizza</strong>",
+          "target": [
+            "strong"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": "imgNode",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<div class=\"absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 rounded-[0.875rem] bg-[var(--color-surface-glass)] px-3 py-2.5 shadow-sm backdrop-blur md:inset-x-4 md:bottom-4 md:px-4 md:py-3\">",
+                  "target": [
+                    ".inset-x-3"
+                  ]
+                },
+                {
+                  "html": "<img alt=\"Golden Path Pizza\" decoding=\"async\" data-nimg=\"fill\" class=\"object-cover\" style=\"position:absolute;he...\" sizes=\"(min-width: 1152px) ...\" srcset=\"/_next/image?url=%2F...\" src=\"http://localhost:300...\">",
+                  "target": [
+                    ".rounded-\\[1\\.125rem\\] > img"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element's background color could not be determined because element contains an image node"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<span class=\"shrink-0 text-xs font-semibold text-[var(--color-text-secondary)] md:text-[0.8125rem]\">From <!-- -->$14.00</span>",
+          "target": [
+            ".shrink-0"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": "shortTextContent",
+                "expectedContrastRatio": "4.5:1",
+                "colorParse": "oklab(1 0 5.96046e-8 / 0.2)"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element content is too short to determine if it is actual text content"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<span class=\"ml-2 rounded-full bg-[var(--color-surface)]/20 px-2 py-0.5 text-xs\">1</span>",
+          "target": [
+            ".bg-\\[var\\(--color-brand-text-hover\\)\\] > .ml-2.bg-\\[var\\(--color-surface\\)\\]\\/20.px-2"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": "shortTextContent",
+                "expectedContrastRatio": "4.5:1",
+                "colorParse": "oklab(1 0 5.96046e-8 / 0.2)"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element content is too short to determine if it is actual text content"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<span class=\"ml-2 rounded-full bg-[var(--color-surface)]/20 px-2 py-0.5 text-xs\">1</span>",
+          "target": [
+            ".hover\\:bg-\\[var\\(--color-surface-disabled\\)\\] > .ml-2.bg-\\[var\\(--color-surface\\)\\]\\/20.px-2"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content"
+        }
+      ]
+    }
+  ],
+  "passedRules": 23,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open customer navigation",
+        "width": 48,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 54,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "All1",
+        "width": 81.53334045410156,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Browser Test Pizza1",
+        "width": 180.68331909179688,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "View Golden Path Pizza",
+        "width": 358,
+        "height": 306.66668701171875
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Quick add Golden Path Pizza",
+        "width": 44,
+        "height": 44
+      }
+    ],
+    "feedback": [],
+    "focus": {
+      "tag": "BODY",
+      "outline": "rgb(0, 0, 0) 3px",
+      "text": "Skip to contentOrderlyMenuTrack orderSign inCartOrderly Browser TestFresh comfort food, ready when y"
+    }
+  }
+}

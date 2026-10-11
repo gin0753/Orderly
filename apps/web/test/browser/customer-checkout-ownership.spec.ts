@@ -30,7 +30,7 @@ async function addPizza(page: Page) {
   const dialog = page.getByRole("dialog", { name: "Golden Path Pizza" });
   await dialog.getByRole("radio", { name: "Large" }).click();
   await dialog.getByRole("button", { name: /^Add to cart/ }).click();
-  await page.getByRole("link", { name: "View Cart & Checkout" }).click();
+  await page.getByRole("link", { name: "Continue to checkout" }).click();
   await expect(page).toHaveURL(/\/checkout$/);
 }
 
@@ -173,6 +173,7 @@ test("logout clears untouched account prefills while keeping typed details and c
   await expect(page).toHaveURL(/\/account$/);
   await addPizza(page);
   await page.getByLabel("Phone number").fill("0400 777 666");
+  await page.getByRole("button", { name: "Account options" }).click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page.getByLabel("Full name")).toHaveValue("");
   await expect(page.getByLabel("Email address")).toHaveValue("");

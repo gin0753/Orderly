@@ -1,0 +1,101 @@
+{
+  "browser": "firefox",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "url": "http://localhost:3000/",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 19,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 92.64999389648438,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "All1",
+        "width": 81.53334045410156,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Browser Test Pizza1",
+        "width": 180.68331909179688,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "View Golden Path Pizza",
+        "width": 257,
+        "height": 290.75
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Add",
+        "width": 60.26666259765625,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Close product details",
+        "width": 44,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "SmallIncludedDefault",
+        "width": 120,
+        "height": 90
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Large+$4.00",
+        "width": 120,
+        "height": 90
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Extra Cheese+$2.00",
+        "width": 384,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Decrease quantity",
+        "width": 44,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Increase quantity",
+        "width": 44,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Add to cart·$14.00",
+        "width": 400,
+        "height": 48
+      }
+    ],
+    "feedback": [
+      {
+        "role": "status",
+        "live": "polite",
+        "text": "Item total$14.00"
+      }
+    ],
+    "focus": {
+      "tag": "BUTTON",
+      "outline": "rgb(28, 25, 23) 3px",
+      "text": ""
+    }
+  }
+}

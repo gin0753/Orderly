@@ -14,6 +14,9 @@ import { setCartOpener } from "@/features/cart/utils/cart-focus";
 import { useHasHydrated } from "@/hooks/use-has-hydrated";
 import { usePathname } from "next/navigation";
 import { CustomerSignOut } from "@/features/customer-auth/components/customer-sign-out";
+import Link from "next/link";
+import { buttonStyles } from "../ui/button";
+import { CustomerAccountDropdown } from "./customer-account-dropdown";
 import { safeCustomerReturnPath } from "@/features/customer-auth/lib/return-path";
 
 export function SiteHeader() {
@@ -28,27 +31,34 @@ export function SiteHeader() {
   const authenticated = status === "authenticated";
   const navLinks = [
     { label: "Menu", href: "/" },
-    authenticated ? { label: "Orders", href: "/account/orders" } : { label: "Track order", href: "/track-order" },
-    authenticated ? { label: "Account", href: "/account" } : { label: "Sign in", href: `/login?returnTo=${encodeURIComponent(safeCustomerReturnPath(pathname === "/" ? "/account" : pathname))}` },
+    { label: "Track order", href: "/track-order" },
   ];
+  const signInHref = `/login?returnTo=${encodeURIComponent(safeCustomerReturnPath(pathname === "/" ? "/account" : pathname))}`;
+  const mobileLinks = [...navLinks, ...(authenticated ? [
+    { label: "Profile", href: "/account#profile" },
+    { label: "Orders", href: "/account/orders" },
+    { label: "Sign-in & Security", href: "/account#security" },
+  ] : [{ label: "Sign in", href: signInHref }])];
 
   return (
     <AppHeaderShell
       logoHref="/"
       navLinks={navLinks}
+      mobileNavLinks={mobileLinks}
       mobileLabel="Customer navigation"
+      mobileCycleTabStops
       onBeforeMobileOpen={() => dispatch(closeCart())}
       mobileFooter={authenticated ? <CustomerSignOut /> : undefined}
       rightSlot={
         <div className="flex items-center gap-2">
-        {authenticated ? <div className="hidden md:block"><CustomerSignOut /></div> : null}
+        {authenticated ? <CustomerAccountDropdown /> : <Link href={signInHref} className={buttonStyles({ variant: "ghost", className: "hidden md:inline-flex" })}>Sign in</Link>}
         <Button
           type="button"
           onClick={(event) => {
             setCartOpener(event.currentTarget);
             dispatch(openCart());
           }}
-          className="relative flex h-12 min-w-12 cursor-pointer items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)] shadow-sm transition hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-muted)] md:h-10"
+          className="relative flex h-12 min-w-12 cursor-pointer items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)] shadow-sm transition hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-muted)]"
           aria-label="Open cart"
         >
           <span className="relative flex h-5 w-5 items-center justify-center">

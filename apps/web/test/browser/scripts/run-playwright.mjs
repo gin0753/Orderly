@@ -49,7 +49,7 @@ console.log(`prismaTargetsMatch=${target.targetsMatch}`);
 const suites = playwrightArguments.length
   ? [playwrightArguments]
   : process.env.ORDERLY_BROWSER_PRODUCTION === "1" || process.env.GITHUB_ACTIONS === "true"
-    ? [["critical-workflow.spec.ts"], ["google-oauth.spec.ts"], ["customer-account.spec.ts"], ["customer-checkout-ownership.spec.ts"], ["customer-order-history.spec.ts"], ["customer-anonymous-auth.spec.ts"]]
+    ? [["critical-workflow.spec.ts"], ["design-foundation.spec.ts"], ["customer-navigation.spec.ts"], ["google-oauth.spec.ts"], ["customer-account.spec.ts"], ["customer-checkout-ownership.spec.ts"], ["customer-order-history.spec.ts"], ["customer-anonymous-auth.spec.ts"], ["storefront-configurator.spec.ts"], ["premium-transactions.spec.ts"], ["premium-auth-orders-tracking.spec.ts"]]
     : [[]];
 for (const suite of suites) {
   run(["--filter", "web", "test:e2e:run", ...suite]);

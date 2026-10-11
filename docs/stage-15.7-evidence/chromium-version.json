@@ -1,0 +1,9 @@
+{
+  "browserName": "chromium",
+  "version": "151.0.7922.34",
+  "platform": "win32",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.34 Safari/537.36",
+  "deviceScaleFactor": 1,
+  "locale": "en-US",
+  "timezone": "Australia/Sydney"
+}

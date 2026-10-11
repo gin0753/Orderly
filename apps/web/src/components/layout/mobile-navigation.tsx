@@ -9,6 +9,7 @@ import { OrderlyLogo } from "@/components/brand/orderly-logo";
 import { Button } from "@/components/ui/button";
 import { useScrollLock } from "@/hooks/use-scroll-lock";
 import type { AppHeaderNavLink } from "./app-header-shell";
+import { navigateAccountSection, useLocationHash } from "@/features/customer-auth/lib/account-section-navigation";
 
 type MobileNavigationProps = {
   links: AppHeaderNavLink[];
@@ -16,6 +17,7 @@ type MobileNavigationProps = {
   identitySuffix?: string;
   footer?: ReactNode;
   onBeforeOpen?: () => void;
+  cycleTabStops?: boolean;
 };
 
 export function MobileNavigation({
@@ -24,6 +26,7 @@ export function MobileNavigation({
   identitySuffix,
   footer,
   onBeforeOpen,
+  cycleTabStops = false,
 }: MobileNavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dialogId = useId();
@@ -31,6 +34,7 @@ export function MobileNavigation({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
+  const hash = useLocationHash();
   useScrollLock(isOpen);
 
   useEffect(() => {
@@ -96,6 +100,17 @@ export function MobileNavigation({
           ));
           const first = controls[0];
           const last = controls[controls.length - 1];
+          // Some WebKit configurations skip links during native Tab navigation.
+          // Customer navigation must keep every destination keyboard reachable.
+          if (cycleTabStops && controls.length) {
+            event.preventDefault();
+            const current = controls.indexOf(document.activeElement as HTMLElement);
+            const next = current < 0
+              ? (event.shiftKey ? controls.length - 1 : 0)
+              : (current + (event.shiftKey ? -1 : 1) + controls.length) % controls.length;
+            controls[next].focus();
+            return;
+          }
           if (event.shiftKey && document.activeElement === first) {
             event.preventDefault();
             last?.focus();
@@ -119,12 +134,13 @@ export function MobileNavigation({
             </div>
             <nav aria-label={label} className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
               {links.map((link) => {
-                const exact = pathname === link.href;
-                const active = exact || (link.href !== "/" && !(link.href === "/account" && pathname.startsWith("/account/orders")) && pathname.startsWith(`${link.href}/`));
+                const [destination, section] = link.href.split("#");
+                const exact = pathname === destination;
+                const active = section ? exact && (hash || "#profile") === `#${section}` : exact || (link.href !== "/" && !(link.href === "/account" && pathname.startsWith("/account/orders")) && pathname.startsWith(`${link.href}/`));
                 return (
                   <Link key={link.href} href={link.href}
-                    aria-current={active ? (exact ? "page" : "location") : undefined}
-                    onClick={() => setIsOpen(false)}
+                    aria-current={active ? (exact && !section ? "page" : "location") : undefined}
+                    onClick={(event) => { setIsOpen(false); navigateAccountSection(event, pathname, link.href); }}
                     className={`flex min-h-12 items-center rounded-xl border-l-4 px-4 py-3 text-base font-semibold focus-visible:outline-2 focus-visible:outline-[var(--color-brand)] ${
                       active
                         ? "border-[var(--color-brand)] bg-[var(--color-brand-soft)] text-[var(--color-brand-text)]"
