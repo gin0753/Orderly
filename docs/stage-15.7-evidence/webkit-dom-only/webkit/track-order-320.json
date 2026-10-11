@@ -1,0 +1,61 @@
+{
+  "browser": "webkit",
+  "viewport": {
+    "width": 320,
+    "height": 568
+  },
+  "url": "http://localhost:3000/track-order",
+  "overflow": 0,
+  "axeVersion": "not run",
+  "axeSkipped": true,
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 0,
+  "interaction": {
+    "navigationElapsedMs": 341,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open customer navigation",
+        "width": 48,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 54,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Track Order",
+        "width": 248,
+        "height": 48
+      }
+    ],
+    "feedback": [
+      {
+        "role": "status",
+        "live": null,
+        "text": ""
+      }
+    ],
+    "focus": {
+      "tag": "BODY",
+      "outline": "3px none rgb(0, 0, 0)",
+      "text": "Skip to contentOrderlyMenuTrack orderSign inCartGuest order trackingCheck your order statusEnter you"
+    }
+  }
+}

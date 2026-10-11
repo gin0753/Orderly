@@ -1,0 +1,23 @@
+﻿[
+    {
+        "type":  "event",
+        "time":  1057087.692,
+        "class":  "BrowserContext",
+        "method":  "pageError",
+        "params":  {
+                       "error":  {
+                                     "error":  {
+                                                   "message":  "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML\u0026args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+                                                   "stack":  "Error: Minified React error #418; visit https://react.dev/errors/418?args[]=HTML\u0026args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at reportError (http://localhost:3000/_next/static/chunks/0_s51-2psu0ql.js:1:47218)\n    at f (http://localhost:3000/_next/static/chunks/0_s51-2psu0ql.js:1:5166)\n    at sk (http://localhost:3000/_next/static/chunks/0_s51-2psu0ql.js:1:156188)\n    at unknown (http://localhost:3000/_next/static/chunks/0_s51-2psu0ql.js:1:153904)\n    at sv (http://localhost:3000/_next/static/chunks/0_s51-2psu0ql.js:1:153908)\n    at st (http://localhost:3000/_next/static/chunks/0_s51-2psu0ql.js:1:137061)\n    at se (http://localhost:3000/_next/static/chunks/0_s51-2psu0ql.js:1:135297)\n    at s$ (http://localhost:3000/_next/static/chunks/0_s51-2psu0ql.js:1:160497)\n    at O (http://localhost:3000/_next/static/chunks/0_s51-2psu0ql.js:1:8663)",
+                                                   "name":  "Error"
+                                               }
+                                 },
+                       "location":  {
+                                        "url":  "http://localhost:3000/_next/static/chunks/0_s51-2psu0ql.js",
+                                        "line":  0,
+                                        "column":  47217
+                                    }
+                   },
+        "pageId":  "page@87425d791960e80f5d556e3e46c4e31a"
+    }
+]

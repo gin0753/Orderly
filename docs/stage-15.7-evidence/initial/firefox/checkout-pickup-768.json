@@ -1,0 +1,13 @@
+{
+  "browser": "firefox",
+  "viewport": {
+    "width": 768,
+    "height": 900
+  },
+  "url": "http://localhost:3000/checkout",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 29
+}

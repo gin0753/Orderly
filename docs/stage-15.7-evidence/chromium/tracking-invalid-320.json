@@ -1,0 +1,59 @@
+{
+  "browser": "chromium",
+  "viewport": {
+    "width": 320,
+    "height": 568
+  },
+  "url": "http://localhost:3000/track-order",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 25,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open customer navigation",
+        "width": 48,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 54,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Track Order",
+        "width": 248,
+        "height": 48
+      }
+    ],
+    "feedback": [
+      {
+        "role": "status",
+        "live": null,
+        "text": ""
+      }
+    ],
+    "focus": {
+      "tag": "INPUT",
+      "outline": "rgb(194, 65, 12) solid 2px",
+      "text": ""
+    }
+  }
+}

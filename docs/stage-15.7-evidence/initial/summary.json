@@ -1,0 +1,430 @@
+{
+  "generatedAt": "2026-10-10T10:39:22.544Z",
+  "scanCount": 73,
+  "screenshotCount": 73,
+  "violations": [],
+  "incompleteByScan": [
+    {
+      "file": "chromium/storefront-1440.json",
+      "rules": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/cart-320.json",
+      "rules": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/configurator-320.json",
+      "rules": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/configurator-390.json",
+      "rules": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/orders-1440.json",
+      "rules": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/orders-320.json",
+      "rules": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/orders-390.json",
+      "rules": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/orders-768.json",
+      "rules": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/orders-empty-320.json",
+      "rules": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/orders-error-320.json",
+      "rules": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/storefront-1440.json",
+      "rules": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/storefront-320.json",
+      "rules": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/storefront-390.json",
+      "rules": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "firefox/storefront-768.json",
+      "rules": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "webkit/storefront-1440.json",
+      "rules": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    }
+  ],
+  "overflows": [
+    {
+      "file": "firefox/login-root-text-200-percent-320.json",
+      "overflow": 104
+    }
+  ],
+  "buildChunks": {
+    "count": 35,
+    "totalBytes": 1239576,
+    "totalGzipBytes": 373942,
+    "chunks": [
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0_s51-2psu0ql.js",
+        "bytes": 232551,
+        "gzipBytes": 72633
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0r85w5zz9yx2f.js",
+        "bytes": 174890,
+        "gzipBytes": 48351
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\03ibq4a_-eexn.js",
+        "bytes": 137452,
+        "gzipBytes": 37366
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\03~yq9q893hmn.js",
+        "bytes": 112594,
+        "gzipBytes": 39627
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0c5_wj_8upr_r.js",
+        "bytes": 54635,
+        "gzipBytes": 12885
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\11uhqjz~qx6oa.js",
+        "bytes": 44832,
+        "gzipBytes": 9270
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0uyl8qx6bwb2s.js",
+        "bytes": 37207,
+        "gzipBytes": 8877
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0jxmhphhz59sb.js",
+        "bytes": 34444,
+        "gzipBytes": 10396
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\12r.0jf17z.cr.js",
+        "bytes": 31038,
+        "gzipBytes": 8933
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\181pb~0ilqq0t.js",
+        "bytes": 30592,
+        "gzipBytes": 8059
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0n7-uphpgs0-x.js",
+        "bytes": 30511,
+        "gzipBytes": 10170
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0lfffpmomag26.js",
+        "bytes": 28529,
+        "gzipBytes": 10169
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\00tta_4g_m.1z.js",
+        "bytes": 27366,
+        "gzipBytes": 8553
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0f02cqjihxhtu.js",
+        "bytes": 27017,
+        "gzipBytes": 9681
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0vb560oh449rd.js",
+        "bytes": 25368,
+        "gzipBytes": 9467
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0_9y6wlwv5f5_.js",
+        "bytes": 23560,
+        "gzipBytes": 7588
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0~w7.d7iwnpu-.js",
+        "bytes": 21432,
+        "gzipBytes": 6735
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0c6hpnfckhcxn.js",
+        "bytes": 21257,
+        "gzipBytes": 7029
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0ua20.ist5-_p.js",
+        "bytes": 21238,
+        "gzipBytes": 6039
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0qrz1txy7t1~l.js",
+        "bytes": 20104,
+        "gzipBytes": 6241
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0wkblg3cw9nda.js",
+        "bytes": 19591,
+        "gzipBytes": 6579
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0.8u8e4sz8vw2.js",
+        "bytes": 19206,
+        "gzipBytes": 5344
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0r7o1i8e9fx63.js",
+        "bytes": 13527,
+        "gzipBytes": 3918
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\turbopack-0lz8cc.lkaxal.js",
+        "bytes": 10613,
+        "gzipBytes": 4162
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\12oo9-ya3mn9y.js",
+        "bytes": 9850,
+        "gzipBytes": 3577
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0q4v8ii~428ny.js",
+        "bytes": 8370,
+        "gzipBytes": 2558
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\18aqttb11ufp0.js",
+        "bytes": 5708,
+        "gzipBytes": 2329
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0mr~aswfiajhf.js",
+        "bytes": 4661,
+        "gzipBytes": 2058
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0ibep9m9sje6r.js",
+        "bytes": 2912,
+        "gzipBytes": 1108
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0.kr5ipil16u2.js",
+        "bytes": 2428,
+        "gzipBytes": 995
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\154kgw2o~856-.js",
+        "bytes": 2352,
+        "gzipBytes": 1208
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\09jqd.v18avpq.js",
+        "bytes": 1398,
+        "gzipBytes": 748
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0u9for43eg.pr.js",
+        "bytes": 1213,
+        "gzipBytes": 585
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0h8_va6uo36~4.js",
+        "bytes": 794,
+        "gzipBytes": 445
+      },
+      {
+        "file": "apps\\web\\.next\\static\\chunks\\0kkewlpfj_w5s.js",
+        "bytes": 336,
+        "gzipBytes": 259
+      }
+    ]
+  },
+  "performance": {
+    "dialogActionToVisibleMs": 467.89999997615814,
+    "samples": [
+      {
+        "route": "/",
+        "lcpMs": 672,
+        "cls": 0,
+        "longTaskCount": 1,
+        "longestTaskMs": 72,
+        "scriptCount": 15,
+        "scriptEncodedBytes": 205745,
+        "scriptTransferBytes": 210245,
+        "scriptDecodedBytes": 695197,
+        "images": [
+          {
+            "src": "http://localhost:3000/_next/image?url=%2Fimages%2Fmenu%2Froasted-mushroom-pizza-v1.webp&w=384&q=75",
+            "loading": "auto",
+            "complete": true,
+            "width": 322,
+            "height": 241
+          },
+          {
+            "src": "http://localhost:3000/_next/image?url=%2Fimages%2Fmenu%2Froasted-mushroom-pizza-v1.webp&w=384&q=75",
+            "loading": "lazy",
+            "complete": true,
+            "width": 356,
+            "height": 267
+          }
+        ]
+      },
+      {
+        "route": "/",
+        "lcpMs": 416,
+        "cls": 0,
+        "longTaskCount": 0,
+        "longestTaskMs": 0,
+        "scriptCount": 15,
+        "scriptEncodedBytes": 205745,
+        "scriptTransferBytes": 0,
+        "scriptDecodedBytes": 695197,
+        "images": [
+          {
+            "src": "http://localhost:3000/_next/image?url=%2Fimages%2Fmenu%2Froasted-mushroom-pizza-v1.webp&w=384&q=75",
+            "loading": "auto",
+            "complete": true,
+            "width": 322,
+            "height": 241
+          },
+          {
+            "src": "http://localhost:3000/_next/image?url=%2Fimages%2Fmenu%2Froasted-mushroom-pizza-v1.webp&w=384&q=75",
+            "loading": "lazy",
+            "complete": true,
+            "width": 356,
+            "height": 267
+          }
+        ]
+      },
+      {
+        "route": "/",
+        "lcpMs": 404,
+        "cls": 0,
+        "longTaskCount": 0,
+        "longestTaskMs": 0,
+        "scriptCount": 15,
+        "scriptEncodedBytes": 205745,
+        "scriptTransferBytes": 0,
+        "scriptDecodedBytes": 695197,
+        "images": [
+          {
+            "src": "http://localhost:3000/_next/image?url=%2Fimages%2Fmenu%2Froasted-mushroom-pizza-v1.webp&w=384&q=75",
+            "loading": "auto",
+            "complete": true,
+            "width": 322,
+            "height": 241
+          },
+          {
+            "src": "http://localhost:3000/_next/image?url=%2Fimages%2Fmenu%2Froasted-mushroom-pizza-v1.webp&w=384&q=75",
+            "loading": "lazy",
+            "complete": true,
+            "width": 356,
+            "height": 267
+          }
+        ]
+      },
+      {
+        "route": "/login",
+        "lcpMs": 208,
+        "cls": 0.11476099725914421,
+        "longTaskCount": 0,
+        "longestTaskMs": 0,
+        "scriptCount": 15,
+        "scriptEncodedBytes": 203283,
+        "scriptTransferBytes": 3877,
+        "scriptDecodedBytes": 683809,
+        "images": [
+          {
+            "src": "http://localhost:3000/images/brand/google-sign-in-light.png",
+            "loading": "lazy",
+            "complete": true,
+            "width": 720,
+            "height": 160
+          }
+        ]
+      },
+      {
+        "route": "/register",
+        "lcpMs": 172,
+        "cls": 0.16361610395324824,
+        "longTaskCount": 0,
+        "longestTaskMs": 0,
+        "scriptCount": 15,
+        "scriptEncodedBytes": 203283,
+        "scriptTransferBytes": 0,
+        "scriptDecodedBytes": 683809,
+        "images": [
+          {
+            "src": "http://localhost:3000/images/brand/google-sign-in-light.png",
+            "loading": "lazy",
+            "complete": true,
+            "width": 720,
+            "height": 160
+          }
+        ]
+      },
+      {
+        "route": "/track-order",
+        "lcpMs": 132,
+        "cls": 0,
+        "longTaskCount": 0,
+        "longestTaskMs": 0,
+        "scriptCount": 17,
+        "scriptEncodedBytes": 209978,
+        "scriptTransferBytes": 11172,
+        "scriptDecodedBytes": 703451,
+        "images": []
+      }
+    ]
+  }
+}

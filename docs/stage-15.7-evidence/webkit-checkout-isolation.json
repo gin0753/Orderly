@@ -1,0 +1,30 @@
+{
+  "visits": [
+    {
+      "width": 1440,
+      "ready": true,
+      "elapsedMs": 1649,
+      "text": "Checkout\n\nReview your order and enter your details.\n\nChecking out as a guest. Sign in if you have an account.\n\n1\nDetails\n2\nConfirmed\n\nFulfillment\n\nHow would you like to receive your order?\n\nPickup\nCollect your order from the restaurant\nFree\nDelivery\nHave your order delivered to your address\n$5.00\nCustomer Details\n\nWe'll use this to send updates about your order.\n\nFull name\nPhone number\nEmail address\nOrder Notes (Optional)\n\nAdd any special instructions for the restaurant.\n\nOrder notes\n0/200 characters\nYour Order\n\n1 item\n\nEdit cart\nGolden Path Pizza\n\nLarge\n\n$18.00\n\nQty: 1\n\nSubtotal\n$18.00\nDelivery fee\nNot applicable\nService fee\n$1.20\nTotal\n$19.20\nPlace Order"
+    },
+    {
+      "width": 768,
+      "ready": true,
+      "elapsedMs": 1482,
+      "text": "Checkout\n\nReview your order and enter your details.\n\nChecking out as a guest. Sign in if you have an account.\n\n1\nDetails\n2\nConfirmed\n\nFulfillment\n\nHow would you like to receive your order?\n\nPickup\nCollect your order from the restaurant\nFree\nDelivery\nHave your order delivered to your address\n$5.00\nCustomer Details\n\nWe'll use this to send updates about your order.\n\nFull name\nPhone number\nEmail address\nOrder Notes (Optional)\n\nAdd any special instructions for the restaurant.\n\nOrder notes\n0/200 characters\nYour Order\n\n1 item\n\nEdit cart\nGolden Path Pizza\n\nLarge\n\n$18.00\n\nQty: 1\n\nSubtotal\n$18.00\nDelivery fee\nNot applicable\nService fee\n$1.20\nTotal\n$19.20\n\nTotal\n\n$19.20\n\nPlace Order →"
+    },
+    {
+      "width": 390,
+      "ready": true,
+      "elapsedMs": 1239,
+      "text": "Checkout\n\nReview your order and enter your details.\n\nChecking out as a guest. Sign in if you have an account.\n\n1\nDetails\n2\nConfirmed\n\nFulfillment\n\nHow would you like to receive your order?\n\nPickup\nCollect your order from the restaurant\nFree\nDelivery\nHave your order delivered to your address\n$5.00\nCustomer Details\n\nWe'll use this to send updates about your order.\n\nFull name\nPhone number\nEmail address\nOrder Notes (Optional)\n\nAdd any special instructions for the restaurant.\n\nOrder notes\n0/200 characters\nYour Order\n\n1 item\n\nEdit cart\nGolden Path Pizza\n\nLarge\n\n$18.00\n\nQty: 1\n\nSubtotal\n$18.00\nDelivery fee\nNot applicable\nService fee\n$1.20\nTotal\n$19.20\n\nTotal\n\n$19.20\n\nPlace Order →"
+    },
+    {
+      "width": 320,
+      "ready": true,
+      "elapsedMs": 2378,
+      "text": "Checkout\n\nReview your order and enter your details.\n\nChecking out as a guest. Sign in if you have an account.\n\n1\nDetails\n2\nConfirmed\n\nFulfillment\n\nHow would you like to receive your order?\n\nPickup\nCollect your order from the restaurant\nFree\nDelivery\nHave your order delivered to your address\n$5.00\nCustomer Details\n\nWe'll use this to send updates about your order.\n\nFull name\nPhone number\nEmail address\nOrder Notes (Optional)\n\nAdd any special instructions for the restaurant.\n\nOrder notes\n0/200 characters\nYour Order\n\n1 item\n\nEdit cart\nGolden Path Pizza\n\nLarge\n\n$18.00\n\nQty: 1\n\nSubtotal\n$18.00\nDelivery fee\nNot applicable\nService fee\n$1.20\nTotal\n$19.20\n\nTotal\n\n$19.20\n\nPlace Order →"
+    }
+  ],
+  "errors": [],
+  "failedRequests": []
+}

@@ -1,0 +1,65 @@
+{
+  "browser": "chromium",
+  "viewport": {
+    "width": 320,
+    "height": 568
+  },
+  "url": "http://localhost:3000/",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 14,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open customer navigation",
+        "width": 48,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Close customer navigation",
+        "width": 48,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 54,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "All1",
+        "width": 81.546875,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Browser Test Pizza1",
+        "width": 180.703125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "View Golden Path Pizza",
+        "width": 288,
+        "height": 280
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Quick add Golden Path Pizza",
+        "width": 44,
+        "height": 44
+      }
+    ],
+    "feedback": [],
+    "focus": {
+      "tag": "BUTTON",
+      "outline": "rgb(28, 25, 23) none 3px",
+      "text": ""
+    }
+  }
+}

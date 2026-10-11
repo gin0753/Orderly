@@ -1,0 +1,41 @@
+{
+  "browser": "chromium",
+  "viewport": {
+    "width": 768,
+    "height": 900
+  },
+  "url": "http://localhost:3000/track-order/157001",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 26,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 106.109375,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Refresh",
+        "width": 89.296875,
+        "height": 44
+      }
+    ],
+    "feedback": [
+      {
+        "role": "status",
+        "live": null,
+        "text": ""
+      }
+    ],
+    "focus": {
+      "tag": "H1",
+      "outline": "rgb(28, 25, 23) none 3px",
+      "text": "Order #157001"
+    }
+  }
+}

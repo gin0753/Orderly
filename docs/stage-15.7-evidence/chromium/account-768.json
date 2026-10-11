@@ -1,0 +1,107 @@
+{
+  "browser": "chromium",
+  "viewport": {
+    "width": 768,
+    "height": 900
+  },
+  "url": "http://localhost:3000/account",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 28,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Account options",
+        "width": 156.328125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 106.109375,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 656,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 656,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 656,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Save profile",
+        "width": 114.421875,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Connect Google",
+        "width": 656,
+        "height": 44
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 656,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Connect Google",
+        "width": 172.34375,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Change password",
+        "width": 656,
+        "height": 44
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 656,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 656,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 656,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Change password",
+        "width": 152.09375,
+        "height": 44
+      }
+    ],
+    "feedback": [],
+    "focus": {
+      "tag": "BODY",
+      "outline": "rgb(0, 0, 0) none 3px",
+      "text": "Skip to contentOrderlyMenuTrack orderAAccount1$18.00ProfileOrdersSign-in & SecurityYour Orderly acco"
+    }
+  }
+}
