@@ -209,3 +209,80 @@ The separately approved timeline connector implementation is now complete; see [
 ### Resumed release verification outcome
 
 The [latest final release results](v1-final-release-unblocking-report.md#resumed-final-release-verification--actual-results) supersede the infrastructure blockers above: Docker and the guarded local schema configuration are restored; Chromium passed 61 application cases, Firefox 6 acceptance cases, isolated WebKit 7 and combined WebKit 4, with only existing engine-specific skips. The historical loading timeout was not reproduced. WebKit access-control/hydration findings and real-device/deployment/operations acceptance remain conditions. Cleanup/timeline application files and all 84 retained screenshots are unchanged. No Packaging, commit, push or deployment performed.
+
+### Final auth error feedback consistency fix — 11 October 2026
+
+**Root cause.** Account Google callback failures used an unstyled paragraph and one email-specific explanation for `failed`, `cancelled` and `conflict`. Profile/password submission failures also used ordinary text. The established customer pattern is a `role="alert"` with danger text, surface and border tokens; checkout already follows it. Sign-in/register OAuth callback messages had a danger surface but lacked danger text/border. No new feedback framework was needed.
+
+**Changes.** Google linking now has one compact inline notification beside its sign-in methods: “Google connection unsuccessful”, a decorative error icon, and the existing danger tokens. The official Google logo/button, password label, authentication calls and linking rules are preserved. No additional live region or focus movement was introduced. Retrying dismisses the old callback notification; a subsequent request failure replaces it with one safe message. Connected accounts/success do not retain stale failure feedback. Profile/password errors and sign-in/register callback/session-failure text receive the same existing tokens; success text and validation behavior stay unchanged. Checkout required no changes.
+
+Backend inspection confirms `access_denied` maps to `cancelled`, `ConflictException` to `conflict`, and other callback failures to `failed`. Linking conflict covers email mismatch, existing links and concurrent changes, so its guidance does **not** assert a particular email conflict. Cancellation says authorization was not completed. Generic/provider/network causes cannot be distinguished reliably by `failed`, so the UI offers a generic retry message. Start-request failures also use generic guidance because the existing password error can include expired/inactive sessions. Backend/API contracts and security behavior were not changed.
+
+**Exact changed-file inventory for this patch:**
+
+- `apps/web/src/features/customer-auth/components/customer-google-methods.tsx`
+- `apps/web/src/features/customer-auth/components/customer-auth-form.tsx`
+- `apps/web/src/features/customer-auth/components/customer-account-profile.tsx`
+- `apps/web/src/features/customer-auth/components/customer-password-form.tsx`
+- `apps/web/test/customer-google-feedback.test.tsx`
+- `apps/web/test/browser/customer-google-feedback.spec.ts`
+- This report and 12 new PNGs under `docs/v1-auth-feedback-evidence/{before,after}/`: `{failed,conflict}-{1440,390,320}.png` in each directory. Existing evidence was preserved.
+
+**Before/after captures.** These are sign-in-methods section crops from real local application pages with synthetic customer/session and callback fixtures; they show generic failure and confirmed conflict-code presentation, not a live external Google failure.
+
+| State / viewport | Before | After |
+|---|---|---|
+| Generic / 1440px | [Before](v1-auth-feedback-evidence/before/failed-1440.png) | [After](v1-auth-feedback-evidence/after/failed-1440.png) |
+| Generic / 390px | [Before](v1-auth-feedback-evidence/before/failed-390.png) | [After](v1-auth-feedback-evidence/after/failed-390.png) |
+| Generic / 320px | [Before](v1-auth-feedback-evidence/before/failed-320.png) | [After](v1-auth-feedback-evidence/after/failed-320.png) |
+| Conflict / 1440px | [Before](v1-auth-feedback-evidence/before/conflict-1440.png) | [After](v1-auth-feedback-evidence/after/conflict-1440.png) |
+| Conflict / 390px | [Before](v1-auth-feedback-evidence/before/conflict-390.png) | [After](v1-auth-feedback-evidence/after/conflict-390.png) |
+| Conflict / 320px | [Before](v1-auth-feedback-evidence/before/conflict-320.png) | [After](v1-auth-feedback-evidence/after/conflict-320.png) |
+
+**Verification.** Tested uncommitted patch on HEAD `1ed797b518fac96036d5d158ed1082d9a1248e2f`. Docker Linux Engine 29.5.3 was available. Browser runs used the existing guard-derived loopback `orderly_test` / `schema=public`, matching Prisma targets and `NODE_ENV=test`; guarded seeding used only that dedicated database. No production/staging data or live external Google authentication was accessed.
+
+- `pnpm --filter web test --runInBand customer-google-feedback customer-account customer-auth-forms`: **33 passed, four suites**. Includes callback semantics, one alert, safe error text, retry dismissal, success navigation, stale-success suppression, profile/password failures and existing focus/validation behavior. New feedback suite was rerun after awaiting all fixture updates: **7 passed**.
+- `pnpm --filter web typecheck` and `pnpm --filter web lint`: **passed**, including browser/component test types.
+- `pnpm exec node audit-artifacts/auth-feedback/run.cjs build build`: **passed** optimized production frontend build, using the existing local browser-build environment.
+- `pnpm exec node audit-artifacts/auth-feedback/run.cjs optimized before chromium-desktop`: **six before-capture cases passed**.
+- `pnpm exec node audit-artifacts/auth-feedback/run.cjs regression after chromium-desktop`: **15 passed** — nine new generic/conflict/cancellation cases across 1440/390/320px plus all six existing controlled OAuth cases (conflict, successful explicit linking, session persistence, logout and responsive surfaces). Error cases also verify one notification after a failed retry, retained password value, safe text, no forced alert focus and no horizontal overflow.
+
+Private logs, JSON results and traces are retained under `audit-artifacts/auth-feedback/`; public screenshots contain only synthetic fixtures and no credentials. Node 24.16.0, pnpm 10.14.0, Playwright 1.62.1 / Chromium 151.0.7922.34 were used.
+
+**Remaining risks.** An additional artificial whole-document CSS-zoom diagnostic passed at 200% but failed at 400% with 573px horizontal overflow in the unchanged desktop header/account layout. Its screenshot, trace and original diagnostic test remain in `audit-artifacts/auth-feedback/zoom/` and `css-zoom-original.spec.ts`. CSS zoom does not switch responsive media queries, so this is not proof of native browser-zoom behavior. No broader layout fix was made. Native 200%/400% zoom, screen-reader announcement timing, Safari/Firefox and real-device visual acceptance were not verified in this patch. Other release/operations conditions remain as documented in the final release and WebKit investigation reports. No commit, push, deployment or Packaging work was performed.
+
+The follow-up reflow check (`INVESTIGATION_GREP=zoom-equivalent pnpm exec node audit-artifacts/auth-feedback/run.cjs optimized reflow chromium-desktop`) **passed both cases** at 720px and 360px, corresponding to 200%/400% zoom on a 1440px CSS viewport. It retained the global no-overflow assertion and verified reduced-motion mode, keyboard expansion of Connect Google, labeled password entry and Tab focus on the Google button. These are responsive-width simulations, not native browser-zoom certification. Final TypeScript/lint checks include these tests. Focused fix recommendation: **PASS WITH CONDITIONS** for the manual zoom/assistive-technology and existing release gates above.
+
+### Final 400% zoom triage — 11 October 2026
+
+**Disposition: simulation-only artifact for the retained 573px overflow; one minor P3 scroll/presentation observation; no confirmed P1/P2 in this focused check.** No UI fix is proposed or implemented. This finding does not independently block Packaging; all other release gates remain in force.
+
+**Exact original failure.** On `/account?google=conflict`, an authenticated synthetic fixture at a **1440 × 900 content viewport** set `document.documentElement.style.zoom = "4"`. The assertion `document.documentElement.scrollWidth - innerWidth <= 1` failed with **573**. The original screenshot, trace, error context and `audit-artifacts/auth-feedback/css-zoom-original.spec.ts` are preserved. A new reproduction retained that exact assertion and failed again: viewport 1440 × 900, DPR 1, desktop breakpoint active, document width 2013. The largest measured offender is the header's **Open cart** button, right edge **2013.14px**; Account options reaches 1610.55px. The desktop account grid (`lg:grid-cols-[13rem_minmax(0,1fr)]`) also stays active, leaving enlarged account content cramped. This is not an overflow originating from the Google error notification. See [original failure](v1-zoom-triage-evidence/original-css-400-failure.png).
+
+**Native zoom methodology.** Used isolated bundled Chromium 151.0.7922.34 in its supported full-browser headless mode, with a local diagnostic extension and the actual `chrome.tabs.setZoom` API. This is browser tab zoom, not CSS zoom, pinch magnification or a narrowed-viewport substitution. The extension only targeted the local Account tab and did not modify page/app code. Verified the reported zoom factor, CSS viewport, DPR, unchanged CSS `zoom: 1` and responsive breakpoints. [Chromium zoom API](https://developer.chrome.com/docs/extensions/reference/api/tabs) and [Playwright extension support](https://playwright.dev/docs/chrome-extensions) document the mechanism.
+
+| Content viewport at 100% | Native zoom | CSS viewport after zoom | DPR | Horizontal overflow | Evidence |
+|---|---|---|---|---|---|
+| 1440 × 900 | 200% | 720 × 450 | 2 | 0px | [Top](v1-zoom-triage-evidence/native-1440-2-top.png) |
+| 1440 × 900 | 400% | 360 × 225 | 4 | 0px | [Top](v1-zoom-triage-evidence/native-1440-4-top.png), [Feedback](v1-zoom-triage-evidence/native-1440-4-security.png), [Controls](v1-zoom-triage-evidence/native-1440-4-controls.png) |
+| 1280 × 900 | 200% | 640 × 450 | 2 | 0px | [Top](v1-zoom-triage-evidence/native-1280-2-top.png) |
+| 1280 × 900 | 400% | 320 × 225 | 4 | 0px | [Top](v1-zoom-triage-evidence/native-1280-4-top.png), [Feedback](v1-zoom-triage-evidence/native-1280-4-security.png), [Controls](v1-zoom-triage-evidence/native-1280-4-controls.png) |
+
+Native zoom deactivates the desktop breakpoint and uses mobile navigation plus the single-column account layout. Essential content requires vertical scrolling at 400%, which is expected; no horizontal scrolling was required. Keyboard activation of Sign-in & Security and Connect Google, password entry, Tab focus, enabled Google action, mock failed retry and readable feedback passed. The Change password disclosure was opened, all three labeled fields accepted focus and remained horizontally within the viewport, and submitting empty fields focused the first invalid field. Profile edit/save completed against a synthetic response. Reduced-motion mode was enabled. No real authentication, OAuth provider, customer-data update or password change was performed.
+
+**Minor P3 observation.** After focusing the Google password input at 400%, the sticky header partially masks the upper edge of its label; the focused input and Google button remain visible and operable. A normal upward wheel scroll reveals the complete label without horizontal scrolling. A separate 1280 × 900 / 400% run asserted that the label's top moved below the header bottom and passed; see [label after scrolling](v1-zoom-triage-evidence/native-1280-4-label-scrolled.png). This is recoverable presentation friction, not loss of essential content/action. Recommended disposition: retain as a low-priority focus/scroll-offset follow-up and check during manual desktop/assistive-technology UAT; do not expand this task into header redesign.
+
+**Reproduction and results.** Used existing optimized local application build on HEAD `1ed797b518fac96036d5d158ed1082d9a1248e2f` with the preceding uncommitted auth-feedback patch. Existing database guards supplied only loopback `orderly_test`, `schema=public`, matching Prisma targets and test mode. No guard bypass, reseeding, production connection or application mutation was needed. Session/capability and form API responses were intercepted with synthetic fixtures.
+
+From repository root, set the indicated `INVESTIGATION_GREP`, then run:
+
+- `native`: `pnpm exec node audit-artifacts/zoom-triage/run.cjs optimized native-final chromium-desktop` — **four native cases passed**.
+- `native 400`: `pnpm exec node audit-artifacts/zoom-triage/run.cjs optimized native-captures chromium-desktop` — **two repeated 400% cases passed**, including a final no-overflow assertion after form interactions.
+- `native 400% at 1280px`: `pnpm exec node audit-artifacts/zoom-triage/run.cjs optimized label-followup chromium-desktop` — **one label-scroll follow-up passed**.
+- `CSS zoom retained`: `pnpm exec node audit-artifacts/zoom-triage/run.cjs optimized css-reproduction chromium-desktop` — **failed as before (573px)**; assertion unchanged, failure retained.
+
+Seven native runs produced seven full-page axe scans with **zero violations**. Private traces, element metrics, axe JSON, local-only extension, reproduction scripts and logs remain under `audit-artifacts/zoom-triage/`. Initial diagnostic runs are also retained: four failed before page verification because tracing was started twice; another four failed because the harness tried to focus closed password fields or compared Chromium's floating-point factor `3.9999999999999996` with strict equality to 4. Only those harness issues were corrected: open the existing disclosure and compare the factor to eight decimal places. No app code, timeout, overflow threshold or accessibility assertion was weakened. One scrolled Playwright capture was blank; repeated captures used Chromium's direct viewport screenshot API, and the original blank capture remains retained.
+
+For manual reproduction, use a safe synthetic/local account, set the **content area** to 1440 × 900 or 1280 × 900 at 100%, then use Chromium's native zoom menu to select 400%. Confirm `innerWidth` is respectively 360 or 320 and CSS `zoom` is 1; navigate to Security, open both disclosures, Tab through fields and actions, retry Google with a controlled failure and scroll vertically to read feedback/labels. Do not set `html.style.zoom` for this native check.
+
+**Packaging impact and limits.** The retained CSS simulation failure does not establish a native Chromium reflow defect and is not a P1 release blocker. Recommend **PASS WITH CONDITIONS for this zoom triage**, recording the P3 observation. This does not certify overall production readiness: headed browser chrome/OS scaling, real-device zoom, Safari/Firefox, screen-reader output and existing release/operations conditions still require their own acceptance. Only this report, ten new synthetic-evidence PNGs under `docs/v1-zoom-triage-evidence/`, and ignored diagnostic artifacts were added/updated in this task. The original four failure-evidence files were checksum-verified unchanged. No application/test-source changes, dependencies, commits, push, deployment or Packaging execution.

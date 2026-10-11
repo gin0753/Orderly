@@ -107,10 +107,10 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
     </header>
     <Card variant="surface" className="space-y-5 p-5 sm:p-8">
       {auth.notice ? <p role="status" className="mt-4 text-sm">{auth.notice}</p> : null}
-      {search.get("google") === "conflict" ? <p role="alert" className="mt-4 rounded-xl bg-[var(--color-danger-background)] p-3 text-sm">An Orderly account already uses this email. Sign in with your password, then connect Google from your account.</p> : null}
-      {search.get("google") === "failed" || search.get("google") === "cancelled" ? <p role="alert" className="mt-4 rounded-xl bg-[var(--color-danger-background)] p-3 text-sm">Google sign-in did not complete. Please try again.</p> : null}
+      {search.get("google") === "conflict" ? <p role="alert" className="mt-4 rounded-xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-3 text-sm text-[var(--color-danger-strong)]">An Orderly account already uses this email. Sign in with your password, then connect Google from your account.</p> : null}
+      {search.get("google") === "failed" || search.get("google") === "cancelled" ? <p role="alert" className="mt-4 rounded-xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-3 text-sm text-[var(--color-danger-strong)]">Google sign-in did not complete. Please try again.</p> : null}
       {unresolved ? <p role="status" className="mt-4 text-sm">Checking your session…</p> : null}
-      {auth.status === "error" ? <div className="mt-4 space-y-2 text-sm"><p>We couldn’t check your existing session. You can try again or sign in below.</p><Button variant="secondary" onClick={() => { void dispatch(bootstrapCustomer()); }}>Check session again</Button></div> : null}
+      {auth.status === "error" ? <div className="mt-4 space-y-2 text-sm"><p className="rounded-xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-3 text-sm text-[var(--color-danger-strong)]">We couldn’t check your existing session. You can try again or sign in below.</p><Button variant="secondary" onClick={() => { void dispatch(bootstrapCustomer()); }}>Check session again</Button></div> : null}
       <form ref={formRef} onSubmit={submit} noValidate aria-label={registering ? "Create your account" : "Sign in"} aria-busy={busy} className="space-y-5">
         {registering ? field("name", "Name", "name") : null}
         {field("email", "Email", "email", "email")}
