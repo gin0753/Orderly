@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "audited_head": "85d90468901ea3211a864e2c844509a538ea2a47",
+  "excluded_self": "Self hash intentionally omitted; take a detached checksum at commit review.",
+  "validation": {
+    "date": "2026-10-11",
+    "head": "85d90468901ea3211a864e2c844509a538ea2a47",
+    "index_unchanged": true,
+    "tracked_and_staged_changes": 0,
+    "verified_baseline_files": 1060,
+    "verified_archive_source_files": 1067,
+    "public_paths": 37,
+    "screenshots": 25,
+    "fresh_clone_model_local_markdown_links": 169,
+    "broken_links": 0,
+    "final_axe_scans_by_engine": {
+      "chromium": 70,
+      "firefox": 70,
+      "webkit": 70
+    },
+    "archive_copied_files": 1067,
+    "archive_destination_verified_files": 1067,
+    "archive_status": "VERIFIED_LOCAL_RESTRICTED_ARCHIVE",
+    "archive_total_bytes": 354379748,
+    "archive_receipt_sha256": "f9a44d3340cb362808d74e05c65d252a3c069bc9ff1a8204363679fd6f30ed28",
+    "archived_historical_link_targets_checked": 3,
+    "archived_gallery_link_occurrences_checked": 720,
+    "tests_executed": false,
+    "original_evidence_modified": false,
+    "new_ignored_helpers": [
+      {
+        "path": "audit-artifacts/c4-phase2-prepare.cjs",
+        "size_bytes": 21767,
+        "sha256": "ae8fad2d37aa480040329a9260be30386ab114e4be7c92c6564a697f8e18651b"
+      },
+      {
+        "path": "audit-artifacts/c4-phase2-verify.cjs",
+        "size_bytes": 6204,
+        "sha256": "0f4411e842c84e5338417c9bf05ca9255805617b951a1a25662f8e1d501c1bb8"
+      },
+      {
+        "path": "audit-artifacts/c4-copy-verify.ps1",
+        "size_bytes": 6872,
+        "sha256": "b29876dfc46464e4915357ba71d1f7f14f17cb127422af00937b5b982c800ff6"
+      }
+    ],
+    "untracked_count": 938
+  },
+  "entries": [
+    {
+      "path": "docs/c4-acceptance-publication-handoff.md",
+      "size_bytes": 2207,
+      "sha256": "168f2c2cf2de6241443572ee47454fc01e22178c2c74e8adbb1492ca2214d2b0"
+    },
+    {
+      "path": "docs/c4-archive-verification-manifest.json",
+      "size_bytes": 1654518,
+      "sha256": "f9a44d3340cb362808d74e05c65d252a3c069bc9ff1a8204363679fd6f30ed28"
+    },
+    {
+      "path": "docs/c4-commit-validation-checklist.md",
+      "size_bytes": 1940,
+      "sha256": "392feeedd6703485e15ad3f199d8c9c7c5dccb3dc13baf57d37b74f4acf22e14"
+    },
+    {
+      "path": "docs/c4-documentation-link-resolution.md",
+      "size_bytes": 2101,
+      "sha256": "daac5027f0e5b4c4c4d352657e60b2930ffd3e5f5553c782bda76724caa11918"
+    },
+    {
+      "path": "docs/c4-final-retention-decisions.md",
+      "size_bytes": 3694,
+      "sha256": "f44e0c48fceb694996f69559721f79d96ee371fdfdb8ebc3057a5b86b7dfab1b"
+    },
+    {
+      "path": "docs/c4-privacy-review-summary.md",
+      "size_bytes": 1718,
+      "sha256": "1a577b101c36b0b693a16c81bba20f83f830daccb8770798c1b22ef3e9136027"
+    },
+    {
+      "path": "docs/c4-privacy-review.json",
+      "size_bytes": 513314,
+      "sha256": "2f9908e55f26f68e0ba0e4b7ec22ef9cc8bb645ddc7c1b2f71f33b99049f3905"
+    },
+    {
+      "path": "docs/c4-public-axe-scan-catalog.json",
+      "size_bytes": 150877,
+      "sha256": "53b2f4681f2efbe52e6c0d5ac5c3af474259909d518872679b897b1bcaa2a1f4"
+    },
+    {
+      "path": "docs/c4-public-evidence-index.md",
+      "size_bytes": 6019,
+      "sha256": "643d6f4a5b6b4d19d67dfb40045a2a41a2ac90abf2b8df89cc0118f86a47da3a"
+    },
+    {
+      "path": "docs/c4-public-git-evidence-paths.txt",
+      "size_bytes": 1945,
+      "sha256": "c58e5b5daad6d47b6ee2f34292ba626637613ec6fc75a274c92442f4ce2aa899"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/cart-390.png",
+      "size_bytes": 32734,
+      "sha256": "2ca3e60cf3af2468e7a57396e948dbc5e765f7b620bcf4e688dc0cc2dc82289f"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/checkout-delivery-1440.png",
+      "size_bytes": 126261,
+      "sha256": "0edab2fdb4b1384ffba3bead7a12532c28a3b1bd83e20f64b09f4ad4f8f93d8b"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/checkout-delivery-320.png",
+      "size_bytes": 110928,
+      "sha256": "8531b913d94fe2a58902ecbaeabadfdf1c7cee54112e13a79735d36f384be6d2"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/checkout-delivery-390.png",
+      "size_bytes": 112434,
+      "sha256": "58815b0d4d6d9122674825ae069706a5e02d2157fd2b6edccbe9cf541a8a933e"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/checkout-delivery-768.png",
+      "size_bytes": 121029,
+      "sha256": "f5c107a856f004127dcd02c832a5f8c1ea808a4efb291c5e0272ff6e6aae1d44"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/checkout-pickup-320.png",
+      "size_bytes": 88076,
+      "sha256": "5ebffb0416979df759e40131ad8179a0775342e229fa4745223d7a2b77e1ec59"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/configurator-1440.png",
+      "size_bytes": 422967,
+      "sha256": "f5cfd2872e7c7c933cf6ddbab586658573d9cdfa9c173a9c94957fa87c7d4e9c"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/configurator-320.png",
+      "size_bytes": 41281,
+      "sha256": "bca90efb19e1f84209ec6a6ce7581d1d1e0814a435329306b146c8aed1b02442"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/configurator-390.png",
+      "size_bytes": 67973,
+      "sha256": "9dc9b81f638b4f8dc303fcb9dd254b08bf52901491b03372e6bdff913ae5c510"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/configurator-768.png",
+      "size_bytes": 286779,
+      "sha256": "aaed79b36c8168698eed079e98dfaab4daeccdcaebfb00a849673ac48c915b6c"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/confirmation-390.png",
+      "size_bytes": 34356,
+      "sha256": "69856673f303b237b5c67345818a5b4f22e8a71d3f19c51f683977acf2a11f95"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/login-1440.png",
+      "size_bytes": 46787,
+      "sha256": "7be3b96329ed9b14d59bed9e7bb92bfd3165f7dc12324dec4319443823f3378f"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/register-320.png",
+      "size_bytes": 41899,
+      "sha256": "c497008bb0b5ba44dab743635c27d9717ec2ae7cf70ed40b5557034b1aa46e68"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/storefront-1440.png",
+      "size_bytes": 539427,
+      "sha256": "eb50d7f8c80e3a62417b546fa63103c05cca649f7f7307b2cfafa7fb881c81a2"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/storefront-320.png",
+      "size_bytes": 260596,
+      "sha256": "b1a2945230fd98d55dff48f3decc0bf563e4b07bbaece1c312d2078bd15c1f55"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/storefront-390.png",
+      "size_bytes": 345673,
+      "sha256": "4f98e3f2ad7c2c73493b8825264e691ad6d8a7f82a1fb3b47c04885844df197e"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/chromium/storefront-768.png",
+      "size_bytes": 449343,
+      "sha256": "805d92ec6c61004cc3ee6ef1c8e10db32ca1c2d93ce1ebd2e1006c6f0c758653"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/initial/firefox/login-root-text-200-percent-320.png",
+      "size_bytes": 85428,
+      "sha256": "2c0bd750634fcb4f64ac4aa3a4e2f7f4ad0e6d0b235c971d339014af9763a108"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/states/orders-error-320.png",
+      "size_bytes": 51686,
+      "sha256": "d0c2a7dd813d7bd02360dbdbf0d60a112fe172f9861297d7ae14aa36a59ab713"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/states/orders-loading-320.png",
+      "size_bytes": 51759,
+      "sha256": "176b3099463020e2304f720a00cb928eae6944a177ef05c94418e6373d78db77"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/states/tracking-loading-320.png",
+      "size_bytes": 22205,
+      "sha256": "1bff6dc07a0d9968d5372d0b4bc0f27bdcf7db3c4659decb73f015309341e55a"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/states/tracking-not-found-320.png",
+      "size_bytes": 25812,
+      "sha256": "b4f568cb3b071d3ea3172df4160db2a444f4e2e67afa0dcabbadf6ee2d499c91"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/states/tracking-search-320.png",
+      "size_bytes": 51370,
+      "sha256": "48150cfd3fe558ef39d8609e6728b9f8531c622f5f584093b6bcebcd1c800e64"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/webkit-second-run-failures/final-acceptance-fixed-che-e12e6-nd-bottom-in-four-viewports-webkit/test-failed-1.png",
+      "size_bytes": 56172,
+      "sha256": "8eb26d6205438032d8675443fa7f09618a830f60b576d5879d0753876ab2f620"
+    },
+    {
+      "path": "docs/stage-15.7-evidence/webkit/navigation-focus-after-390.png",
+      "size_bytes": 53271,
+      "sha256": "3952cd1bd86402740b638f772238093730f600e125cc0e67835cb4d8af65a2a3"
+    },
+    {
+      "path": "docs/stage-15.7-manual-uat-checklist.md",
+      "size_bytes": 4951,
+      "sha256": "aeaac017042534a3d88813a9b925438471f3eed030131a233541100194e40c02"
+    }
+  ]
+}

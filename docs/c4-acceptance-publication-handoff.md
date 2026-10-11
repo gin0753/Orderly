@@ -1,0 +1,11 @@
+# Historical acceptance publication handoff
+
+This new summary preserves the distinction between historical Stage 15.7 acceptance and C1–C3 commit validation. It does not replace or rewrite the original reports. Source HEAD: 85d90468901ea3211a864e2c844509a538ea2a47.
+
+The historical Stage 15.7 report records PASS WITH CONDITIONS: 292 web component tests, 150 API unit tests, 121 API integration tests and 55 Chromium regression cases passed in its earlier run. The combined multi-engine audit recorded 8 passed, 2 failed and 2 skipped; later isolated WebKit passes do not erase the failures. Its 210 final axe scans cover 70 per engine; incomplete rules remain manual-review findings, not passes. [Scan catalog](c4-public-axe-scan-catalog.json) preserves individual original fingerprints and rule metadata without DOM payloads.
+
+C1 validation later recorded 54 unique passing Chromium cases and an unresolved storefront image-decode timeout; the full runner did not pass. C2 final browser confirmation and C3 live multi-engine acceptance were blocked when local Docker/Postgres became unavailable. C1–C3 static checks, builds and component validations are recorded in the original execution report. No tests were rerun during C4 preparation.
+
+The initial Firefox 320px/200% root-text overflow, intermittent WebKit loading stalls and tracking-loading cosmetic finding remain open or conditional. Playwright WebKit does not prove iOS Safari acceptance. [Manual UAT](stage-15.7-manual-uat-checklist.md) remains unexecuted, including real-device/native zoom, screen readers, live OAuth, deployment equivalence and performance.
+
+Historical gallery and failure references resolve through the [original gallery record](c4-public-evidence-index.md#original-gallery), [WebKit failure screenshot record](c4-public-evidence-index.md#original-keyboard-failure-screenshot) and [restricted trace record](c4-public-evidence-index.md#original-keyboard-failure-trace). These are evidence identifiers/checksums, not public archive downloads. See [curated screenshots](c4-public-evidence-index.md#representative-screenshots). Original acceptance and execution reports are preserved byte-for-byte in the archive copy plan.
