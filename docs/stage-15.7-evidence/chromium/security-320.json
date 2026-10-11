@@ -1,0 +1,107 @@
+{
+  "browser": "chromium",
+  "viewport": {
+    "width": 320,
+    "height": 568
+  },
+  "url": "http://localhost:3000/account",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 28,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open customer navigation",
+        "width": 48,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 54,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Save profile",
+        "width": 114.421875,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Connect Google",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Connect Google",
+        "width": 172.34375,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "label": "Change password",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Change password",
+        "width": 152.09375,
+        "height": 44
+      }
+    ],
+    "feedback": [],
+    "focus": {
+      "tag": "SUMMARY",
+      "outline": "rgb(28, 25, 23) none 3px",
+      "text": "Change password"
+    }
+  }
+}

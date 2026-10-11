@@ -61,6 +61,221 @@
   --color-danger-foreground: var(--color-danger-strong);
 }
 
+/* Customer-only foundation. Admin continues to inherit the original :root tokens. */
+.customer-theme {
+  --color-background: #faf8f5;
+  --color-surface-muted: #f3f0eb;
+  --color-surface-hover: #f3f0eb;
+  --color-surface-soft: var(--color-surface-muted);
+  --color-page-background: var(--color-background);
+  --color-text-primary: #1c1917;
+  --color-text-secondary: #57534e;
+  --color-text-muted: #69635d;
+  --color-placeholder: #69635d;
+  --color-border: #e7e2da;
+  --color-control-border: #8a8178;
+  --color-brand-soft: #fff1e7;
+  --color-brand-hover: #9a3412;
+  --color-overlay: rgba(0, 0, 0, 0.48);
+  --color-brand-surface: #181818;
+  --color-brand-surface-raised: #242424;
+  --color-on-brand: #ffffff;
+  --color-on-brand-secondary: #d6d3d1;
+  --color-ring-on-brand: #ffb38a;
+
+  --font-family-body: ui-sans-serif, system-ui, sans-serif;
+  --text-display: 2.25rem;
+  --leading-display: 2.5rem;
+  --text-page-title: 1.75rem;
+  --leading-page-title: 2.125rem;
+  --text-section-title: 1.5rem;
+  --leading-section-title: 1.875rem;
+  --text-card-title: 1rem;
+  --leading-card-title: 1.375rem;
+  --text-body: 1rem;
+  --leading-body: 1.5rem;
+  --text-helper: 0.875rem;
+  --leading-helper: 1.25rem;
+  --text-badge: 0.75rem;
+  --leading-badge: 1rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --page-gutter: var(--space-4);
+  --customer-content-width: 72rem;
+  --radius-control: 0.75rem;
+  --radius-card: 1.25rem;
+  --radius-overlay: 1.5rem;
+  --radius-pill: 9999px;
+  --shadow-surface: 0 1px 3px rgba(28, 25, 23, 0.05);
+  --shadow-hover: 0 8px 24px rgba(28, 25, 23, 0.08);
+  --shadow-overlay: 0 24px 64px rgba(0, 0, 0, 0.2);
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --control-height: 3rem;
+  --control-font-size: var(--text-body);
+  --button-height-sm: 2.75rem;
+  --button-height-md: 2.75rem;
+  --button-height-icon: 2.75rem;
+  --button-radius-sm: var(--radius-control);
+  --button-radius-md: var(--radius-control);
+  --button-radius-icon: var(--radius-pill);
+  --motion-feedback: 150ms;
+  --motion-disclosure: 180ms;
+  --motion-fade: 220ms;
+  --motion-enter: 260ms;
+  --motion-drawer: 280ms;
+  --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--font-family-body);
+}
+
+@media (min-width: 640px) {
+  .customer-theme { --page-gutter: var(--space-6); }
+}
+
+@media (min-width: 1024px) {
+  .customer-theme {
+    --page-gutter: var(--space-8);
+    --text-display: 3.5rem;
+    --leading-display: 3.75rem;
+    --text-page-title: 2.25rem;
+    --leading-page-title: 2.625rem;
+  }
+}
+
+/* Also covers existing customer links and custom controls outside the primitives. */
+.customer-theme :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: var(--focus-width) solid var(--color-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.customer-theme .orderly-control:focus {
+  outline: var(--focus-width) solid var(--color-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.customer-theme .orderly-control[aria-invalid="true"] {
+  border-color: var(--color-danger-strong);
+}
+
+.customer-theme .customer-disclosure {
+  animation: orderly-fade-in var(--motion-disclosure) ease-out;
+}
+
+/* Stage 15.4: scoped storefront presentation, using the customer foundation. */
+.customer-theme .storefront-hero {
+  background-image: radial-gradient(ellipse at top right, rgba(194, 65, 12, 0.14), transparent 65%);
+}
+
+.customer-theme .storefront-hero-action:focus-visible {
+  outline-color: var(--color-ring-on-brand);
+  --tw-ring-color: var(--color-ring-on-brand);
+  --tw-ring-offset-color: var(--color-brand-surface);
+}
+
+.customer-theme .storefront-product-card {
+  transition: transform var(--motion-fade) var(--motion-ease), box-shadow var(--motion-fade) ease-out;
+}
+
+.customer-theme .storefront-product-image {
+  transition: transform var(--motion-fade) var(--motion-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .customer-theme .storefront-product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+  }
+  .customer-theme .storefront-product-card:hover .storefront-product-image {
+    transform: scale(1.025);
+  }
+}
+
+.customer-theme .storefront-category,
+.customer-theme .storefront-option {
+  transition-duration: var(--motion-feedback);
+  transition-property: background-color, border-color, color, box-shadow;
+}
+
+.customer-theme .storefront-option[aria-checked="true"] {
+  border-color: var(--color-brand-strong);
+  box-shadow: inset 0 0 0 1px var(--color-brand-strong);
+}
+
+.customer-theme .storefront-option:disabled {
+  background-color: var(--color-surface-muted);
+}
+
+.customer-theme .storefront-configurator {
+  animation: storefront-dialog-enter var(--motion-enter) var(--motion-ease);
+}
+
+.customer-theme .storefront-price-feedback {
+  animation: orderly-fade-in var(--motion-feedback) ease-out;
+}
+
+.customer-theme .storefront-purchase-footer {
+  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+}
+
+/* Leave room above focused options for the compact mobile identity heading. */
+.customer-theme .storefront-configurator-content { scroll-padding-top: 6rem; }
+
+@media (min-width: 768px) {
+  .customer-theme .storefront-configurator-content { scroll-padding-top: var(--space-8); }
+}
+
+@keyframes storefront-dialog-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 767px) and (max-height: 600px) {
+  .customer-theme .storefront-configurator-photo { height: 5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-theme .storefront-configurator,
+  .customer-theme .storefront-price-feedback { animation: none; }
+  .customer-theme .storefront-product-card:hover,
+  .customer-theme .storefront-product-card:hover .storefront-product-image { transform: none; }
+}
+
+/* Transaction surfaces opt into the existing customer foundation. */
+.customer-theme .transaction-cart-panel {
+  animation: transaction-drawer-enter var(--motion-drawer) var(--motion-ease);
+}
+.customer-theme .transaction-cart-close:focus-visible {
+  outline-color: var(--color-ring-on-brand);
+}
+.customer-theme .transaction-checkout {
+  padding-bottom: calc(var(--checkout-action-height, 6rem) + var(--space-8));
+}
+.customer-theme .transaction-checkout :where(input, select, textarea, [tabindex="-1"]) {
+  scroll-margin-top: 6rem;
+  scroll-margin-bottom: calc(var(--checkout-action-height, 6rem) + var(--space-4));
+}
+.customer-theme .transaction-confirmation-mark {
+  animation: orderly-fade-in var(--motion-fade) var(--motion-ease);
+}
+@keyframes transaction-drawer-enter {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@media (min-width: 1024px) {
+  .customer-theme .transaction-checkout { padding-bottom: var(--space-12); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .customer-theme .transaction-cart-panel,
+  .customer-theme .transaction-confirmation-mark { animation: none; }
+}
+
 .orderly-warm-gradient {
   background: linear-gradient(135deg, #ffedd5, #f5f5f4);
 }
@@ -113,16 +328,16 @@ body {
 }
 
 .animate-orderly-fade-in {
-  animation: orderly-fade-in 220ms ease-out;
+  animation: orderly-fade-in var(--motion-fade, 220ms) ease-out;
 }
 
 .animate-orderly-slide-up {
-  animation: orderly-slide-up 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: orderly-slide-up var(--motion-enter, 260ms) var(--motion-ease, cubic-bezier(0.16, 1, 0.3, 1));
   will-change: transform, opacity;
 }
 
 .animate-orderly-slide-left {
-  animation: orderly-slide-left 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: orderly-slide-left var(--motion-drawer, 280ms) var(--motion-ease, cubic-bezier(0.16, 1, 0.3, 1));
   will-change: transform, opacity;
 }
 
@@ -144,7 +359,8 @@ body {
   .animate-spin,
   .animate-orderly-fade-in,
   .animate-orderly-slide-up,
-  .animate-orderly-slide-left {
+  .animate-orderly-slide-left,
+  .customer-theme .customer-disclosure {
     animation: none !important;
   }
 }

@@ -1,0 +1,113 @@
+{
+  "browser": "firefox",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "url": "http://localhost:3000/checkout",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 30,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 106.08332824707031,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "PickupCollect your order from the restaurantFree",
+        "width": 339,
+        "height": 126
+      },
+      {
+        "tag": "BUTTON",
+        "label": "DeliveryHave your order delivered to your address$5.00",
+        "width": 339,
+        "height": 126
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 690,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 690,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 690,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 690,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 337,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 337,
+        "height": 48
+      },
+      {
+        "tag": "SELECT",
+        "label": "Select stateVICNSWQLDWASATASACTNT",
+        "width": 337,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 337,
+        "height": 48
+      },
+      {
+        "tag": "TEXTAREA",
+        "label": "",
+        "width": 690,
+        "height": 128
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Edit cart",
+        "width": 92.78334045410156,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Place Order",
+        "width": 342,
+        "height": 52
+      }
+    ],
+    "feedback": [
+      {
+        "role": "status",
+        "live": "polite",
+        "text": ""
+      }
+    ],
+    "focus": {
+      "tag": "BUTTON",
+      "outline": "rgb(28, 25, 23) 3px",
+      "text": "DeliveryHave your order delivered to your address$5.00"
+    }
+  }
+}

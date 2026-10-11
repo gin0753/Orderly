@@ -62,11 +62,11 @@ export function CheckoutOrderSummary({
   return (
     <aside
       aria-label={compact ? "Order review" : "Order summary"}
-      className={`${compact ? "" : "sticky top-24"} rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-sm`}
+      className={`${compact ? "" : "sticky top-24 max-h-[calc(100dvh-7rem)] overflow-y-auto"} transaction-order-summary rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-6`}
     >
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
+          <h2 className="text-xl font-bold tracking-tight text-[var(--color-text-primary)]">
             Your Order
           </h2>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
@@ -94,32 +94,32 @@ export function CheckoutOrderSummary({
           const optionSummary = getCartItemOptionSummary(item);
 
           return (
-            <div key={item.key} className="flex gap-4 py-4 first:pt-0">
+            <div key={item.key} className="flex gap-3 py-4 first:pt-0">
               <div
-                className={`${compact ? "hidden" : "relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--color-surface-hover)]"}`}
+                className="relative size-14 shrink-0 overflow-hidden rounded-[var(--radius-control)] bg-[var(--color-surface-muted)] sm:size-16"
               >
                 <ProductImage
                   src={item.product.imageUrl}
                   alt={item.product.name}
-                  sizes="80px"
+                  sizes="(min-width: 640px) 64px, 56px"
                 />
               </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="break-words font-semibold text-[var(--color-text-primary)]">
+                    <h3 className="break-words text-sm font-bold leading-5 text-[var(--color-text-primary)]">
                       {item.product.name}
                     </h3>
 
                     {optionSummary ? (
-                      <p className="mt-1 break-words text-sm text-[var(--color-text-secondary)]">
+                      <p className="mt-1 break-words text-sm leading-5 text-[var(--color-text-secondary)]">
                         {optionSummary}
                       </p>
                     ) : null}
                   </div>
 
-                  <p className="shrink-0 font-semibold text-[var(--color-text-primary)]">
+                  <p className="shrink-0 font-bold tabular-nums text-[var(--color-text-primary)]">
                     {formatMoneyFromCents(itemTotalCents)}
                   </p>
                 </div>
@@ -143,7 +143,7 @@ export function CheckoutOrderSummary({
           label="Delivery fee"
           value={
             fulfillmentType === "pickup"
-              ? "Free"
+              ? "Not applicable"
               : formatMoneyFromCents(deliveryFeeCents)
           }
         />
@@ -189,7 +189,7 @@ export function CheckoutOrderSummary({
       {validationErrors.length > 0 ? (
         <div className="mt-5 rounded-2xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-4">
           <p className="text-sm font-semibold text-[var(--color-danger-strong)]">
-            Please complete the required fields.
+            Review the following before trying again.
           </p>
 
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--color-danger-strong)]">
@@ -204,6 +204,7 @@ export function CheckoutOrderSummary({
         <Button
           type="button"
           disabled={disabled || !isAcceptingOrders}
+          aria-busy={onSubmitLabel === "Placing order..."}
           onClick={onSubmit}
           className="mt-6 h-[52px] w-full rounded-2xl"
         >
@@ -240,7 +241,7 @@ function SummaryRow({
       ].join(" ")}
     >
       <span className="text-[var(--color-text-secondary)]">{label}</span>
-      <span className="font-semibold text-[var(--color-text-primary)]">
+      <span className="font-semibold tabular-nums text-[var(--color-text-primary)]">
         {value}
       </span>
     </div>

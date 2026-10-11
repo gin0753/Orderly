@@ -76,6 +76,8 @@ export function CheckoutPageClient({
     initialIsAcceptingOrders,
   );
   const submitErrorRef = useRef<HTMLDivElement>(null);
+  const checkoutRef = useRef<HTMLDivElement>(null);
+  const actionRef = useRef<HTMLDivElement>(null);
 
   const customer = useAppSelector((state) => state.customerAuth.customer);
   const authNotice = useAppSelector((state) => state.customerAuth.notice);
@@ -128,8 +130,21 @@ export function CheckoutPageClient({
   const minimumRemainingCents = Math.max(minimumOrderAmountCents - subtotalCents, 0);
 
   useEffect(() => {
+    const action = actionRef.current;
+    const checkoutElement = checkoutRef.current;
+    if (!action || !checkoutElement) return;
+    const measure = () => checkoutElement.style.setProperty("--checkout-action-height", `${action.getBoundingClientRect().height}px`);
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(action);
+    return () => observer.disconnect();
+  }, [hasClientHydrated, hasHydrated, isCartEmpty, isRedirectingToSuccess]);
+
+  useEffect(() => {
     if (submitError) {
-      submitErrorRef.current?.focus();
+      submitErrorRef.current?.focus({ preventScroll: true });
+      submitErrorRef.current?.scrollIntoView?.({ block: "center", behavior: "instant" });
     }
   }, [submitError]);
 
@@ -170,9 +185,9 @@ export function CheckoutPageClient({
 
     if (hasFieldErrors) {
       window.requestAnimationFrame(() => {
-        document
-          .querySelector<HTMLElement>('[aria-invalid="true"]')
-          ?.focus();
+        const invalidField = document.querySelector<HTMLElement>('[aria-invalid="true"]');
+        invalidField?.focus({ preventScroll: true });
+        invalidField?.scrollIntoView?.({ block: "center", behavior: "instant" });
       });
       return;
     }
@@ -280,16 +295,16 @@ export function CheckoutPageClient({
   }
 
   return (
-    <div className="bg-[var(--color-background)] px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-10">
-      <div className="mx-auto max-w-7xl">
-        <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5 shadow-sm sm:px-8">
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">
+    <div ref={checkoutRef} className="transaction-checkout bg-[var(--color-background)] px-[var(--page-gutter)] py-6 lg:py-10">
+      <div className="mx-auto max-w-[var(--customer-content-width)]">
+        <div className="mb-8">
+          <h1 className="text-[length:var(--text-page-title)] font-bold leading-[var(--leading-page-title)] tracking-tight text-[var(--color-text-primary)]">
             Checkout
           </h1>
-          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+          <p className="mt-3 text-base leading-6 text-[var(--color-text-secondary)]">
             Review your order and enter your details.
           </p>
-          <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+          <p className="mt-2 break-words text-sm leading-6 text-[var(--color-text-secondary)]">
             {customer ? <>Signed in as <span className="font-semibold text-[var(--color-text-primary)]">{customer.email}</span>. You can use different contact details for this order.</> : <>Checking out as a guest. <Link href="/login?returnTo=%2Fcheckout" onClick={() => saveCheckoutReturnDraft(checkout)} className="font-semibold text-[var(--color-brand-text)] underline underline-offset-2">Sign in</Link> if you have an account.</>}
           </p>
 
@@ -297,6 +312,7 @@ export function CheckoutPageClient({
             <CheckoutStepIndicator />
           </div>
         </div>
+        <p role="status" aria-live="polite" className="sr-only">{isSubmitting ? "Placing your order. Please wait." : ""}</p>
 
         {!orderingAvailable ? (
           <section
@@ -327,7 +343,7 @@ export function CheckoutPageClient({
                 ref={submitErrorRef}
                 tabIndex={-1}
                 role="alert"
-                className="rounded-2xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-4 text-sm font-medium text-[var(--color-danger-strong)]"
+                className="scroll-mt-24 rounded-[var(--radius-card)] border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-5 text-sm font-medium leading-6 text-[var(--color-danger-strong)]"
               >
                 {submitError ?? "Your customer session ended. Sign in again or explicitly continue as a guest before placing this order."}
               </div>
@@ -388,20 +404,21 @@ export function CheckoutPageClient({
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-12px_30px_rgba(0,0,0,0.08)] lg:hidden">
-        <div className="mx-auto flex max-w-7xl items-center gap-4">
+      <div ref={actionRef} className="transaction-checkout-action fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[var(--shadow-overlay)] lg:hidden">
+        <div className="mx-auto flex max-w-[var(--customer-content-width)] items-center gap-4">
           <div className="min-w-0 flex-1">
             <p className="text-xs text-[var(--color-text-secondary)]">Total</p>
-            <p className="text-xl font-bold text-[var(--color-text-primary)]">
+            <p className="text-xl font-bold tabular-nums text-[var(--color-text-primary)]">
               {formatMoneyFromCents(totalCents)}
             </p>
           </div>
 
           <Button
             type="button"
+            aria-busy={isSubmitting}
             disabled={isSubmitting || !orderingAvailable || minimumRemainingCents > 0 || requiresSessionRecovery}
             onClick={handleContinue}
-            className="h-12 rounded-2xl px-6 text-sm font-semibold"
+            className="min-h-12 h-auto max-w-[65%] shrink-0 whitespace-normal rounded-[var(--radius-control)] px-5 py-3 text-sm font-semibold"
           >
             {!orderingAvailable
               ? "Ordering paused"

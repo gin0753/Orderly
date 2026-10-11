@@ -1,0 +1,102 @@
+{
+  "browser": "webkit",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "url": "http://localhost:3000/",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "axeSkipped": false,
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 19,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open customer navigation",
+        "width": 48,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 54,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "All1",
+        "width": 84.578125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Browser Test Pizza1",
+        "width": 193.234375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "View Golden Path Pizza",
+        "width": 358,
+        "height": 306.65625
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Quick add Golden Path Pizza",
+        "width": 44,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "1View cart$18.00",
+        "width": 358,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Close cart",
+        "width": 44,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Remove Golden Path Pizza",
+        "width": 44,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Decrease quantity for Golden Path Pizza",
+        "width": 44,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Increase quantity for Golden Path Pizza",
+        "width": 44,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Clear cart",
+        "width": 350,
+        "height": 44
+      }
+    ],
+    "feedback": [
+      {
+        "role": "status",
+        "live": "polite",
+        "text": "Added 1 × Golden Path Pizza. 1 in cart."
+      }
+    ],
+    "focus": {
+      "tag": "BUTTON",
+      "outline": "2px solid rgb(255, 179, 138)",
+      "text": ""
+    }
+  }
+}

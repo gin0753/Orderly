@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button, buttonStyles } from "@/components/ui/button";
 import { formatMoneyFromCents } from "@/lib/format-money";
 import Link from "next/link";
 import { closeCart } from "../../cart-slice";
@@ -17,11 +17,11 @@ export function CartDrawerFooter({
 }: CartDrawerFooterProps) {
   const dispatch = useAppDispatch();
   return (
-    <div className="shrink-0 border-t border-[var(--color-border-soft)] bg-[var(--color-surface)] px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5">
+    <div className="transaction-cart-footer shrink-0 border-t border-[var(--color-border)] bg-[var(--color-surface)] px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
       <div className="flex items-center justify-between text-sm text-[var(--color-text-secondary)]">
         <span>Subtotal</span>
 
-        <span className="font-semibold text-[var(--color-text-primary)]">
+        <span className="text-xl font-bold tabular-nums text-[var(--color-text-primary)]">
           {formatMoneyFromCents(subtotalCents)}
         </span>
       </div>
@@ -30,14 +30,14 @@ export function CartDrawerFooter({
         Delivery fee and final total will be calculated at checkout.
       </p>
 
-      <div className="mt-5 grid gap-3">
+      <div className="mt-4 grid gap-2">
         {checkoutAvailability === "available" ? (
           <Link
             href="/checkout"
             onClick={() => dispatch(closeCart())}
-            className="flex h-13 w-full items-center justify-center rounded-2xl bg-[var(--color-brand-strong)] px-5 text-sm font-semibold text-[var(--color-text-inverse)] transition hover:bg-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2"
+            className={buttonStyles({ size: "lg", className: "h-13 w-full" })}
           >
-            View Cart &amp; Checkout
+            Continue to checkout
           </Link>
         ) : (
           <button

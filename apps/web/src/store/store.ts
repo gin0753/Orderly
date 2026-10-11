@@ -4,6 +4,7 @@ import cartReducer from "@/features/cart/cart-slice";
 import authReducer from "@/features/auth/store/auth-slice";
 import customerAuthReducer from "@/features/customer-auth/store/customer-auth-slice";
 import { clearCustomerPrivateData } from "@/features/customer-auth/lib/private-data";
+import { cartFeedbackMiddleware } from "@/features/cart/utils/cart-feedback";
 
 export const makeStore = () => {
   const store = configureStore({
@@ -12,6 +13,7 @@ export const makeStore = () => {
       auth: authReducer,
       customerAuth: customerAuthReducer,
     },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(cartFeedbackMiddleware),
   });
   let previous = store.getState().customerAuth;
   store.subscribe(() => {

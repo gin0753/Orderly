@@ -1,0 +1,114 @@
+[
+  {
+    "key": "Tab",
+    "inside": false,
+    "tag": "BODY",
+    "label": null,
+    "text": "Skip to contentOrderlyMenuTrack orderSign inOrderlyMenuTrack orderSign inCartOrd",
+    "hasFocus": false
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "DIALOG",
+    "label": "Customer navigation",
+    "text": "OrderlyMenuTrack orderSign in",
+    "hasFocus": true
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "BUTTON",
+    "label": "Close customer navigation",
+    "text": "",
+    "hasFocus": true
+  },
+  {
+    "key": "Tab",
+    "inside": false,
+    "tag": "BODY",
+    "label": null,
+    "text": "Skip to contentOrderlyMenuTrack orderSign inOrderlyMenuTrack orderSign inCartOrd",
+    "hasFocus": false
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "DIALOG",
+    "label": "Customer navigation",
+    "text": "OrderlyMenuTrack orderSign in",
+    "hasFocus": true
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "BUTTON",
+    "label": "Close customer navigation",
+    "text": "",
+    "hasFocus": true
+  },
+  {
+    "key": "Tab",
+    "inside": false,
+    "tag": "BODY",
+    "label": null,
+    "text": "Skip to contentOrderlyMenuTrack orderSign inOrderlyMenuTrack orderSign inCartOrd",
+    "hasFocus": false
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "DIALOG",
+    "label": "Customer navigation",
+    "text": "OrderlyMenuTrack orderSign in",
+    "hasFocus": true
+  },
+  {
+    "key": "Shift+Tab",
+    "inside": false,
+    "tag": "BODY",
+    "label": null,
+    "text": "Skip to contentOrderlyMenuTrack orderSign inOrderlyMenuTrack orderSign inCartOrd",
+    "hasFocus": false
+  },
+  {
+    "key": "Shift+Tab",
+    "inside": true,
+    "tag": "BUTTON",
+    "label": "Close customer navigation",
+    "text": "",
+    "hasFocus": true
+  },
+  {
+    "key": "Alt+Tab",
+    "inside": false,
+    "tag": "BODY",
+    "label": null,
+    "text": "Skip to contentOrderlyMenuTrack orderSign inOrderlyMenuTrack orderSign inCartOrd",
+    "hasFocus": false
+  },
+  {
+    "key": "Alt+Tab",
+    "inside": true,
+    "tag": "DIALOG",
+    "label": "Customer navigation",
+    "text": "OrderlyMenuTrack orderSign in",
+    "hasFocus": true
+  },
+  {
+    "key": "Alt+Tab",
+    "inside": true,
+    "tag": "BUTTON",
+    "label": "Close customer navigation",
+    "text": "",
+    "hasFocus": true
+  },
+  {
+    "key": "Alt+Tab",
+    "inside": false,
+    "tag": "BODY",
+    "label": null,
+    "text": "Skip to contentOrderlyMenuTrack orderSign inOrderlyMenuTrack orderSign inCartOrd",
+    "hasFocus": false
+  }
+]

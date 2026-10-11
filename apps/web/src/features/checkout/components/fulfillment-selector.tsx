@@ -1,6 +1,7 @@
 import type { FulfillmentType } from "../checkout-types";
 import { DELIVERY_FEE_CENTS } from "../checkout-utils";
 import { formatMoneyFromCents } from "@/lib/format-money";
+import { Check, ShoppingBag, Truck } from "lucide-react";
 
 type FulfillmentSelectorProps = {
   value: FulfillmentType;
@@ -15,21 +16,18 @@ const options: Array<{
   title: string;
   description: string;
   price: string;
-  icon: string;
 }> = [
   {
     value: "pickup",
     title: "Pickup",
     description: "Collect your order from the restaurant",
     price: "Free",
-    icon: "🛍️",
   },
   {
     value: "delivery",
     title: "Delivery",
     description: "Have your order delivered to your address",
     price: "",
-    icon: "🚗",
   },
 ];
 
@@ -41,17 +39,17 @@ export function FulfillmentSelector({
   deliveryEnabled = true,
 }: FulfillmentSelectorProps) {
   return (
-    <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+    <section className="rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-6">
       <div>
         <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-          1. Fulfillment
+          Fulfillment
         </h2>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
           How would you like to receive your order?
         </p>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <div role="group" aria-label="Fulfillment method" className="mt-5 grid gap-3 sm:grid-cols-2">
         {options.map((option) => {
           const isSelected = value === option.value;
           const isEnabled = option.value === "pickup" ? pickupEnabled : deliveryEnabled;
@@ -64,17 +62,17 @@ export function FulfillmentSelector({
               aria-pressed={isSelected && isEnabled}
               onClick={() => onChange(option.value)}
               className={[
-                "flex items-center gap-4 rounded-2xl border p-4 text-left transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50",
+                "flex min-w-0 items-center gap-3 rounded-[var(--radius-control)] border p-4 text-left transition cursor-pointer disabled:cursor-not-allowed",
                 isSelected
-                  ? "border-[var(--color-brand)] bg-[var(--color-brand-soft)]"
-                  : "border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-border-hover)]",
+                  ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-soft)] shadow-[inset_0_0_0_1px_var(--color-brand-strong)]"
+                  : "border-[var(--color-control-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-muted)]",
               ].join(" ")}
             >
-              <span className="flex size-11 items-center justify-center rounded-full bg-[var(--color-surface-hover)] text-xl">
-                {option.icon}
+              <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-[var(--color-surface-muted)] text-[var(--color-brand-text)]">
+                {option.value === "pickup" ? <ShoppingBag className="size-5" /> : <Truck className="size-5" />}
               </span>
 
-              <span className="flex-1">
+              <span className="min-w-0 flex-1">
                 <span className="block font-semibold text-[var(--color-text-primary)]">
                   {option.title}
                 </span>
@@ -96,13 +94,14 @@ export function FulfillmentSelector({
               </span>
 
               <span
+                aria-hidden="true"
                 className={[
-                  "size-5 rounded-full border",
+                  "flex size-5 shrink-0 items-center justify-center rounded-full border",
                   isSelected
-                    ? "border-[var(--color-brand)] bg-[var(--color-brand)]"
-                    : "border-[var(--color-border-hover)]",
+                    ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)]"
+                    : "border-[var(--color-control-border)]",
                 ].join(" ")}
-              />
+              >{isSelected ? <Check className="size-3.5" /> : null}</span>
             </button>
           );
         })}

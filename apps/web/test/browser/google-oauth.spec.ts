@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { createRequire } from "node:module";
+import { openCustomerAccountActions } from "./customer-navigation-helpers";
 
 const requireFromTest = createRequire(__filename);
 const { PrismaClient } = requireFromTest("../../../api/node_modules/@prisma/client") as {
@@ -27,6 +28,7 @@ async function signOut(page: Page) {
   const response = page.waitForResponse((result) =>
     result.request().method() === "POST" && new URL(result.url()).pathname === "/api/customer/auth/logout",
   );
+  await openCustomerAccountActions(page);
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   expect((await response).status()).toBe(204);
   await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
@@ -46,7 +48,7 @@ test("new Google customer keeps a session across reload and returns to checkout"
   await expect(page.getByRole("heading", { name: "Controlled Google provider" })).toBeVisible();
   await page.getByRole("link", { name: "Continue as new", exact: true }).click();
   await expect(page).toHaveURL(/\/checkout$/);
-  await expect(peer.getByRole("link", { name: "Account" })).toBeVisible();
+  await expect(peer.getByRole("button", { name: "Account options" })).toBeVisible();
   await page.goto("/account");
   await expect(page.getByLabel("Email")).toHaveValue("google.browser@example.com");
   await expect(page.getByText("Not configured", { exact: true })).toBeVisible();
@@ -102,6 +104,7 @@ test("matching password email blocks anonymous Google linking, then explicit lin
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/account$/);
+  await page.locator("summary").filter({ hasText: "Connect Google" }).click();
   await page.getByLabel("Current password to connect Google").fill(password);
   await page.getByRole("button", { name: "Connect Google" }).click();
   await page.getByRole("link", { name: "Continue as web-link" }).click();

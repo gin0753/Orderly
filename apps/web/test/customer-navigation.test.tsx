@@ -42,7 +42,7 @@ it("uses one customer header on tracking with Track order active and a working c
   render(<Provider store={store}><CustomerLayout>{page}</CustomerLayout></Provider>);
   expect(screen.getAllByRole("banner")).toHaveLength(1);
   expect(within(screen.getByRole("navigation", { name: "Primary navigation" })).getByRole("link", { name: "Track order" })).toHaveAttribute("aria-current", "page");
-  expect(screen.getAllByRole("link", { name: "Menu" })).toHaveLength(2);
+  expect(screen.getAllByRole("link", { name: "Menu" })).toHaveLength(1);
   expect(screen.queryByRole("link", { name: "Back to menu" })).not.toBeInTheDocument();
   expect(screen.getByDisplayValue("ORD-123")).toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: "Open cart" }));

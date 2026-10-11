@@ -33,6 +33,7 @@ test("profile persists and password change replaces the session across browsers"
   await expect(page.getByLabel("Name")).toHaveValue("After Name");
   await expect(page.getByLabel(/Phone/)).toHaveValue("+61 400 123 456");
 
+  await page.locator("summary").filter({ hasText: "Change password" }).click();
   await page.getByLabel("Current password", { exact: true }).fill(oldPassword);
   await page.getByLabel("New password", { exact: true }).fill(newPassword);
   await page.getByLabel("Confirm new password").fill(newPassword);
@@ -45,6 +46,7 @@ test("profile persists and password change replaces the session across browsers"
   await expect(peer).toHaveURL(/\/login\?returnTo=%2Faccount/);
   await peerContext.close();
 
+  await page.getByRole("button", { name: "Account options" }).click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
@@ -64,13 +66,15 @@ test("linked and Google-only accounts show their available methods", async ({ pa
   await page.getByLabel("Confirm password").fill(linkedPassword);
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page).toHaveURL(/\/account$/);
+  await page.locator("summary").filter({ hasText: "Connect Google" }).click();
   await page.getByLabel("Current password to connect Google").fill(linkedPassword);
   await page.getByRole("button", { name: "Connect Google" }).click();
   await page.getByRole("link", { name: "Continue as other" }).click();
   await expect(page).toHaveURL(/\/account\?google=connected$/);
   await expect(page.getByText("Connected", { exact: true })).toHaveCount(2);
-  await expect(page.getByRole("button", { name: "Change password" })).toBeVisible();
+  await expect(page.locator("summary").filter({ hasText: "Change password" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Unlink/ })).toHaveCount(0);
+  await page.getByRole("button", { name: "Account options" }).click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await page.goto("/login");
   await page.getByRole("button", { name: "Continue with Google" }).click();
@@ -95,7 +99,7 @@ test("account forms fit desktop, tablet, and narrow mobile viewports", async ({ 
   ]) {
     await page.setViewportSize(viewport);
     await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Change password" })).toBeVisible();
+    await expect(page.locator("summary").filter({ hasText: "Change password" })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
   }
 });

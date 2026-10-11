@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { Suspense } from "react";
 import { CustomerAccountProfile } from "@/features/customer-auth/components/customer-account-profile";
 import { CustomerGoogleMethods } from "@/features/customer-auth/components/customer-google-methods";
 import { CustomerPasswordForm } from "@/features/customer-auth/components/customer-password-form";
 
 export default function AccountPage() {
-  return <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:py-12">
+  return <div className="mx-auto w-full max-w-3xl">
     <div className="mb-8">
       <p className="text-sm font-semibold text-[var(--color-brand-text)]">Your Orderly account</p>
       <h1 className="mt-1 text-3xl font-bold tracking-tight">Account</h1>
@@ -15,16 +14,12 @@ export default function AccountPage() {
     </div>
     <div className="space-y-6">
       <CustomerAccountProfile />
-      <section aria-labelledby="security-heading" className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-8">
-        <h2 id="security-heading" className="text-xl font-bold">Sign-in &amp; security</h2>
-        <Suspense fallback={null}><CustomerGoogleMethods /></Suspense>
-        <CustomerPasswordForm />
+      <section id="security" aria-labelledby="security-heading" className="scroll-mt-24 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-8">
+        <h2 id="security-heading" tabIndex={-1} className="text-xl font-bold">Sign-in &amp; Security</h2>
+        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">Manage how you sign in and keep your account secure.</p>
+        <Suspense fallback={null}><CustomerGoogleMethods collapsible /></Suspense>
+        <CustomerPasswordForm collapsible />
       </section>
     </div>
-    <nav aria-label="More account options" className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold">
-      <Link href="/account/orders" className="text-[var(--color-brand-text)] underline underline-offset-4">Your orders</Link>
-      <Link href="/" className="text-[var(--color-brand-text)] underline underline-offset-4">Browse menu</Link>
-      <Link href="/track-order" className="text-[var(--color-brand-text)] underline underline-offset-4">Track an order</Link>
-    </nav>
-  </main>;
+  </div>;
 }

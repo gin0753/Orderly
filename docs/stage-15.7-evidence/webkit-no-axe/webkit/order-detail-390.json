@@ -1,0 +1,36 @@
+{
+  "browser": "webkit",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "url": "http://localhost:3000/account/orders/audit-order",
+  "overflow": 0,
+  "axeVersion": "not run",
+  "axeSkipped": true,
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 0,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open customer navigation",
+        "width": 48,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 54,
+        "height": 48
+      }
+    ],
+    "feedback": [],
+    "focus": {
+      "tag": "MAIN",
+      "outline": "3px none rgb(28, 25, 23)",
+      "text": "ProfileOrdersSign-in & Security← Back to ordersYour order recordOrder #157001Placed 9 Oct 2026, 2:00"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "browser": "firefox",
+  "viewport": {
+    "width": 768,
+    "height": 900
+  },
+  "url": "http://localhost:3000/order-success?orderNumber=157001&totalCents=4120&orderType=PICKUP",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 22,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 106.08332824707031,
+        "height": 48
+      }
+    ],
+    "feedback": [],
+    "focus": {
+      "tag": "BODY",
+      "outline": "rgb(0, 0, 0) 3px",
+      "text": "Skip to contentOrderlyMenuTrack orderSign in1$18.00Order receivedThanks, your order is in.We've rece"
+    }
+  }
+}

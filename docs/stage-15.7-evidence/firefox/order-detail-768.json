@@ -1,0 +1,35 @@
+{
+  "browser": "firefox",
+  "viewport": {
+    "width": 768,
+    "height": 900
+  },
+  "url": "http://localhost:3000/account/orders/audit-order",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 26,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Account options",
+        "width": 156.33334350585938,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 106.08332824707031,
+        "height": 48
+      }
+    ],
+    "feedback": [],
+    "focus": {
+      "tag": "BODY",
+      "outline": "rgb(0, 0, 0) 3px",
+      "text": "Skip to contentOrderlyMenuTrack orderAAccount1$18.00ProfileOrdersSign-in & Security← Back to ordersY"
+    }
+  }
+}

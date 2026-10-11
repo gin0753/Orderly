@@ -103,7 +103,7 @@ test("same-context tabs discover login, refresh valid cookies, and keep logout a
   await peer.getByLabel("Confirm password").fill("Anonymous probe password 123!");
   await peer.getByRole("button", { name: "Create account" }).click();
   await expect(peer).toHaveURL(/\/account$/);
-  await expect(page.getByRole("link", { name: "Account", exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Account options", exact: true })).toBeVisible();
   await expect.poll(() => responses.length).toBe(4);
   console.log("AUTH_PROBE cross-tab changed", JSON.stringify(responses.slice(3)));
 
@@ -123,6 +123,7 @@ test("same-context tabs discover login, refresh valid cookies, and keep logout a
   expect(responses.slice(beforeRefresh).map(({ status }) => status)).toEqual([401, 401, 200, 200]);
 
   const beforeLogout = responses.length;
+  await peer.getByRole("button", { name: "Account options" }).click();
   await peer.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page.getByRole("link", { name: "Sign in", exact: true }).first()).toBeVisible();
   await page.evaluate(() => {

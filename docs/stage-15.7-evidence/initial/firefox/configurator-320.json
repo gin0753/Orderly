@@ -1,0 +1,67 @@
+{
+  "browser": "firefox",
+  "viewport": {
+    "width": 320,
+    "height": 568
+  },
+  "url": "http://localhost:3000/",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "tags": [
+        "cat.color",
+        "wcag2aa",
+        "wcag143",
+        "TTv5",
+        "TT13.c",
+        "EN-301-549",
+        "EN-9.1.4.3",
+        "ACT",
+        "RGAAv4",
+        "RGAA-3.2.1"
+      ],
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "18.0pt (24px)",
+                "fontWeight": "bold",
+                "messageKey": "elmPartiallyObscured",
+                "expectedContrastRatio": "3:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<div class=\"storefront-product-heading sticky -top-5 z-[1] -mx-5 border-b border-[var(--color-border)] bg-[var(--color-background)] px-5 pb-3 md:static md:mx-0 md:border-0 md:px-0 md:pr-10\">",
+                  "target": [
+                    ".storefront-product-heading"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element's background color could not be determined because it's partially obscured by another element"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<h2 id=\"_r_0_\" class=\"text-[length:var(--text-section-title)] font-bold leading-tight tracking-tight text-[var(--color-text-primary)] md:mt-2\">Golden Path Pizza</h2>",
+          "target": [
+            "#_r_0_"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+        }
+      ]
+    }
+  ],
+  "passedRules": 19
+}

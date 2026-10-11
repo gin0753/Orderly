@@ -1,0 +1,13 @@
+{
+  "browser": "webkit",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "url": "http://localhost:3000/",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 19
+}

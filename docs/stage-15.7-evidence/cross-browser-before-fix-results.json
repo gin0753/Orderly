@@ -1,0 +1,408 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\dev\\Orderly\\apps\\web\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      "playwright.acceptance.config.ts"
+    ],
+    "configFile": "C:\\dev\\Orderly\\apps\\web\\playwright.acceptance.config.ts",
+    "rootDir": "C:/dev/Orderly/apps/web/test/browser",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/dev/Orderly/apps/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/dev/Orderly/apps/web/test/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "final-acceptance.spec.ts"
+        ],
+        "timeout": 240000
+      },
+      {
+        "outputDir": "C:/dev/Orderly/apps/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/dev/Orderly/apps/web/test/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "final-acceptance.spec.ts"
+        ],
+        "timeout": 240000
+      },
+      {
+        "outputDir": "C:/dev/Orderly/apps/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/dev/Orderly/apps/web/test/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "final-acceptance.spec.ts"
+        ],
+        "timeout": 240000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../../docs/stage-15.7-evidence/cross-browser-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "final-acceptance.spec.ts",
+      "file": "final-acceptance.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "rendered customer journey, axe and keyboard containment across four widths",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 600000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 100113,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:41:16.527Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0ab3e9a786c92e0424a-f6d5e52a53b4eaa69132",
+          "file": "final-acceptance.spec.ts",
+          "line": 65,
+          "column": 5
+        },
+        {
+          "title": "native browser performance diagnostics on the optimized local build",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18136,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:42:59.372Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0ab3e9a786c92e0424a-c391b8d6b787e86c8e14",
+          "file": "final-acceptance.spec.ts",
+          "line": 183,
+          "column": 5
+        },
+        {
+          "title": "rendered customer journey, axe and keyboard containment across four widths",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 600000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "firefox",
+              "projectName": "firefox",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 195468,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:43:20.904Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b0ab3e9a786c92e0424a-2a3b73dc250dfe7f9f34",
+          "file": "final-acceptance.spec.ts",
+          "line": 65,
+          "column": 5
+        },
+        {
+          "title": "native browser performance diagnostics on the optimized local build",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "Consistent Chromium lab conditions; not field INP.",
+                  "location": {
+                    "file": "C:\\dev\\Orderly\\apps\\web\\test\\browser\\final-acceptance.spec.ts",
+                    "line": 184,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "firefox",
+              "projectName": "firefox",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 592,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:46:37.965Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Consistent Chromium lab conditions; not field INP.",
+                      "location": {
+                        "file": "C:\\dev\\Orderly\\apps\\web\\test\\browser\\final-acceptance.spec.ts",
+                        "line": 184,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "b0ab3e9a786c92e0424a-5eecc9cb1bf91cae01a4",
+          "file": "final-acceptance.spec.ts",
+          "line": 183,
+          "column": 5
+        },
+        {
+          "title": "rendered customer journey, axe and keyboard containment across four widths",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 600000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 111814,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\dev\\Orderly\\apps\\web\\test\\browser\\final-acceptance.spec.ts:93:96",
+                    "location": {
+                      "file": "C:\\dev\\Orderly\\apps\\web\\test\\browser\\final-acceptance.spec.ts",
+                      "column": 96,
+                      "line": 93
+                    },
+                    "snippet": "  91 |       await expect(navigation).toBeVisible();\n  92 |       await audit(page, browserName, \"mobile-navigation\", width);\n> 93 |       for (let i = 0; i < 12; i++) {\n     |                                     ^\n  94 |         await page.keyboard.press(\"Tab\");\n  95 |         expect(await navigation.evaluate((dialog) => dialog.contains(document.activeElement))).toBe(true);\n  96 |       }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\dev\\Orderly\\apps\\web\\test\\browser\\final-acceptance.spec.ts",
+                        "column": 96,
+                        "line": 93
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  91 |       await expect(navigation).toBeVisible();\n  92 |       await audit(page, browserName, \"mobile-navigation\", width);\n> 93 |       for (let i = 0; i < 12; i++) {\n     |                                     ^\n  94 |         await page.keyboard.press(\"Tab\");\n  95 |         expect(await navigation.evaluate((dialog) => dialog.contains(document.activeElement))).toBe(true);\n  96 |       }\n    at C:\\dev\\Orderly\\apps\\web\\test\\browser\\final-acceptance.spec.ts:93:96"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:46:42.510Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\dev\\Orderly\\apps\\web\\test-results\\final-acceptance-rendered--0ce94-tainment-across-four-widths-webkit\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\dev\\Orderly\\apps\\web\\test-results\\final-acceptance-rendered--0ce94-tainment-across-four-widths-webkit\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\dev\\Orderly\\apps\\web\\test-results\\final-acceptance-rendered--0ce94-tainment-across-four-widths-webkit\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\dev\\Orderly\\apps\\web\\test-results\\final-acceptance-rendered--0ce94-tainment-across-four-widths-webkit\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\dev\\Orderly\\apps\\web\\test\\browser\\final-acceptance.spec.ts",
+                    "column": 96,
+                    "line": 93
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b0ab3e9a786c92e0424a-3180e9ea6dcd5cefc5cf",
+          "file": "final-acceptance.spec.ts",
+          "line": 65,
+          "column": 5
+        },
+        {
+          "title": "native browser performance diagnostics on the optimized local build",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "Consistent Chromium lab conditions; not field INP.",
+                  "location": {
+                    "file": "C:\\dev\\Orderly\\apps\\web\\test\\browser\\final-acceptance.spec.ts",
+                    "line": 184,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 440,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T10:48:44.263Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Consistent Chromium lab conditions; not field INP.",
+                      "location": {
+                        "file": "C:\\dev\\Orderly\\apps\\web\\test\\browser\\final-acceptance.spec.ts",
+                        "line": 184,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "b0ab3e9a786c92e0424a-bb7b65750881a837aa1f",
+          "file": "final-acceptance.spec.ts",
+          "line": 183,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-10T10:41:06.201Z",
+    "duration": 460289.343,
+    "expected": 3,
+    "skipped": 2,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

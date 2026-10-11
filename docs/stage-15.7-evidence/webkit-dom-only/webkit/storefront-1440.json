@@ -1,0 +1,55 @@
+{
+  "browser": "webkit",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "url": "http://localhost:3000/",
+  "overflow": 0,
+  "axeVersion": "not run",
+  "axeSkipped": true,
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 0,
+  "interaction": {
+    "navigationElapsedMs": 764,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 94.015625,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "All1",
+        "width": 84.578125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Browser Test Pizza1",
+        "width": 193.234375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "View Golden Path Pizza",
+        "width": 257,
+        "height": 290.75
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Add",
+        "width": 61.21875,
+        "height": 44
+      }
+    ],
+    "feedback": [],
+    "focus": {
+      "tag": "BODY",
+      "outline": "3px none rgb(0, 0, 0)",
+      "text": "Skip to contentOrderlyMenuTrack orderSign inCartOrderly Browser TestFresh comfort food, ready when y"
+    }
+  }
+}

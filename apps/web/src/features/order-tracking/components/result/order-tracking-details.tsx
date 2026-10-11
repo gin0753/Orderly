@@ -15,7 +15,7 @@ type DetailCardProps = {
 function DetailCard({ label, children, className = "" }: DetailCardProps) {
   return (
     <div
-      className={`rounded-2xl bg-[var(--color-surface-muted)] p-4 ${className}`}
+      className={`min-w-0 break-words rounded-2xl bg-[var(--color-surface-muted)] p-4 ${className}`}
     >
       <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
         {label}
@@ -42,7 +42,7 @@ export function OrderTrackingDetails({ order }: OrderTrackingDetailsProps) {
   const formattedAddress = formatDeliveryAddress(order);
 
   return (
-    <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 md:p-6">
+    <section className="rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-6">
       <h2 className="text-lg font-bold tracking-tight text-[var(--color-text-primary)]">
         Details
       </h2>

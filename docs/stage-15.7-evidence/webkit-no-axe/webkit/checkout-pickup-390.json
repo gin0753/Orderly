@@ -1,0 +1,90 @@
+{
+  "browser": "webkit",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "url": "http://localhost:3000/checkout",
+  "overflow": 0,
+  "axeVersion": "not run",
+  "axeSkipped": true,
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 0,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open customer navigation",
+        "width": 48,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 54,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "PickupCollect your order from the restaurantFree",
+        "width": 318,
+        "height": 126
+      },
+      {
+        "tag": "BUTTON",
+        "label": "DeliveryHave your order delivered to your address$5.00",
+        "width": 318,
+        "height": 126
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 318,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 318,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 318,
+        "height": 48
+      },
+      {
+        "tag": "TEXTAREA",
+        "label": "",
+        "width": 318,
+        "height": 128
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Edit cart",
+        "width": 96.015625,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Place Order →",
+        "width": 136.5,
+        "height": 48
+      }
+    ],
+    "feedback": [
+      {
+        "role": "status",
+        "live": "polite",
+        "text": ""
+      }
+    ],
+    "focus": {
+      "tag": "BODY",
+      "outline": "3px none rgb(0, 0, 0)",
+      "text": "Skip to contentOrderlyMenuTrack orderSign in1$18.00CheckoutReview your order and enter your details."
+    }
+  }
+}

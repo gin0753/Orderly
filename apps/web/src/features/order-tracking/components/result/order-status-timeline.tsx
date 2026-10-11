@@ -1,185 +1,39 @@
+import { Check, X } from "lucide-react";
 import { cn } from "@/lib/cn";
-
-import type { OrderStatus, OrderType } from "../../types/order-tracking.types";
 import { formatDateTime } from "@/lib/format-date-time";
+import type { OrderStatus, OrderType } from "../../types/order-tracking.types";
 
-type OrderStatusTimelineProps = {
-  status: OrderStatus;
-  orderType: OrderType;
-  createdAt: string;
-  updatedAt: string;
-};
+type OrderStatusTimelineProps = { status: OrderStatus; orderType: OrderType; createdAt: string; updatedAt: string };
+const STEPS = ["Placed", "Preparing", "Ready", "Completed"];
+const ACTIVE_INDEX: Record<Exclude<OrderStatus, "CANCELLED">, number> = { PENDING: 0, ACCEPTED: 0, PREPARING: 1, READY: 2, COMPLETED: 3 };
 
-type TimelineStatus = "PENDING" | "PREPARING" | "READY" | "COMPLETED";
-
-const STATUS_STEPS: {
-  status: TimelineStatus;
-  label: string;
-}[] = [
-  {
-    status: "PENDING",
-    label: "Placed",
-  },
-  {
-    status: "PREPARING",
-    label: "Preparing",
-  },
-  {
-    status: "READY",
-    label: "Ready",
-  },
-  {
-    status: "COMPLETED",
-    label: "Completed",
-  },
-];
-
-const ACTIVE_INDEX_BY_STATUS: Record<
-  Exclude<OrderStatus, "CANCELLED">,
-  number
-> = {
-  PENDING: 0,
-  ACCEPTED: 0,
-  PREPARING: 1,
-  READY: 2,
-  COMPLETED: 3,
-};
-
-function getStepHelper(
-  stepStatus: TimelineStatus,
-  orderStatus: OrderStatus,
-  orderType: OrderType,
-) {
-  if (stepStatus === "PENDING") {
-    if (orderStatus === "ACCEPTED") {
-      return "Restaurant confirmed your order";
-    }
-
-    return "Order received";
-  }
-
-  if (stepStatus === "PREPARING") {
-    return "Kitchen is working";
-  }
-
-  if (stepStatus === "READY") {
-    return orderType === "PICKUP" ? "Ready for pickup" : "Ready for delivery";
-  }
-
-  return "Order finished";
-}
-
-export function OrderStatusTimeline({
-  status,
-  orderType,
-  createdAt,
-  updatedAt,
-}: OrderStatusTimelineProps) {
-  if (status === "CANCELLED") {
-    return (
-      <div className="rounded-3xl border border-[var(--color-danger-border)] bg-[var(--color-danger-background)] p-5">
-        <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-lg font-bold text-[var(--color-danger-foreground)]">
-            !
+export function OrderStatusTimeline({ status, orderType, createdAt, updatedAt }: OrderStatusTimelineProps) {
+  if (status === "CANCELLED") return <section className="rounded-[var(--radius-card)] border border-[var(--color-danger-border)] bg-[var(--color-danger-background)] p-5 sm:p-6">
+    <div className="flex items-start gap-3 text-[var(--color-danger-foreground)]">
+      <X aria-hidden="true" className="mt-1 size-6 shrink-0" />
+      <div><h2 className="text-lg font-bold">This order has been cancelled</h2><p className="mt-2 text-sm leading-6">The order was updated on <time dateTime={updatedAt}>{formatDateTime(updatedAt)}</time>.</p></div>
+    </div>
+  </section>;
+  const activeIndex = ACTIVE_INDEX[status];
+  return <section aria-labelledby="tracking-progress-heading" className="rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-6">
+    <h2 id="tracking-progress-heading" className="text-xl font-bold tracking-tight">Order progress</h2>
+    <p className="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">Progress reflects the current recorded status. Individual step times are not available.</p>
+    <p className="mt-2 text-sm text-[var(--color-text-muted)]">Last updated <time dateTime={updatedAt}>{formatDateTime(updatedAt)}</time></p>
+    <ol aria-label="Order progress" className="mt-6 grid gap-4 md:grid-cols-4">
+      {STEPS.map((label, index) => {
+        const current = index === activeIndex;
+        const earlier = index < activeIndex;
+        return <li key={label} aria-current={current ? "step" : undefined} className="relative flex gap-3 md:block">
+          <span aria-hidden="true" className={cn("relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border text-sm font-bold", current || earlier ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)]" : "border-[var(--color-control-border)] bg-[var(--color-surface-muted)] text-[var(--color-text-secondary)]")}>
+            {earlier ? <Check className="size-5" /> : index + 1}
+          </span>
+          <div className="min-w-0 md:mt-3">
+            <p className={cn("text-sm font-bold", current ? "text-[var(--color-brand-text)]" : "text-[var(--color-text-primary)]")}>{label}</p>
+            <p className="mt-1 text-xs leading-5 text-[var(--color-text-secondary)]">{current ? status === "ACCEPTED" ? "Current status: Accepted" : status === "READY" ? `Current status: Ready for ${orderType === "PICKUP" ? "pickup" : "delivery"}` : "Current status" : earlier ? "Earlier step" : "Not yet reached"}</p>
+            {index === 0 ? <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]"><time dateTime={createdAt}>{formatDateTime(createdAt)}</time></p> : null}
           </div>
-
-          <div>
-            <h2 className="text-base font-bold text-[var(--color-danger-foreground)]">
-              This order has been cancelled
-            </h2>
-
-            <p className="mt-1 text-sm leading-6 text-[var(--color-danger-foreground)]">
-              The order was updated on {formatDateTime(updatedAt)}.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const activeIndex = ACTIVE_INDEX_BY_STATUS[status];
-
-  return (
-    <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 md:p-6">
-      <div className="mb-5 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
-        <div>
-          <h2 className="text-lg font-bold tracking-tight text-[var(--color-text-primary)]">
-            Order progress
-          </h2>
-
-          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-            {orderType === "PICKUP"
-              ? "Follow your pickup order from placed to completed."
-              : "Follow your delivery order from placed to completed."}
-          </p>
-        </div>
-
-        <p className="text-sm font-medium text-[var(--color-text-muted)]">
-          Last updated {formatDateTime(updatedAt)}
-        </p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-4">
-        {STATUS_STEPS.map((step, index) => {
-          const isAcceptedPlacedStep = status === "ACCEPTED" && index === 0;
-
-          const isCurrent = index === activeIndex && status !== "ACCEPTED";
-
-          const isDone = index < activeIndex || isAcceptedPlacedStep;
-
-          const isActiveOrDone = isCurrent || isDone;
-
-          return (
-            <div key={step.status} className="relative">
-              {index < STATUS_STEPS.length - 1 ? (
-                <div
-                  className={cn(
-                    "absolute left-5 top-5 hidden h-px w-full md:block",
-                    isDone
-                      ? "bg-[var(--color-brand)]"
-                      : "bg-[var(--color-border)]",
-                  )}
-                />
-              ) : null}
-
-              <div
-                className="relative z-10 flex gap-3 md:block"
-                aria-current={isCurrent ? "step" : undefined}
-              >
-                <div
-                  className={cn(
-                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-bold",
-                    isActiveOrDone
-                      ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-strong)] text-[var(--color-text-inverse)]"
-                      : "border-[var(--color-border)] bg-[var(--color-surface-muted)] text-[var(--color-text-muted)]",
-                  )}
-                >
-                  {isDone ? "✓" : index + 1}
-                </div>
-
-                <div className="md:mt-3">
-                  <p
-                    className={cn(
-                      "text-sm font-bold",
-                      isCurrent
-                        ? "text-[var(--color-brand)]"
-                        : "text-[var(--color-text-primary)]",
-                    )}
-                  >
-                    {step.label}
-                  </p>
-
-                  <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">
-                    {step.status === "PENDING" && status !== "ACCEPTED"
-                      ? formatDateTime(createdAt)
-                      : getStepHelper(step.status, status, orderType)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
+        </li>;
+      })}
+    </ol>
+  </section>;
 }

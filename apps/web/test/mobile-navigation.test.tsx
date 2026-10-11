@@ -10,6 +10,7 @@ import { hydrateCart, openCart } from "@/features/cart/cart-slice";
 import { loginAdmin } from "@/features/auth/store/auth-slice";
 import { authApi } from "@/features/auth/api/auth-api";
 import { makeStore } from "@/store/store";
+import { bootstrapCustomer } from "@/features/customer-auth/store/customer-auth-slice";
 
 let pathname = "/track-order";
 const replaceMock = jest.fn();
@@ -88,6 +89,19 @@ it("exposes only admin links, with nested Menu active and bottom Sign out", asyn
   expect(within(dialog).getByRole("button", { name: "Sign out" })).toBeInTheDocument();
 });
 
+it("keeps tracking and account sections available to authenticated mobile customers", async () => {
+  const { store } = renderHeader();
+  act(() => {
+    store.dispatch(bootstrapCustomer.pending("customer", undefined));
+    store.dispatch(bootstrapCustomer.fulfilled({ id: "one", email: "customer@example.test", name: "Customer", phone: null, authMethods: { password: true, google: false } }, "customer", undefined));
+  });
+  const { dialog, trigger } = await openNavigation();
+  expect(within(dialog).getAllByRole("link").map((link) => link.textContent)).toEqual(["Menu", "Track order", "Profile", "Orders", "Sign-in & Security"]);
+  expect(within(dialog).getByRole("button", { name: "Sign out" })).toBeInTheDocument();
+  await userEvent.keyboard("{Escape}");
+  expect(trigger).toHaveFocus();
+});
+
 it.each(["close", "escape", "backdrop", "link", "cancel"])("closes via %s and restores focus and scrolling", async (method) => {
   renderHeader();
   const { trigger, dialog } = await openNavigation();
@@ -133,6 +147,20 @@ it("restores scrolling on unmount", async () => {
   view.unmount();
   expect(document.body.style.overflow).toBe("auto");
   expect(document.documentElement.style.overflow).toBe("scroll");
+});
+
+it("moves through every customer destination without relying on native link tabbing", async () => {
+  renderHeader();
+  const { dialog } = await openNavigation();
+  const close = within(dialog).getByRole("button", { name: "Close customer navigation" });
+  for (const name of ["Menu", "Track order", "Sign in"]) {
+    expect(fireEvent.keyDown(document.activeElement!, { key: "Tab" })).toBe(false);
+    expect(within(dialog).getByRole("link", { name })).toHaveFocus();
+  }
+  fireEvent.keyDown(document.activeElement!, { key: "Tab" });
+  expect(close).toHaveFocus();
+  fireEvent.keyDown(close, { key: "Tab", shiftKey: true });
+  expect(within(dialog).getByRole("link", { name: "Sign in" })).toHaveFocus();
 });
 
 it("closes when resizing to desktop and leaves desktop links available", async () => {

@@ -17,7 +17,10 @@ jest.mock("@/features/customer-auth/lib/session-events", () => ({ publishCustome
 const api = customerAuthApi as jest.Mocked<typeof customerAuthApi>;
 const customer = { id: "customer", email: "ada@example.test", name: "Ada", phone: null, authMethods: { password: true, google: false } };
 
-beforeEach(() => { pathname = "/"; jest.clearAllMocks(); });
+beforeEach(() => {
+  pathname = "/"; jest.clearAllMocks();
+  window.matchMedia = jest.fn().mockImplementation(() => ({ matches: true, addEventListener: jest.fn(), removeEventListener: jest.fn() }));
+});
 
 it("shows guest navigation without dead account/order links", () => {
   const store = makeStore();
@@ -25,7 +28,7 @@ it("shows guest navigation without dead account/order links", () => {
   const desktop = screen.getByRole("navigation", { name: "Primary navigation" });
   expect(within(desktop).getByRole("link", { name: "Menu" })).toBeInTheDocument();
   expect(within(desktop).getByRole("link", { name: "Track order" })).toBeInTheDocument();
-  expect(within(desktop).getByRole("link", { name: "Sign in" })).toHaveAttribute("href", expect.stringContaining("/login?returnTo="));
+  expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", expect.stringContaining("/login?returnTo="));
   expect(within(desktop).queryByRole("link", { name: "Orders" })).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Open cart" })).toBeInTheDocument();
 });
@@ -39,9 +42,10 @@ it("shows authenticated order navigation and preserves the cart on logout", asyn
   api.logout.mockResolvedValue(undefined);
   render(<Provider store={store}><SiteHeader /></Provider>);
   const desktop = screen.getByRole("navigation", { name: "Primary navigation" });
-  expect(within(desktop).getByRole("link", { name: "Account" })).toHaveAttribute("href", "/account");
-  expect(within(desktop).getByRole("link", { name: "Orders" })).toHaveAttribute("href", "/account/orders");
-  expect(within(desktop).queryByRole("link", { name: "Track order" })).not.toBeInTheDocument();
+  expect(within(desktop).getByRole("link", { name: "Track order" })).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Account options" }));
+  expect(screen.getByRole("link", { name: "Account" })).toHaveAttribute("href", "/account#profile");
+  expect(screen.getByRole("link", { name: "Orders" })).toHaveAttribute("href", "/account/orders");
   await userEvent.click(screen.getByRole("button", { name: "Sign out" }));
   expect(api.logout).toHaveBeenCalledTimes(1);
   expect(store.getState().customerAuth.status).toBe("unauthenticated");

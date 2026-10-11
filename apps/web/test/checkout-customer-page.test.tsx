@@ -33,6 +33,17 @@ function show(customer: PublicCustomer | null = alice, configuredDeliveryFeeCent
 
 beforeEach(() => { jest.resetAllMocks(); sessionStorage.clear(); });
 
+it("focuses the first invalid contact field and exposes its error without submitting", async () => {
+  const user = userEvent.setup();
+  show(null);
+  await user.click(await screen.findByRole("button", { name: /^Place Order$/ }));
+  const name = screen.getByRole("textbox", { name: "Full name" });
+  await waitFor(() => expect(name).toHaveFocus());
+  expect(name).toHaveAttribute("aria-invalid", "true");
+  expect(name).toHaveAccessibleDescription();
+  expect(orderApi).not.toHaveBeenCalled();
+});
+
 it("disables delivery while pickup remains selected and can submit", async () => {
   const user = userEvent.setup();
   show(alice, 725, { deliveryEnabled: false });

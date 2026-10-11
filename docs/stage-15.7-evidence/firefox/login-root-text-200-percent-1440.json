@@ -1,0 +1,59 @@
+{
+  "browser": "firefox",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "url": "http://localhost:3000/login",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 26,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 183.28334045410156,
+        "height": 96
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 704,
+        "height": 96
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 704,
+        "height": 96
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 40,
+        "height": 40
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Sign in",
+        "width": 704,
+        "height": 96
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Continue with Google",
+        "width": 704,
+        "height": 96
+      }
+    ],
+    "feedback": [],
+    "focus": {
+      "tag": "BODY",
+      "outline": "rgb(0, 0, 0) 3px",
+      "text": "Skip to contentOrderlyMenuTrack orderSign inCartYour Orderly accountSign in to OrderlyWelcome back. "
+    }
+  }
+}

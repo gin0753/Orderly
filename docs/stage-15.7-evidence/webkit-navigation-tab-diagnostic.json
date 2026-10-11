@@ -1,0 +1,114 @@
+[
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "A",
+    "label": null,
+    "text": "Menu",
+    "hasFocus": true
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "A",
+    "label": null,
+    "text": "Track order",
+    "hasFocus": true
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "A",
+    "label": null,
+    "text": "Sign in",
+    "hasFocus": true
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "BUTTON",
+    "label": "Close customer navigation",
+    "text": "",
+    "hasFocus": true
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "A",
+    "label": null,
+    "text": "Menu",
+    "hasFocus": true
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "A",
+    "label": null,
+    "text": "Track order",
+    "hasFocus": true
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "A",
+    "label": null,
+    "text": "Sign in",
+    "hasFocus": true
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "BUTTON",
+    "label": "Close customer navigation",
+    "text": "",
+    "hasFocus": true
+  },
+  {
+    "key": "Shift+Tab",
+    "inside": true,
+    "tag": "A",
+    "label": null,
+    "text": "Sign in",
+    "hasFocus": true
+  },
+  {
+    "key": "Shift+Tab",
+    "inside": true,
+    "tag": "A",
+    "label": null,
+    "text": "Track order",
+    "hasFocus": true
+  },
+  {
+    "key": "Alt+Tab",
+    "inside": true,
+    "tag": "A",
+    "label": null,
+    "text": "Sign in",
+    "hasFocus": true
+  },
+  {
+    "key": "Alt+Tab",
+    "inside": true,
+    "tag": "BUTTON",
+    "label": "Close customer navigation",
+    "text": "",
+    "hasFocus": true
+  },
+  {
+    "key": "Alt+Tab",
+    "inside": true,
+    "tag": "A",
+    "label": null,
+    "text": "Menu",
+    "hasFocus": true
+  },
+  {
+    "key": "Alt+Tab",
+    "inside": true,
+    "tag": "A",
+    "label": null,
+    "text": "Track order",
+    "hasFocus": true
+  }
+]

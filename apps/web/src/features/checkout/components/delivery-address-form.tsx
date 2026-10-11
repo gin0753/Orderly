@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import type { CheckoutFieldErrors, CheckoutFormState } from "../checkout-types";
 import { Input } from "@/components/ui/input";
@@ -28,17 +28,18 @@ export function DeliveryAddressForm({
   onChange,
   disabled,
 }: DeliveryAddressFormProps) {
+  const prefix = useId();
   return (
     <section
       className={[
-        "rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition",
+        "rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] transition sm:p-6",
         disabled ? "opacity-60" : "",
       ].join(" ")}
     >
       <div>
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-            3. Delivery Address
+            Delivery Address
           </h2>
 
           {disabled ? (
@@ -54,12 +55,14 @@ export function DeliveryAddressForm({
       </div>
 
       <fieldset disabled={disabled} className="mt-5 grid gap-4">
-        <label className="grid gap-2">
-          <span className="text-sm font-medium text-[var(--color-text-primary)]">
+        <div className="grid gap-2">
+          <label htmlFor={`${prefix}-address`} className="text-sm font-medium text-[var(--color-text-primary)]">
             Address
-          </span>
+          </label>
 
           <Input
+            id={`${prefix}-address`}
+            aria-describedby={errors.address ? `${prefix}-address-error` : undefined}
             value={form.address}
             onChange={(event) => onChange({ address: event.target.value })}
             placeholder="Enter street address"
@@ -72,29 +75,32 @@ export function DeliveryAddressForm({
             }
           />
 
-          {errors.address ? <FieldError>{errors.address}</FieldError> : null}
-        </label>
+          {errors.address ? <FieldError id={`${prefix}-address-error`}>{errors.address}</FieldError> : null}
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="grid gap-2">
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+          <div className="grid gap-2">
+            <label htmlFor={`${prefix}-apartment`} className="text-sm font-medium text-[var(--color-text-primary)]">
               Apt, suite, etc. optional
-            </span>
+            </label>
 
             <Input
+              id={`${prefix}-apartment`}
               value={form.apartment}
               onChange={(event) => onChange({ apartment: event.target.value })}
               placeholder="Apartment, suite, unit, etc."
               autoComplete="address-line2"
             />
-          </label>
+          </div>
 
-          <label className="grid gap-2">
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+          <div className="grid gap-2">
+            <label htmlFor={`${prefix}-city`} className="text-sm font-medium text-[var(--color-text-primary)]">
               City
-            </span>
+            </label>
 
             <Input
+              id={`${prefix}-city`}
+              aria-describedby={errors.city ? `${prefix}-city-error` : undefined}
               value={form.city}
               onChange={(event) => onChange({ city: event.target.value })}
               placeholder="Enter city"
@@ -107,17 +113,19 @@ export function DeliveryAddressForm({
               }
             />
 
-            {errors.city ? <FieldError>{errors.city}</FieldError> : null}
-          </label>
+            {errors.city ? <FieldError id={`${prefix}-city-error`}>{errors.city}</FieldError> : null}
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="grid gap-2">
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+          <div className="grid gap-2">
+            <label htmlFor={`${prefix}-state`} className="text-sm font-medium text-[var(--color-text-primary)]">
               State
-            </span>
+            </label>
 
             <Select
+              id={`${prefix}-state`}
+              aria-describedby={errors.state ? `${prefix}-state-error` : undefined}
               value={form.state}
               onChange={(event) => onChange({ state: event.target.value })}
               autoComplete="address-level1"
@@ -137,15 +145,17 @@ export function DeliveryAddressForm({
               ))}
             </Select>
 
-            {errors.state ? <FieldError>{errors.state}</FieldError> : null}
-          </label>
+            {errors.state ? <FieldError id={`${prefix}-state-error`}>{errors.state}</FieldError> : null}
+          </div>
 
-          <label className="grid gap-2">
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+          <div className="grid gap-2">
+            <label htmlFor={`${prefix}-postcode`} className="text-sm font-medium text-[var(--color-text-primary)]">
               Postcode
-            </span>
+            </label>
 
             <Input
+              id={`${prefix}-postcode`}
+              aria-describedby={errors.postcode ? `${prefix}-postcode-error` : undefined}
               value={form.postcode}
               onChange={(event) => onChange({ postcode: event.target.value })}
               placeholder="Enter postcode"
@@ -160,18 +170,18 @@ export function DeliveryAddressForm({
             />
 
             {errors.postcode ? (
-              <FieldError>{errors.postcode}</FieldError>
+              <FieldError id={`${prefix}-postcode-error`}>{errors.postcode}</FieldError>
             ) : null}
-          </label>
+          </div>
         </div>
       </fieldset>
     </section>
   );
 }
 
-function FieldError({ children }: { children: ReactNode }) {
+function FieldError({ id, children }: { id: string; children: ReactNode }) {
   return (
-    <span className="text-sm font-medium text-[var(--color-danger-strong)]">
+    <span id={id} className="text-sm font-medium text-[var(--color-danger-strong)]">
       {children}
     </span>
   );

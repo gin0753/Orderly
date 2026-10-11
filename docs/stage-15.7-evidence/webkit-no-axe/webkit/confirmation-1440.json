@@ -1,0 +1,30 @@
+{
+  "browser": "webkit",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "url": "http://localhost:3000/order-success?orderNumber=157001&totalCents=4120&orderType=PICKUP",
+  "overflow": 0,
+  "axeVersion": "not run",
+  "axeSkipped": true,
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 0,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 94.015625,
+        "height": 48
+      }
+    ],
+    "feedback": [],
+    "focus": {
+      "tag": "BODY",
+      "outline": "3px none rgb(0, 0, 0)",
+      "text": "Skip to contentOrderlyMenuTrack orderSign inCartOrder receivedThanks, your order is in.We've receive"
+    }
+  }
+}

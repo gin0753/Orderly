@@ -1,0 +1,77 @@
+{
+  "browser": "chromium",
+  "viewport": {
+    "width": 320,
+    "height": 568
+  },
+  "url": "http://localhost:3000/register",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [],
+  "passedRules": 26,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open customer navigation",
+        "width": 48,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 54,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "label": "",
+        "width": 20,
+        "height": 20
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Create account",
+        "width": 248,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Continue with Google",
+        "width": 248,
+        "height": 48
+      }
+    ],
+    "feedback": [],
+    "focus": {
+      "tag": "BODY",
+      "outline": "rgb(0, 0, 0) none 3px",
+      "text": "Skip to contentOrderlyMenuTrack orderSign in1$18.00Your Orderly accountCreate your accountKeep your "
+    }
+  }
+}

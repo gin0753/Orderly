@@ -29,7 +29,7 @@ export function OrderTrackingErrorState({
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center">
-        <Card role="alert" className="w-full max-w-xl border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
+        <Card variant="surface" role="alert" className="w-full max-w-xl p-5 text-center sm:p-8">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-danger-background)] text-2xl font-bold text-[var(--color-danger-foreground)]">
             !
           </div>
@@ -55,7 +55,7 @@ export function OrderTrackingErrorState({
 
             <Button
               type="button"
-              className="border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
+              variant="secondary"
               onClick={() =>
                 router.push(`/track-order?orderNumber=${encodeURIComponent(orderNumber)}`)
               }

@@ -26,7 +26,8 @@ function show(view: React.ReactElement) {
   store.dispatch(bootstrapCustomer.pending("owner", undefined));
   store.dispatch(bootstrapCustomer.fulfilled(customer, "owner", undefined));
   const queries = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  render(<Provider store={store}><QueryClientProvider client={queries}>{view}</QueryClientProvider></Provider>);
+  render(<Provider store={store}><QueryClientProvider client={queries}><main>{view}</main></QueryClientProvider></Provider>);
+  expect(screen.getAllByRole("main")).toHaveLength(1);
   return { store, queries };
 }
 

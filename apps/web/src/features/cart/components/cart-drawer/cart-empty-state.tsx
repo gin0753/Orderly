@@ -8,8 +8,8 @@ type CartEmptyStateProps = {
 
 export function CartEmptyState({ onBrowseMenu }: CartEmptyStateProps) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-surface-muted)] text-[var(--color-brand)]">
+    <div className="min-h-0 flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-6 text-center">
+      <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-soft)] text-[var(--color-brand-text)]">
         <ShoppingBag className="h-7 w-7" />
       </div>
 

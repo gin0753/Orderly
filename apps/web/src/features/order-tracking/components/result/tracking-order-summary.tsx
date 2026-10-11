@@ -9,7 +9,7 @@ type TrackingOrderSummaryProps = {
 const getItemMeta = (item: OrderTrackingResponse["items"][number]) => {
   const labels = [
     item.sizeName,
-    ...item.options.map((option) => option.name),
+    ...item.options.map((option) => `${option.optionGroupName}: ${option.name}`),
   ].filter(Boolean);
 
   return labels.length > 0 ? labels.join(" · ") : null;
@@ -17,10 +17,10 @@ const getItemMeta = (item: OrderTrackingResponse["items"][number]) => {
 
 export function TrackingOrderSummary({ order }: TrackingOrderSummaryProps) {
   return (
-    <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 md:p-6">
+    <section aria-labelledby="tracking-summary-heading" className="rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-6">
       <div className="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold tracking-tight text-[var(--color-text-primary)]">
+          <h2 id="tracking-summary-heading" className="text-xl font-bold tracking-tight text-[var(--color-text-primary)]">
             Order summary
           </h2>
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">
@@ -34,29 +34,29 @@ export function TrackingOrderSummary({ order }: TrackingOrderSummaryProps) {
       </div>
 
       {order.items.length > 0 ? (
-        <div className="divide-y divide-[var(--color-border)]">
+        <ul className="divide-y divide-[var(--color-border)]">
           {order.items.map((item) => {
             const itemMeta = getItemMeta(item);
 
             return (
-              <div key={item.id} className="flex gap-4 py-4 first:pt-0">
+              <li key={item.id} className="flex gap-3 py-4 first:pt-0">
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[var(--color-surface-muted)]">
                   <ProductImage
                     src={item.imageUrl}
-                    alt={item.name}
+                    alt=""
                     sizes="64px"
                   />
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="truncate text-sm font-bold text-[var(--color-text-primary)]">
+                      <h3 className="break-words text-base font-bold text-[var(--color-text-primary)]">
                         {item.name}
                       </h3>
 
                       {itemMeta ? (
-                        <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                        <p className="mt-1 break-words text-sm text-[var(--color-text-muted)]">
                           {itemMeta}
                         </p>
                       ) : null}
@@ -71,41 +71,41 @@ export function TrackingOrderSummary({ order }: TrackingOrderSummaryProps) {
                     </p>
                   </div>
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       ) : (
         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-sm text-[var(--color-text-muted)]">
           No items found for this order.
         </div>
       )}
 
-      <div className="mt-6 space-y-3 border-t border-[var(--color-border)] pt-5">
+      <dl className="mt-6 space-y-3 border-t border-[var(--color-border)] pt-5 tabular-nums">
         <div className="flex justify-between text-sm text-[var(--color-text-secondary)]">
-          <span>Subtotal</span>
-          <span>{formatMoneyFromCents(order.subtotalCents)}</span>
+          <dt>Subtotal</dt>
+          <dd>{formatMoneyFromCents(order.subtotalCents)}</dd>
         </div>
 
         <div className="flex justify-between text-sm text-[var(--color-text-secondary)]">
-          <span>Delivery fee</span>
-          <span>
-            {order.deliveryFeeCents > 0
+          <dt>Delivery fee</dt>
+          <dd>
+            {order.orderType === "PICKUP" ? "Not applicable" : order.deliveryFeeCents > 0
               ? formatMoneyFromCents(order.deliveryFeeCents)
               : "Free"}
-          </span>
+          </dd>
         </div>
 
         <div className="flex justify-between text-sm text-[var(--color-text-secondary)]">
-          <span>Service fee</span>
-          <span>{formatMoneyFromCents(order.serviceFeeCents)}</span>
+          <dt>Service fee</dt>
+          <dd>{formatMoneyFromCents(order.serviceFeeCents)}</dd>
         </div>
 
         <div className="flex justify-between border-t border-[var(--color-border)] pt-4 text-lg font-bold text-[var(--color-text-primary)]">
-          <span>Total</span>
-          <span>{formatMoneyFromCents(order.totalCents)}</span>
+          <dt>Total</dt>
+          <dd>{formatMoneyFromCents(order.totalCents)}</dd>
         </div>
-      </div>
+      </dl>
     </section>
   );
 }

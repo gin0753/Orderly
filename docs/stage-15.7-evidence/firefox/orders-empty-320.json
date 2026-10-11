@@ -1,0 +1,84 @@
+{
+  "browser": "firefox",
+  "viewport": {
+    "width": 320,
+    "height": 568
+  },
+  "url": "http://localhost:3000/account/orders",
+  "overflow": 0,
+  "axeVersion": "4.13.0",
+  "violations": [],
+  "incomplete": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "tags": [
+        "cat.color",
+        "wcag2aa",
+        "wcag143",
+        "TTv5",
+        "TT13.c",
+        "EN-301-549",
+        "EN-9.1.4.3",
+        "ACT",
+        "RGAAv4",
+        "RGAA-3.2.1"
+      ],
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "messageKey": "nonBmp"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element content contains only non-text characters"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<span aria-hidden=\"true\">✓</span>",
+          "target": [
+            ".border-\\[var\\(--color-brand-strong\\)\\] > span[aria-hidden=\"true\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters"
+        }
+      ]
+    }
+  ],
+  "passedRules": 22,
+  "interaction": {
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open customer navigation",
+        "width": 48,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open cart",
+        "width": 54,
+        "height": 48
+      }
+    ],
+    "feedback": [
+      {
+        "role": "status",
+        "live": null,
+        "text": "0 orders · Page 1 of 1"
+      }
+    ],
+    "focus": {
+      "tag": "BODY",
+      "outline": "rgb(0, 0, 0) 3px",
+      "text": "Skip to contentOrderlyMenuTrack orderAAccountCartProfileOrdersSign-in & SecurityYour Orderly account"
+    }
+  }
+}
