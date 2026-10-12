@@ -162,57 +162,67 @@ export class CustomerAuthService {
     sessionId: string,
     identity: { subject: string; email: string },
   ): Promise<void> {
-    const session = await this.prisma.customerSession.findUnique({
-      where: { id: sessionId },
-      include: { customerUser: true },
-    });
-    if (
-      !session ||
-      session.expiresAt <= new Date() ||
-      !session.customerUser.isActive ||
-      !session.customerUser.passwordHash
-    ) {
-      throw new UnauthorizedException(
-        'Sign in with your password to connect Google.',
-      );
-    }
-    if (session.customerUser.email !== identity.email)
-      throw new ConflictException(
-        'Google email must match your Orderly account email.',
-      );
-    if (
-      session.customerUser.googleSubject &&
-      session.customerUser.googleSubject !== identity.subject
-    ) {
-      throw new ConflictException(
-        'A different Google account is already connected.',
-      );
-    }
-    if (session.customerUser.googleSubject === identity.subject) return;
-    try {
-      const updated = await this.prisma.customerUser.updateMany({
-        where: {
-          id: session.customerUserId,
-          googleSubject: null,
-          isActive: true,
-        },
-        data: { googleSubject: identity.subject, emailVerifiedAt: new Date() },
+    return this.prisma.$transaction(async (tx) => {
+      await lockCustomerDeletion(tx);
+      // Session deletion (including logout/replay revocation) must serialize with linking.
+      await tx.$queryRaw`SELECT "id" FROM "CustomerSession" WHERE "id" = ${sessionId}::uuid FOR UPDATE`;
+      const session = await tx.customerSession.findUnique({
+        where: { id: sessionId },
+        include: { customerUser: true },
       });
-      if (updated.count !== 1)
-        throw new ConflictException(
-          'Google connection changed. Please try again.',
-        );
-    } catch (error) {
       if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
+        !session ||
+        session.expiresAt <= new Date() ||
+        session.createdAt.getTime() + this.config.absoluteSeconds * 1000 <=
+          Date.now() ||
+        !session.customerUser.isActive ||
+        !session.customerUser.passwordHash
       ) {
-        throw new ConflictException(
-          'This Google account is already connected to another customer.',
+        throw new UnauthorizedException(
+          'Sign in with your password to connect Google.',
         );
       }
-      throw error;
-    }
+      if (session.customerUser.email !== identity.email)
+        throw new ConflictException(
+          'Google email must match your Orderly account email.',
+        );
+      if (
+        session.customerUser.googleSubject &&
+        session.customerUser.googleSubject !== identity.subject
+      ) {
+        throw new ConflictException(
+          'A different Google account is already connected.',
+        );
+      }
+      if (session.customerUser.googleSubject === identity.subject) return;
+      try {
+        const updated = await tx.customerUser.updateMany({
+          where: {
+            id: session.customerUserId,
+            googleSubject: null,
+            isActive: true,
+          },
+          data: {
+            googleSubject: identity.subject,
+            emailVerifiedAt: new Date(),
+          },
+        });
+        if (updated.count !== 1)
+          throw new ConflictException(
+            'Google connection changed. Please try again.',
+          );
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          throw new ConflictException(
+            'This Google account is already connected to another customer.',
+          );
+        }
+        throw error;
+      }
+    });
   }
 
   async refresh(token?: string): Promise<CustomerAuthResult> {

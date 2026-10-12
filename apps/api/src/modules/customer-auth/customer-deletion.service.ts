@@ -114,6 +114,8 @@ export class CustomerDeletionService {
     return this.prisma.$transaction(async (tx) => {
       await lockCustomerDeletion(tx);
       await tx.$queryRaw`SELECT "id" FROM "CustomerUser" WHERE "id" = ${customerId}::uuid FOR UPDATE`;
+      // Serialize the final authorization with logout and direct session revocation.
+      await tx.$queryRaw`SELECT "id" FROM "CustomerSession" WHERE "id" = ${sessionId}::uuid FOR UPDATE`;
       const session = await tx.customerSession.findUnique({
         where: { id: sessionId },
         include: { customerUser: true },

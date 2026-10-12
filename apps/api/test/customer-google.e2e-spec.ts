@@ -9,6 +9,7 @@ import type { Server } from 'node:http';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { CustomerGoogleOAuthService } from '../src/modules/customer-auth/customer-google-oauth.service';
+import { CustomerAuthService } from '../src/modules/customer-auth/customer-auth.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 
 const password = 'A correct password 123!';
@@ -521,5 +522,32 @@ describe('Customer Google OAuth', () => {
       (await prisma.customerUser.findUniqueOrThrow({ where: { email } }))
         .googleSubject,
     ).toMatch(/^google-browser-(link|conflict)$/);
+  });
+
+  it('does not link Google from a stale session snapshot after revocation', async () => {
+    await register();
+    const session = await prisma.customerSession.findFirstOrThrow({
+      include: { customerUser: true },
+    });
+    await prisma.customerSession.delete({ where: { id: session.id } });
+    // Model the old nontransactional read completing before a concurrent revocation.
+    // The final authorization must re-read the live session in its locked transaction.
+    const staleRead = jest
+      .spyOn(prisma.customerSession, 'findUnique')
+      .mockResolvedValue(session);
+    try {
+      await expect(
+        app.get(CustomerAuthService).connectGoogle(session.id, {
+          subject: 'google-revoked-link',
+          email,
+        }),
+      ).rejects.toThrow();
+      expect(
+        (await prisma.customerUser.findUniqueOrThrow({ where: { email } }))
+          .googleSubject,
+      ).toBeNull();
+    } finally {
+      staleRead.mockRestore();
+    }
   });
 });

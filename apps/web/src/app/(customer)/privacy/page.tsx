@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <PolicyPage title="Privacy Policy">
+    <PolicyPage title="Privacy Policy" lastUpdated="12 October 2026">
       <section>
         <h2>About this demo</h2>
         <p>Orderly is a developer portfolio demonstration, not a real restaurant or commercial ordering service. Orders are demonstrations and do not result in food preparation, pickup or delivery. Although the service is a demo, information submitted to it can be stored in a live database. Use fictional order contact details and addresses, and do not submit sensitive information.</p>
@@ -15,6 +15,7 @@ export default function PrivacyPage() {
       <section>
         <h2>Information collected</h2>
         <p>Accounts contain your email address, name and optional phone number, account identifiers, sign-in methods and account timestamps. If you register with a password, a protected password representation is stored rather than the password itself. Session records and cookies support sign-in and sign-out.</p>
+        <p>Password registration first stores a pending email address, a verification-link hash, link expiry, and email-send timestamps and counts used to prevent abuse. A pending registration is not an active account. You verify the email and choose your own password before the account is created. Account records retain verification evidence when available.</p>
         <p>Demonstration orders contain the name, email, phone number, pickup or delivery choice, delivery address when supplied, notes, selected products and options, quantities, prices, order number, status and timestamps. Orders placed while signed in are linked to your account for private history. Guest orders are also stored.</p>
         <p>Requests involve technical information such as IP addresses, browser/request information and access times. The application uses request information to limit abuse, and hosting providers may process it in operational logs.</p>
       </section>
@@ -25,7 +26,7 @@ export default function PrivacyPage() {
       </section>
       <section>
         <h2>How information is used and accessed</h2>
-        <p>Information supports account access, profile updates, demonstration checkout, order history and tracking, administration, troubleshooting and abuse prevention. Administrators can view order details to demonstrate order management.</p>
+        <p>Information supports registration and email verification, account access, profile updates, demonstration checkout, order history and tracking, administration, troubleshooting and abuse prevention. Administrators can view order details to demonstrate order management.</p>
         <p>Detailed tracking requires an order number and a private receipt code issued at checkout, or the signed-in account that placed the order. Receipt codes are reusable for 30 days unless revoked. Tracking does not display contact details, addresses or notes. Legacy guest orders and lost, expired or revoked codes cannot be recovered online. Private account history remains available through its owning account.</p>
       </section>
       <section>
@@ -36,12 +37,15 @@ export default function PrivacyPage() {
       <section>
         <h2>Service providers</h2>
         <p>The deployed demo uses Vercel for the website, Railway for the application server and Neon for database hosting. Google processes authentication when you choose Google sign-in. Processing or storage may take place outside your country; exact hosting locations and provider retention depend on the deployment and provider settings.</p>
+        <p>Transactional registration emails are sent through Resend. Resend receives the recipient email address, sender details and message content, including the private verification link, to process delivery. Email delivery information and messages may also be retained by the provider and your email service under their policies and settings. Keep verification links private. Removing an Orderly account does not recall an email or erase copies in your mailbox or provider systems.</p>
         <p>An optional administrator-only menu writing tool sends product names, categories and supplied description text to OpenAI when enabled. Customer accounts and orders are not inputs to that tool. Administrators should not put personal information in menu text. Service providers handle information under their own terms and privacy policies.</p>
       </section>
       <section>
         <h2>Retention, choices and requests</h2>
         <p>No fixed account, order, backup or log retention period is promised for this demo. Session expiry is not the same as deletion of stored records. Demonstration data may be removed during maintenance or resets, and the service is not a permanent archive.</p>
-        <p>You can browse without an account, choose password registration instead of Google, edit your account name and phone number, and clear browser storage. Self-service customer account deletion requires current-password or fresh Google identity verification and is blocked while orders are active. It removes your profile and sign-in credentials, signs out all customer sessions, erases personal contact/address/notes from your completed or cancelled account-owned orders, and revokes their receipt codes. Financial and item records are retained. Guest and other customers? records are unaffected; registering again does not recover deleted account history. There is no data export feature. Use the developer contact below to ask about your information, request access, correction or deletion, or raise a privacy concern. A request is not a guarantee of immediate or complete removal from backups or provider systems.</p>
+        <p>Registration links expire after 30 minutes and replacement emails invalidate earlier links. Expiry or use makes a link unusable; it does not immediately erase its pending email and abuse-prevention metadata. Expired pending records are cleaned during later registration activity after their send-limit window has passed. Other temporary sign-in and deletion-verification records also expire and can remain until later cleanup. Low activity can therefore leave expired metadata stored longer; no exact physical cleanup deadline is promised.</p>
+        <p>You can browse without an account, choose password registration instead of Google, edit your account name and phone number, and clear browser storage. Self-service customer account deletion requires current-password or fresh Google identity verification and is blocked while orders are active. It removes your profile and sign-in credentials, signs out all customer sessions, erases personal contact/address/notes from your completed or cancelled account-owned orders, and revokes their receipt codes. Historical financial and item records are retained. Records belonging to guests and other customers are unaffected; registering again does not recover deleted account history. There is no data export feature.</p>
+        <p>Deletion invalidates an existing pending registration link, but its email and send-limit history can remain until cleanup to prevent abuse. Minimal temporary verification and abuse-prevention records may also remain until expiry and cleanup. Account deletion changes the primary database; it does not guarantee complete immediate erasure from backups, operational logs, email providers, downloaded data or browser copies. Use the developer contact below to ask about your information, request access, correction or deletion, or raise a privacy concern. A request is not a guarantee of immediate or complete removal from backups or third-party systems.</p>
       </section>
       <section>
         <h2>Changes</h2>

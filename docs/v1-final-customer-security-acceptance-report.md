@@ -1,0 +1,232 @@
+# V1 final customer security acceptance audit
+
+Audit and scoped P2 closure date: 12 October 2026. Reviewed base: `5e2ede48520acde0992ea158e12d2a93ead61cf7`, plus the narrowly scoped linking/deletion revocation fixes and F-04/F-15 closure described below. No commit, push, deployment, production-data operation or Packaging was performed.
+
+## Verdict
+
+**PASS WITH CONDITIONS. F-04 and F-15 are closed within this scoped follow-up.** The replay fixture's hydration/quota race was reproduced and corrected; three consecutive complete production-build Security 2B runs passed all 36 cases each (108 passes), with zero retries, failures or disabled cases. Privacy disclosure and revision are corrected. Existing P1 protections remain unchanged and pass regression checks. Historical failed runs are retained below; they are not erased or recast as passes. V1 external release acceptance remains conditional on real-provider, operational and cross-engine staging evidence. No Packaging or deployment is authorized or performed here.
+
+## Scope and evidence boundaries
+
+Read the [Security 2A report](v1-registration-email-verification-report.md), [Security 2B report](v1-customer-account-deletion-report.md), and [F1 guest receipt report, including closure and retained failures](v1-guest-tracking-security-hardening-report.md). Reviewed current customer auth/controller/config/DTO/guards/JWT strategy, registration/mailer, Google provider/OAuth transactions, deletion service, customer account and session UI/coordinator, checkout/history/tracking authorization, Admin strategy, Prisma schema and migrations, privacy notice and test runners.
+
+All database tests use synthetic loopback `orderly_test`, `schema=public`, matching `DATABASE_URL` and `DIRECT_DATABASE_URL`, `NODE_ENV=test`. The existing guard denies other database names, hosts/schemas, mismatched targets and Railway/Vercel deployment markers before reset. API integration and browser resets run sequentially. Email delivery is mocked or represented by guarded synthetic mailbox fixtures; test-mode mailer refuses real sends. Google browser fixtures and locally signed OIDC tests are synthetic. No real customer accounts, production credentials or provider-console settings were inspected. New diagnostics do not contain capability secrets.
+
+## Cross-feature acceptance
+
+| Area | Security model and evidence reviewed |
+| --- | --- |
+| Registration | Initial request creates only a pending email row, never credentials/session. Recipient chooses their own password and name on explicit completion POST. An unsolicited click/page load cannot activate attacker-selected credentials. SHA-256 digest only, 256-bit secret, 30-minute lifetime, conditional single-use consumption and unique account/session creation share a transaction. Fragment links, no-referrer page, no token storage and generic membership responses are preserved. |
+| Resend and failures | Persistent mailbox cooldown 60 seconds and five attempts/hour include failed delivery. Resend replaces the digest. Provider timeout/error expires the attempted link; recovery requires another eligible resend. Expired records release identity availability without resetting a live abuse quota. |
+| Existing password accounts | Null `emailVerifiedAt` honestly records absent evidence. Existing login/refresh/profile/password-change remain usable. Verification cannot replace credentials, reclaim/merge an account or attach historical guest orders. No automatic evidence backfill or recovery feature. |
+| Password/session lifecycle | Cost-12 bcrypt, 15-character/72 UTF-8-byte new-password policy; generic invalid login. Separate customer JWT claims/keys/cookies, live DB session on access, rotating refresh digest/version, sliding expiry capped by absolute lifetime. Logout, replay, password change and deletion revoke authorization. A late cookie response cannot recreate a revoked session. |
+| Google identity/linking | Cryptographically validated OIDC subject determines identity; verified email does not merge existing accounts. Linking requires current-password initiation, the initiating live session, verified matching email and unique subject. Account selection alone is not deletion reauthentication. The audit fixed final-link revocation ordering (F-01). |
+| Deletion | Principal supplies target UUID; injected targets rejected. Password/linked accounts require current password. Google-only uses isolated `DELETE_ACCOUNT`, signed after-intent `auth_time`, exact stored subject and browser/session/customer/purpose-bound five-minute digest-only grant. Explicit final POST, single-use transactional consumption; callback creates no account/session or association. Logout/password change revoke grants through session cascades. |
+| Orders/history | Ownership is stored UUID, never contact email. History queries scope every read by current customer UUID. Owned checkout participates in deletion coordination: order first blocks deletion; deletion first rejects checkout without guest fallback. All four active statuses block deletion regardless of payment status. |
+| Retention/receipts | Terminal owned orders retain financial, item/option and status snapshots; contact/address/notes scrubbed and ownership detached. Owned receipt digest removed/revoked. Guest/other-owner records, receipt capabilities and Admin identity remain untouched even with the same email. Receipt proof is a reusable 30-day bearer capability; explicit invalid proof has no owner fallback. Tracking response omits contact/address/notes. |
+| Re-registration | Deleted email or fresh Google subject reuse creates a new UUID with no old history. Deletion invalidates pre-existing pending email proof while retaining abuse quota. Six-minute hashed subject barrier rejects pre-deletion sign-in intents; five-minute OAuth expiry is checked again after provider exchange. Session-bound stale callbacks cascade away. |
+| Browser/session isolation | Initiator cleanup clears private identity/queries, owned receipt and untouched account-prefilled draft fields; preserves public cart, independently typed guest details and Admin state. Scoped deletion broadcasts invalidate matching peer tabs; DB revocation protects independent devices on subsequent requests. Focus/visibility recheck is the fallback. Cached/offline already-rendered information cannot be remotely erased. |
+
+Registration activation, password/Google login, password change, deletion and owned checkout coordinate with a PostgreSQL transaction advisory lock. The final Google linking transaction now also participates and locks the initiating session row; direct logout/replay session DELETE must therefore serialize. Provider exchange and bcrypt remain outside these brief transactions.
+
+## Findings and disposition
+
+No P0 finding identified. Findings apply to this scoped review; this is not a certification of all infrastructure or unrelated V1 release work.
+
+| ID / severity | Finding and evidence | Recommended disposition / release effect |
+| --- | --- | --- |
+| F-01 / P1, fixed | `connectGoogle` previously read a session outside a transaction then wrote the association separately. A concurrent logout/password change could revoke that session after its read yet before the association write. A focused integration regression returned the real pre-revocation snapshot after deleting the synthetic session; the original implementation incorrectly resolved successfully. | Fixed only final linking authorization: acquire existing coordination lock, lock/re-read live session, check sliding and absolute expiry, validate identity and update association in one transaction. Regression fails before and passes after. Ship with coordinated API build; no schema/UI feature change. |
+| F-02 / P2, open | Real Google after-intent authentication freshness and usability are unverified. Current code requests `max_age=0` and essential signed `auth_time`; old/missing evidence is rejected. Synthetic tests establish application validation, not Google's actual challenge behavior. | Release gate: synthetic staging must prove fresh subject-bound authentication and silent/old SSO rejection. If provider cannot supply fresh evidence, Google-only deletion acceptance remains blocked; no email/SSO/`iat` fallback or unapproved architectural expansion. |
+| F-03 / P2, open | Real Resend inbox delivery, sender domain and production link behavior are unverified. Provider acceptance is not proof of arrival; timeouts invalidate uncertain links. | Release gate: verified sending domain, restricted API key, configured sender and staging delivery/expiry/replay/resend/failure recovery checks. Verify click tracking and retention/redaction settings. |
+| F-04 / P2, closed | Privacy now discloses Resend delivery/message processing, pending verification/send-limit metadata, expiry versus lazy cleanup, retained business records and primary-database/provider/backup/browser-copy limits. Privacy date is 12 October; Terms date/layout unchanged. | Scoped disclosure corrected and component/static/build checks pass. Real provider configuration/retention review remains F-03/operational staging; no complete-immediate-erasure or invented retention promise. See P2 closure evidence below. |
+| F-05 / P2, open | Backup restore, populated production-sized upgrade/lock duration, coordinated rollout and deployed proxy/APM secret redaction have no evidence in this audit. Source contains no new raw-secret logs, but that does not cover infrastructure access/query/body logs. | Release gate: owner-approved synthetic staging rehearsal, recoverable backup, measured migration/cutover, matching writers and sanitized log inspection. Never roll back to contact-only guest tracking or immediate unverified registration. |
+| F-06 / P2, open | Full Firefox/Safari and assistive-technology acceptance for new verification/deletion flows remains unverified. Chromium and component checks do not prove these engines or real mobile devices. | Complete focused manual staging checklist before external acceptance. Historical Stage 15 evidence is not proof for these new flows. |
+| F-07 / P2, documented V1 limitation | HTTP rate counters are process-local. Durable mailbox quotas survive restarts/instances, but aggregate login/lookup limits depend on deployed instance count and trusted proxy identity. | Validate single-instance/edge controls and direct API behavior at rollout. Document effective limits and monitoring. Separately review distributed rate storage if scaling; no framework expansion in this audit. |
+| F-08 / P3, open operational action | Expired pending/OAuth/grant/barrier rows are invalid by time but physically cleaned lazily. Low traffic can retain stale metadata longer. | Assign cleanup owner/frequency/retention policy; purge only expired rows, preserving pending mailbox quota for its one-hour abuse window. Do not remove a live barrier or grant. |
+| F-09 / P3, documented limitation | An older untagged owned receipt in another tab cannot be safely classified for local erasure. Its server capability is revoked; tagged and initiating-tab owned receipts are cleared. | Retain scoped cleanup and disclose browser-copy limitations. No blanket guest/Admin storage clear. No authorization blocker. |
+| F-10 / P3, documented V1 tradeoff | One global advisory lock serializes short identity and owned-checkout transactions. It reduces throughput and could surface default transaction wait limits at volume. | Measure staging contention; keep provider/bcrypt outside lock. Review finer-grained locking separately if volume requires it. Do not weaken coordination for rollout. |
+| F-11 / P3, test finding | Initial full API run: 12 suites/150 tests passed; deletion setup exceeded existing 15-second hook timeout, producing 19 failures plus undefined teardown. Concurrent checks were running. Isolated unchanged-timeout rerun passed all 170 tests after the P1 fix. Resource contention is plausible, not proved. | Preserve failure; run heavy DB acceptance alone. Do not raise timeouts or skip cases merely to obtain green. Optional test teardown resilience is deferred. |
+| F-12 / P1, fixed | Password deletion read the initiating session without locking it against logout/direct revocation. A real PostgreSQL test held uncommitted session deletion, started account deletion and observed a blocked DB operation, then committed revocation first. The original password deletion still succeeded. | Added initiating session `FOR UPDATE` before the final live-session check in the existing deletion transaction. Revocation first now rejects deletion and retains the customer; deletion first can commit before revocation. The same controlled concurrency test also proves the F-01 linking fix. No migration or authorization fallback. |
+| F-13 / P3, historical test finding | F1 closure preserved a storefront contrast failure and an alpha/color-space measurement limitation. This audit's unchanged full eight-case storefront suite passes, including contrast. | Preserve prior evidence; current pass does not prove the measurement defect was fixed. Defer improved measurement/cursor control to a separate test task without weakening the contrast threshold. No current customer-security release blocker. |
+| F-14 / P2, documented legacy policy | Historical password accounts have no verified-email evidence and may include earlier email squatting. New mailbox verification intentionally cannot reclaim their UUID/credentials; ownership of those historical mailboxes is not established by this audit. | Retain the explicit no-reclamation policy and null evidence. Never treat these accounts as verified for recovery, email-based linking or order claims. Any future resolution requires a separately approved evidence-based policy, outside V1 scope. |
+| F-15 / P2, closed | Controlled pre-hydration fragment assignment reproduced four checks per viewport, exhausting the shared ten/minute guard and returning 429/unavailable at 320px. Fixture now awaits the empty-link invalid state, replaces the fragment and deliberately reloads once; assertions enforce three checks and 200/200/400. | Three consecutive full Security 2B runs pass 36/36 each, zero retries/skips, nine checks and three rejected replays per run. Original assertions/real guards preserved; no product/API response change. Historical uncaptured statuses remain unknown; the controlled mechanism and correction are documented below. |
+
+## Original acceptance audit validation evidence (retained)
+
+The following results belong to the original acceptance audit, before this P2 closure. Current closure evidence follows later in this report; these failures/results remain intact:
+
+| Check / command | Result |
+| --- | --- |
+| `pnpm --filter api test:unit --runInBand` | Final source: 16 suites / 161 passed (27.193 seconds). |
+| `pnpm --filter api test:e2e` | Final source: 13 suites / 172 passed (155.787 seconds), no skipped cases; guarded full reset/migration. |
+| `pnpm --filter web test --runInBand` | 47 suites / 339 passed (131.150 seconds), no skips. No web application/component code changed during audit. |
+| `pnpm typecheck` | API, web application and web test TypeScript passed on final source. |
+| `pnpm lint` | Both applications passed on final source. |
+| Production API/Web builds | Passed through guarded production browser runs (`nest build`, optimized `next build`), including `/verify-email` and Account prerender. Security/diagnostic builds include both P1 fixes. |
+| `pnpm test:browser` | 11 default production suites / 61 passed, no retries/skips. Run after F-01, before F-12; F-12 changes final deletion authorization, exercised by the following final-source security run. |
+| `pnpm test:browser --security-2b` + explicit continuation | All 36 selected cases executed: 35 passed / 1 verification replay-state failure. Wrapper initially stopped after 7 passes / 1 failure; six remaining suites explicitly continued and all 28 passed. No disabled assertions/guards or automatic retries. |
+| Isolated unchanged 320px verification | 1 passed (21.1 seconds), selected with `--grep '320px'`. Does not replace the failed full-suite case. |
+| Full unchanged verification diagnostics | First probe: 3 passed / 1 failed (40.3 seconds); final status-visible probe: 4 passed (27.5 seconds), no retries. Both results retained. |
+| `git diff --check` / HEAD | Passed; reviewed base unchanged, no commit. |
+
+Browser environment: `TEST_DATABASE_URL=postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public`, `ORDERLY_RECEIPT_SECURITY_TESTS=1`, `ORDERLY_BROWSER_PRODUCTION=1`; runner supplies local `ORDERLY_API_ORIGIN=http://localhost:4000` for optimized builds. Fresh servers isolate process-local rate counters between suites while retaining actual guards and zero retries. Chromium `151.0.7922.34` only. Trace/video/failure screenshots are disabled for secret-bearing cases; Playwright still generated an error-context Markdown with the transient-error page and test source, containing no observed raw secret. This flag is not a guarantee that all page-context artifacts are suppressed. Existing navigation tests explicitly capture three non-receipt synthetic account/navigation screenshots; this is not a claim that absolutely no screenshots exist.
+
+Default browser results: critical workflow 18, design foundation 2, navigation 2, Google OAuth 6, account 3, checkout ownership 6, history 6, anonymous/session coordination 3, storefront configurator 8, premium transactions 5, premium auth/orders/tracking 2. Every selected case executed and passed.
+
+Final-source security results: deletion 4 passed; verification 3 passed / 1 failed; Google OAuth 6, account 3, checkout ownership 6, history 6, anonymous/session 3 and receipts 4 all passed. Across the default plus security selections, 14 distinct suites / 73 distinct cases are covered, with 97 case executions (96 passes / 1 failure) before explicit verification diagnostics. Five overlapping suites run in both selections. No selected case was left unexecuted after wrapper failure.
+
+Including the isolated case and two full verification probes, browser totals are 106 executions: 104 passes / 2 failures. Every one of the 73 distinct selected cases has a passing run; the complete Security 2B wrapper itself was **not green**, and neither failed run is converted into a pass or suppressed.
+
+Continuation used the existing optimized build and fresh servers for each suite, after the isolated verification wrapper's guarded reset/seed. The ignored local [continuation helper](../audit-artifacts/final-security-remaining.cjs) invokes unchanged `pnpm --filter web test:e2e:run <suite>.spec.ts` with the same database allowlist/security settings and records [six zero exit codes](../audit-artifacts/final-security-remaining-results.json). Its first launch failed before tests because `pnpm exec` did not supply `npm_execpath`; supplying the observed installed Corepack pnpm entrypoint resolved that environment issue. Exact successful command: `node audit-artifacts/final-security-remaining.cjs 'C:\Program Files\nodejs\node_modules\corepack\dist\pnpm.js'`, with the three browser environment settings above. No tracked runner/test change or extra reset bypass was introduced.
+
+Failure and reproduction ledger (not silently discarded):
+
+- Initial full integration: 12 suites passed, deletion suite failed its 15-second setup hook; 150 passed / 19 failed. Unchanged-timeout isolated rerun after F-01: 13 suites / 170 passed (105.658 seconds). Final run after both fixes/new cases: 172 passed.
+- F-01 focused Google regression: 15 passed / 1 failed before fix; 16 passed after. The added stale snapshot is controlled test instrumentation using a real synthetic session/customer; it is not a production caching path.
+- First concurrency-fixture attempt: two failed synchronization assertions because PostgreSQL statistics snapshots were reused within the holding transaction. Corrected the fixture to clear that statistics snapshot between observations; did not change application behavior/timeouts or weaken assertions.
+- Corrected real concurrency reproduction: password deletion failed its rejection assertion (deletion succeeded after revocation), Google linking passed after F-01. After F-12: both passed. These focused `--testNamePattern` invocations intentionally excluded 21 other deletion cases; the final full 172-case integration run includes them all.
+- Initial browser invocation: Docker sandbox access denied before any case ran. Escalated reruns retain the same destructive database allowlist. This is environment evidence, not a product test pass/failure.
+- Combined verification failure: `registration-verification.spec.ts:42` could not find the invalid/expired alert on the third replay journey; page instead announced `We could not check this link. Please try again.` Isolated unchanged 320px case passes. First full probe reproduced that failure. Its stdout diagnostic was suppressed by Playwright's server output defaults, so it did not capture response status. Changing only the ignored observer to sanitized stderr produced a final full pass, with API statuses 200/200/400 for each viewport; proxy responses matched. This successful observation does not prove the cause/status of the earlier failures. [Retained first-probe context](../audit-artifacts/final-security-verification-probe/registration-verification--d7a14--accessible-layout-at-320px-chromium-desktop/error-context.md).
+- Existing intentional infrastructure/rollback tests emit sanitized synthetic database-outage messages. They pass by asserting fail-closed/rollback behavior; these logs are not unexpected provider errors.
+
+Exact probe command: `pnpm test:browser registration-verification.spec.ts --output=../../audit-artifacts/final-security-verification-status-probe`, with the three browser variables above plus `NODE_OPTIONS=--require=C:\dev\Orderly\audit-artifacts\registration-status-preload.cjs`. The ignored observer prints only local server port, fixed method/path and status, never bodies/queries/cookies/links. It does not change HTTP decisions or assertions. The earlier probe used output directory `final-security-verification-probe` and stdout instead of stderr. No automatic retry is enabled.
+
+A non-printing format scan of both retained verification-probe text/Markdown/JSON/log directories found zero standalone 43-character bearer-format candidates. This limited local artifact check does not certify external logs, other token formats or screenshots. Final Git status contains only the four scoped source/test files and this new report; HEAD remains the reviewed base.
+
+## Migration, configuration and rollback readiness
+
+The guarded reset successfully applies all 14 checked-in migrations from empty database. Required dependency order is customer password identities/sessions, Google OAuth enum/transactions, customer order ownership, atomic order numbers, F1 receipt metadata (`20261011010000`), 2A pending/nullable verification evidence (`20261012010000`), then 2B enum/grants/barrier (`20261012020000`). Do not edit applied migration histories. The last three are additive, with no historical customer/order bulk UPDATE or deletion. New enum value is not used as a same-transaction SQL default. Customer email/Google subject/token/grant uniqueness and session/OAuth/grant cascades are present; retained orders use `SET NULL`, and item cascades are not exercised because parent orders remain.
+
+Grant customer UUID is a logical binding rather than a direct CustomerUser foreign key; live session/customer/subject/purpose checks enforce it, and the session FK provides cascading revocation. This audit found no reachable cross-account use through supported writers. External/manual database writers are outside that guarantee.
+
+Deletion updates only orders selected by the authenticated customer UUID. It preserves order ID/number/type/status/payment status/createdAt, subtotal/delivery/service/total cents, item/option rows, product references and product/size/quantity/unit-price/line-price/option snapshots. `updatedAt` may change. Name becomes `Deleted customer`, email/phone become empty strings, address lines/city/state/postcode/notes become null, owner becomes null, receipt digest becomes null and expiry/revocation become deletion time. Customer profile/password hash/raw Google association and session-bound OAuth/grants disappear through deletion/cascades. A pending row can retain its email/quota metadata until abuse-window cleanup, with its secret invalidated; the temporary subject ledger retains only a digest. These and lazy physical purge are explicit retention limitations, not a claim that every identifying datum or browser/backup copy is erased immediately. Existing legacy `User` relationships are independent and remain unchanged.
+
+Before a separately authorized rollout:
+
+1. Confirm backup and restore rehearsal, migration status/drift, populated synthetic upgrade and financial/PII assertions. Use production `prisma migrate deploy` through the deployment workflow, not dev/reset; generate matching Prisma client/build artifacts. [Prisma production migration guidance](https://www.prisma.io/docs/orm/migrations/applying-a-migration).
+2. Provision `REGISTRATION_EMAIL_API_KEY` (sending-only), `REGISTRATION_EMAIL_FROM` and verified sender/domain. Confirm SPF/DKIM/domain verification and controlled synthetic inbox delivery. [Resend domain verification](https://resend.com/docs/dashboard/domains/introduction).
+3. Configure exact HTTPS `WEB_ORIGIN`; web build needs exact HTTPS `ORDERLY_API_ORIGIN`. Set matching proxy identity secrets in API/web and distinct customer access/refresh secrets, separate from Admin; synchronize application/database clocks for freshness/expiry. Production must not set local browser-production allowance or run `NODE_ENV=test`/Google fixture mode.
+4. Google requires all three `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`. Callback must equal `WEB_ORIGIN + /api/customer/auth/google/callback`, no query/fragment, and exactly match provider registration. Same-origin web proxy carries host-scoped Secure/HttpOnly/Lax cookies; test cookie/path behavior on HTTPS, not a direct cross-site API bypass. [Google callback and identity reference](https://developers.google.com/identity/openid-connect/reference).
+5. Drain/stop old auth/order writers before enabling deletion. Old versions do not share coordination and may mishandle the new OAuth purpose. Serve matching API/Web and reload stale clients. Prevent direct API traffic from weakening proxy identity/rate controls. Test no-store/error responses and mutation Origin enforcement.
+6. Exclude verification fragments/body tokens, passwords, JWTs/cookies, receipt codes, deletion grant/binding, OAuth code/state/PKCE and provider payloads from logs, traces, analytics, screenshots and error reporting. Inspect sanitized staging logs; never paste a real ID token into evidence.
+7. Assign expiry operations: pending rows only when expired AND quota window at least one hour old; OAuth/grants/barriers only after expiry; sessions after expiry. Preserve six-minute deletion barrier until old five-minute OAuth requests cannot complete. Define provider/backup/log retention and deleted-record restore handling.
+8. Prefer forward fixes with additive schema retained. A code rollback must keep verified registration, receipt capability authorization and deletion/session protections. Restoring a pre-deletion backup can resurrect accounts, PII, grants and sessions: restore only under containment, invalidate authentication/capabilities, and reconcile subsequent deletions before reopening. No rollback/restore was performed here, and destructive migration is not required.
+
+Application tests verify transaction rollback of token consumption/account/session establishment and deletion grant/PII/receipt/barrier/session changes, including a synthetic PostgreSQL trigger failure. This does not prove backup restore or provider side-effect rollback; mail cannot be unsent, and its uncertain token is expired.
+
+## External-provider evidence limits
+
+Locally signed OIDC tests exercise the real library's signature/issuer/audience/nonce/state/PKCE validation and freshness checks against controlled keys/claims. Browser fixtures model missing/stale/fresh evidence without Google infrastructure. Neither proves real Google account selection, MFA/challenge timing, `max_age` honoring or usable after-intent evidence. Google's current reference documents requesting `auth_time` using claims and subject-based identity; it does not establish that this application's freshness request forces a new challenge. This is an inference about an unverified behavior, not a claim that Google either honors or ignores it. Keep fail-closed checks. [Google OIDC reference](https://developers.google.com/identity/openid-connect/reference).
+
+Mocked mail proves application state/error handling and synthetic links; it cannot prove DNS, inbox placement, spam filtering, bounce handling, message delays, link rewriting/scanners or provider retention. No real email/provider tests were conducted.
+
+## Focused manual staging acceptance checklist
+
+Use only approved synthetic staging customer identities and controlled inboxes, never production customer accounts. Record version, time, browser/device, sanitized outcome/status, responsible reviewer and pass/fail; omit passwords, email token, grant, receipt code and full OIDC token.
+
+- [ ] **Real email:** request registration, confirm no active user/session, receive correctly branded trusted HTTPS fragment link in controlled inbox; check spam/delay and sender authentication. A scanner/open alone leaves account pending. Choose a new owner password; initial attacker password cannot log in.
+- [ ] **Expiration/replay:** refresh unconsumed verification page; use another browser to complete; initiating browser receives no session. After 30 minutes or resend, old link fails. Reuse completed link and submit concurrently: exactly one activation. Confirm cooldown/hourly suppression and provider failure/recovery without membership disclosure.
+- [ ] **Google freshness:** sign in synthetic Google-only account, wait so existing SSO predates deletion intent, start dedicated deletion flow. Verify cryptographically validated signed `auth_time` is after intent (one-second rounding tolerance), under five minutes and correct subject. Confirm actual fresh challenge evidence; do not equate account chooser or recent `iat` with authentication.
+- [ ] **Silent SSO rejection:** exercise old/silent SSO, missing/stale evidence, wrong Google account with matching email where available, cancellation and expired callback. No usable grant, association mutation or login session should result. If real provider cannot supply freshness, mark Google-only acceptance blocked.
+- [ ] **Google-only deletion:** fresh callback leaves account and session intact until separate explicit confirmation. Same browser/session completes once; cross-browser/session/account, replay and expiry fail. Logout or session revocation during flow invalidates proof.
+- [ ] **Password deletion:** password and linked account require correct current password and confirmation; wrong/old password fails. Password change invalidates old sessions/grants/linking callback. Active orders block without cancellation/refund; no-order and terminal-only accounts delete.
+- [ ] **Multiple devices/tabs:** login on two browser/device sessions and two tabs; delete on one. Every old session fails account/history/refresh and owned checkout; visible peer tab clears private state on notification/focus/request. Guest cart/draft/receipt and Admin remain usable. Late response cannot restore authorization.
+- [ ] **Historical integrity:** compare synthetic terminal order UUID/number/status/payment/createdAt/cents/items/options before/after. PII removed, ownership null and owned receipts denied; Admin can still inspect retained financial records. Other owner/guest with identical email is unchanged. Re-register email/fresh Google subject yields new UUID and empty historical ownership.
+- [ ] **Failure/rollback:** controlled staging DB/API failure leaves account, sessions, grant, ownership, financial data and receipt authority coherent; retry requires valid proof. Check lost-response UI does not falsely claim deletion. Use contained synthetic records only.
+- [ ] **Firefox/Safari:** current Firefox and actual Safari on macOS/iOS: email fragment preservation, refresh, cross-browser completion, cookies/proxy callback, Google freshness, native dialog and peer-tab/session invalidation. Do not treat WebKit lab alone as Safari proof.
+- [ ] **Mobile accessibility:** 320/390px and real iOS/Android, zoom, keyboard-only Tab/Shift-Tab/Escape/Cancel/focus return, password validation/error focus, screen-reader sent/pending/completed/error/deletion status, no overflow/hidden controls and contrast. Verify announcements with VoiceOver/NVDA or appropriate real assistive technology.
+- [ ] **Operations/privacy:** sender/OAuth settings, HTTPS origins, test bypass absence, proxy/rate behavior, redacted logs, expiry cleanup, truthful privacy notice, backup restore and coordinated rollout signed off. Resolve every failed checklist item before external release acceptance.
+
+## Changed files
+
+- `apps/api/src/modules/customer-auth/customer-auth.service.ts`: P1 final linking transaction/session row lock and absolute lifetime check.
+- `apps/api/src/modules/customer-auth/customer-deletion.service.ts`: P1 session row lock before final deletion authorization.
+- `apps/api/test/customer-google.e2e-spec.ts`: focused stale-session regression.
+- `apps/api/test/customer-deletion.e2e-spec.ts`: two real PostgreSQL session-revocation concurrency cases.
+- This report. No new migration, feature, UI redesign or production-data change.
+
+Ignored local audit diagnostics include the guarded continuation helper/results and HTTP status preload/probe artifacts. They are evidence utilities, not application or checked-in test-framework changes.
+
+## Release blockers and final disposition
+
+The two scoped P1 fixes are complete and verified. External release acceptance is blocked until:
+
+- F-02/F-03: real synthetic staging email delivery and Google fresh reauthentication/silent-SSO evidence pass; fail closed if Google evidence is unavailable.
+- F-05/F-07/F-08: coordinated migration/writer rollout, backup/restore, secret redaction, trusted origins/proxy identity/effective limits and expiry operations are owned and rehearsed.
+- F-06: focused Firefox/Safari, real mobile and assistive-technology acceptance is recorded.
+
+F-04 and F-15 no longer block release on these grounds: their scoped closure evidence is below. This does not satisfy or waive the remaining real-provider/operational/manual staging gates.
+
+F-09/F-10/F-13/F-14 remain explicitly documented limitations/follow-up recommendations, not unrecorded waivers. Configuration values and staging outcomes are **not verified**. No destructive historical migration or architectural expansion is required by the two fixes. Stop at this audit: no commit, push, deployment, production-data change or Packaging.
+
+## Final Security P2 closure — 12 October 2026
+
+This follow-up addresses only F-15 and F-04. It does not repeat the architecture audit or change the existing P1 fixes. Both findings are closed with the evidence below; the original audit results/failures above remain historical evidence.
+
+### F-15 diagnosis and correction
+
+An initial instrumented full Security 2B run passed all 36 cases, but showed the replay setup changing the fragment while the new empty-link page still displayed `checking`. `page.goto()` completion is not proof that the React verification effect has captured the empty fragment. The old fixture immediately assigned a consumed token to `location.hash` and reloaded. Depending on hydration ordering, the effect could read that token before reload, adding another check to the intended replay check.
+
+The controlled [before-correction reproduction](../audit-artifacts/p2-f15-hydration-repro.cjs) uses a copy of the same four verification cases, their existing assertions, the optimized build, guarded reset/seed and actual API rate limiter. It holds client chunks until the SSR heading exists and the original fixture assigns the fragment, then releases hydration and observes the check before the existing reload. This is explicit event ordering, not a timed sleep or a retry. No API response is mocked except the original test's registration delivery acknowledgement.
+
+Observed sanitized requests and states:
+
+| Viewport / controlled old ordering | Check statuses | Replay state |
+| --- | --- | --- |
+| 1440px | 200, 200, 400, 400 | Empty page checking; fragment assigned; invalid; reload; invalid |
+| 390px | 200, 200, 400, 400 | Same duplicate replay pattern |
+| 320px | 200, 200, 429, 429 | Checking; fragment assigned; unavailable; reload; unavailable |
+
+Three cases sharing one server/client-IP counter generated twelve checks within the real ten-per-minute allowance. Separate browser contexts isolate cookies, not that IP quota. The 320px replay assertion failed exactly as reported previously: it expected invalid/expired feedback, but received the transient check-failure state. The controlled run finished **3 passed / 1 failed (44.0 seconds)**, with no retries. [Retained failing context](../audit-artifacts/p2-f15-hydration-results/registration-verification--d7a14--accessible-layout-at-320px-chromium-desktop/error-context.md). This establishes the reproducible hydration/quota mechanism; the two original audit failures lacked HTTP status capture, so their individual responses are not retroactively asserted to be 429.
+
+The application correctly maps HTTP 400 to invalid/expired, and other failures including 429 to unavailable. A limiter response cannot establish whether a secret is invalid. Successful initial checks and the 400 responses before quota exhaustion rule out fixture token invalidity as the cause of this reproduction. Verification uses a direct check request, not a cached query; no product response handling, token lifetime, counter, API or session code needed changing.
+
+Correction in `registration-verification.spec.ts`: await the exact invalid/expired empty-link message before putting the consumed secret in the fragment with `history.replaceState`, then perform the existing deliberate reload. This lets the initial effect finish without issuing a token check and prevents the extra pre-reload check. All original assertions remain. New assertions require exactly three checks per viewport and statuses `[200, 200, 400]`: initial inspection, refresh, one rejected replay. The combined suite stays at nine checks; the ten/minute guard is unchanged.
+
+The test retains sanitized diagnostics for request ordinal/start/HTTP status/network-failure boolean and an enum-only verification state. It does not print bodies, cookies, hashes, links, addresses or token values. A [controlled corrected fixture](../audit-artifacts/p2-f15-hydration-corrected.cjs), with client chunks held until SSR and then released into the new empty-link wait, passed **4/4 (28.9 seconds)**. Each viewport settled `invalid` before fragment insertion, then made exactly three checks (200/200/400), with no unavailable state or 429. No arbitrary waits, timeout increases, unconditional retries or assertion suppression were introduced.
+
+### F-04 disclosure correction
+
+The existing Privacy page now identifies Resend transactional registration delivery and the recipient/sender/message/private-link information sent for delivery. It describes pending email, verification-link hash, expiry, send timestamps/counts, abuse prevention and verification evidence. It distinguishes link usability expiry from physical record cleanup, explains cleanup during later registration activity after the abuse window, and acknowledges longer retention during low activity without inventing a deletion deadline.
+
+Account deletion copy preserves active-order blocking, primary profile/credential/contact removal, owned receipt revocation and retained historical financial/item records. It explicitly discloses pending email/send-history retention for abuse prevention, other minimal temporary records, and limits concerning backups/logs/providers/mailboxes/downloaded/browser copies. It does not promise complete immediate erasure or a provider retention period. Privacy revision is **12 October 2026**; `PolicyPage` accepts an optional date, preserving the existing Terms date and all layout/design conventions.
+
+### Closure validation
+
+| Check | Fresh closure result |
+| --- | --- |
+| API unit, `pnpm --filter api test:unit --runInBand` | 16 suites / 161 passed (44.232 seconds). |
+| API integration, `pnpm --filter api test:e2e` | 13 suites / 172 passed (147.374 seconds), including both existing P1 revocation regressions. |
+| Web components, `pnpm --filter web test --runInBand` | Final serial run: 47 suites / 339 passed (72.502 seconds). |
+| `pnpm typecheck` and `pnpm lint` | Both passed after the final fixture correction; includes browser test TypeScript. |
+| Production API/Web builds | Passed in each of all three consecutive stability runs (`nest build`, optimized `next build`), including `/privacy`, `/verify-email` and Account. |
+| Controlled old replay/hydration ordering | 3 passed / 1 expected reproduced failure; real 429 captured at 320px. |
+| Controlled corrected ordering | 4 passed; nine checks, all replays 400. |
+| Full Security 2B consecutive run 1 | 8 suites / 36 passed, exit 0; 355.1 seconds including reset/seed/build/server lifecycle. |
+| Full Security 2B consecutive run 2 | 8 suites / 36 passed, exit 0; 290.9 seconds including reset/seed/build/server lifecycle. |
+| Full Security 2B consecutive run 3 | 8 suites / 36 passed, exit 0; 260.0 seconds including reset/seed/build/server lifecycle. |
+
+Each full run executes deletion 4, verification 4, Google OAuth 6, account 3, checkout ownership 6, order history 6, anonymous/session coordination 3 and receipt tracking 4. **Three consecutive clean selections: 108 passed, zero failures, skips or retries.** The original browser configuration remains unchanged (`retries: 0`, one worker, 45-second case and 10-second expectation limits). No arbitrary sleeps, extra retry, counter reset within a suite, rate bypass or case filter was used.
+
+Exact repeated command: `pnpm test:browser --security-2b`, invoked sequentially three times with `TEST_DATABASE_URL=postgresql://orderly_user:orderly_password@localhost:5432/orderly_test?schema=public`, `ORDERLY_RECEIPT_SECURITY_TESTS=1`, `ORDERLY_BROWSER_PRODUCTION=1`. Each existing wrapper resets/seeds only the guarded database, builds API/Web against the local origin and starts fresh servers between suites. API integration finished before this sequence; no other database test/reset ran concurrently. Chromium `151.0.7922.34` only, synthetic email/provider fixtures, no real mail.
+
+Retained [run 1 log](../audit-artifacts/p2-security-2b-run-1.log), [run 2 log](../audit-artifacts/p2-security-2b-run-2.log), [run 3 log](../audit-artifacts/p2-security-2b-run-3.log), [exit/duration results](../audit-artifacts/p2-security-stability-results.json) and [sanitized evidence summary](../audit-artifacts/p2-security-evidence-summary.json). Every log contains eight passing suite summaries, exactly nine verification responses, three settled-empty-link markers and three replay 400s; zero unavailable/429 verification states or failed/skipped summaries. The PowerShell capture labels Docker's ordinary stderr status as `NativeCommandError`; all wrapper exits are 0 and this is not a database/test failure.
+
+Source fingerprints for the Privacy page, shared policy component and verification browser fixture match the frozen [closure source baseline](../audit-artifacts/p2-closure-source-baseline.json); no tested source changed between the three runs. A non-printing scan of all three logs found zero standalone 43-character bearer-format candidates. This is limited local diagnostic evidence, not proof of deployed log redaction or real-provider behavior.
+
+The initial full component run was performed concurrently with other checks/browser work and had **338 passed / 1 failed**: unchanged checkout terminal-expiry recovery exceeded its existing 5-second test timeout (170.234 seconds total). The complete unchanged suite then passed serially. Resource contention is plausible, not proved; the failure remains recorded and no checkout code, assertion or timeout was modified.
+
+Exact closure files changed:
+
+- `apps/web/test/browser/registration-verification.spec.ts` — deterministic replay preparation, stronger request/status assertions, secret-safe diagnostics.
+- `apps/web/src/app/(customer)/privacy/page.tsx` — scoped disclosure and Privacy revision.
+- `apps/web/src/components/layout/policy-page.tsx` — optional revision date without changing the Terms date/layout.
+- `docs/v1-final-customer-security-acceptance-report.md` — this closure evidence/disposition.
+
+Pre-existing staged P1 changes in the two API services and two API test files are preserved unchanged. Ignored local before/after hydration reproduction scripts, configs, copied tests and failure context are diagnostic evidence, not production changes or permanent framework changes. No new migration, API feature, dependency, cleanup job or other P2/P3 improvement is included.
+
+### Closure disposition and remaining gates
+
+**F-04 and F-15 closed; overall PASS WITH CONDITIONS remains.** Real Google freshness/silent-SSO and Resend delivery remain unverified (F-02/F-03); rollout/backup/restore/redaction/proxy/expiry operations (F-05/F-07/F-08) and Firefox/Safari/mobile assistive-technology staging acceptance (F-06) remain required. The existing monitored developer-contact placeholder also needs owner replacement before public policy/Google OAuth release; no contact address was invented here. No staging/provider success is inferred from mocked tests. Other P2/P3 dispositions are unchanged and no unrelated improvement was implemented.
+
+No production data was accessed or changed. No commit, push, deployment or Packaging was performed.

@@ -20,6 +20,44 @@ for (const width of [1440, 390, 320]) {
     const secret = await deliveredRegistrationToken(email);
     const context = await browser.newContext({ baseURL: "http://localhost:3000", viewport: { width, height: 900 } });
     const owner = await context.newPage();
+    let checks = 0;
+    const checkStatuses: number[] = [];
+    const checkIds = new WeakMap<object, number>();
+    owner.on("request", (request) => {
+      if (new URL(request.url()).pathname === "/api/customer/auth/registration/check") {
+        checkIds.set(request, ++checks);
+        console.log(`Verification diagnostic: width=${width} check=${checks} started`);
+      }
+    });
+    owner.on("response", (response) => {
+      if (new URL(response.url()).pathname === "/api/customer/auth/registration/check") {
+        checkStatuses.push(response.status());
+        console.log(`Verification diagnostic: width=${width} check=${checkIds.get(response.request())} status=${response.status()}`);
+      }
+    });
+    owner.on("requestfailed", (request) => {
+      if (new URL(request.url()).pathname === "/api/customer/auth/registration/check") {
+        console.log(`Verification diagnostic: width=${width} check=${checkIds.get(request)} networkFailure=true`);
+      }
+    });
+    owner.on("console", (message) => {
+      if (/^Verification state: (checking|pending|invalid|unavailable|complete)$|^Verification replay: emptyLinkSettled=(true|false)$/.test(message.text())) {
+        console.log(`Verification diagnostic: width=${width} ${message.text()}`);
+      }
+    });
+    await owner.addInitScript(() => {
+      let previous = "";
+      const observe = () => {
+        const text = document.querySelector("main")?.textContent ?? "";
+        const state = text.includes("We could not check this link") ? "unavailable"
+          : text.includes("This verification link is invalid or expired") ? "invalid"
+          : text.includes("Verification completed") ? "complete"
+          : document.querySelector('form[aria-label="Finish registration"]') ? "pending"
+          : text.includes("Checking verification link") ? "checking" : "";
+        if (state && state !== previous) { previous = state; console.log(`Verification state: ${state}`); }
+      };
+      new MutationObserver(observe).observe(document, { childList: true, subtree: true });
+    });
     await openVerification(owner, secret);
     await owner.reload();
     await expect(owner.getByRole("form", { name: "Finish registration" })).toBeVisible();
@@ -37,9 +75,17 @@ for (const width of [1440, 390, 320]) {
     // Initiating browser never receives the mailbox owner's session.
     expect((await page.context().cookies()).some((cookie) => cookie.name === "orderly_customer_access")).toBe(false);
     await owner.goto("/verify-email");
-    await owner.evaluate((value) => { location.hash = `token=${value}`; }, secret);
+    // Navigation load can precede the component's first effect. Set the fragment
+    // only after that empty-link check settles, then make one deliberate replay.
+    await expect(owner.getByText("This verification link is invalid or expired. Request a new email.", { exact: true })).toBeVisible();
+    await owner.evaluate((value) => {
+      console.log(`Verification replay: emptyLinkSettled=${document.querySelector("main")?.textContent?.includes("This verification link is invalid or expired") ?? false}`);
+      window.history.replaceState(null, "", `/verify-email#token=${value}`);
+    }, secret);
     await owner.reload();
     await expect(owner.getByRole("alert").filter({ hasText: "invalid or expired" })).toContainText("invalid or expired");
+    expect(checks).toBe(3);
+    expect(checkStatuses).toEqual([200, 200, 400]);
     await context.close();
   });
 }

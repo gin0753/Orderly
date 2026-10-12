@@ -542,6 +542,65 @@ describe('Secure customer account deletion', () => {
       .set('Cookie', merge(credentials, cookies(results[1])))
       .expect(401);
   });
+  it.each(['password deletion', 'Google linking'] as const)(
+    'rejects %s when concurrent session revocation commits first',
+    async (operation) => {
+      const { user } = await passwordAccount();
+      const session = await prisma.customerSession.findFirstOrThrow({
+        where: { customerUserId: user.id },
+      });
+      let outcome!: Promise<boolean>;
+      await prisma.$transaction(async (tx) => {
+        // Hold an uncommitted revocation. An unlocked MVCC read still sees the old row.
+        await tx.customerSession.delete({ where: { id: session.id } });
+        const action =
+          operation === 'password deletion'
+            ? app
+                .get(CustomerDeletionService)
+                .delete(user.id, session.id, password)
+            : app.get(CustomerAuthService).connectGoogle(session.id, {
+                subject: 'revoked-concurrent-link',
+                email: user.email,
+              });
+        outcome = action.then(
+          () => true,
+          () => false,
+        );
+        const deadline = Date.now() + 3000;
+        let blocked = false;
+        while (Date.now() < deadline) {
+          await tx.$queryRaw`SELECT 1 FROM pg_stat_clear_snapshot()`;
+          const rows = await tx.$queryRaw<{ blocked: boolean }[]>`
+          SELECT EXISTS (
+            SELECT 1 FROM pg_stat_activity
+            WHERE datname = current_database() AND pid <> pg_backend_pid()
+              AND wait_event_type = 'Lock' AND state = 'active'
+          ) AS blocked`;
+          if (rows[0]?.blocked) {
+            blocked = true;
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 20));
+        }
+        expect(blocked).toBe(true);
+        // Commit revocation before the blocked deletion can proceed.
+      });
+      expect(await outcome).toBe(false);
+      expect(await prisma.customerUser.count({ where: { id: user.id } })).toBe(
+        1,
+      );
+      expect(
+        await prisma.customerSession.count({ where: { id: session.id } }),
+      ).toBe(0);
+      expect(
+        (
+          await prisma.customerUser.findUniqueOrThrow({
+            where: { id: user.id },
+          })
+        ).googleSubject,
+      ).toBeNull();
+    },
+  );
   it('serializes an authenticated new order with deletion without guest fallback', async () => {
     const { user, credentials } = await passwordAccount();
     await prisma.storeSettings.upsert({
