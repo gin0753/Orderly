@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 
 import { RequireAdmin } from '../../../auth/decorators/require-admin.decorator';
@@ -13,6 +13,11 @@ import { PrivateResponse } from '../../../../http/private-response.interceptor';
 @Controller('admin/menu/ai')
 export class AdminMenuAiController {
   constructor(private readonly adminMenuAiService: AdminMenuAiService) {}
+
+  @Get('capability')
+  getCapability() {
+    return this.adminMenuAiService.getCapability();
+  }
 
   @Post('content-suggestion')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })

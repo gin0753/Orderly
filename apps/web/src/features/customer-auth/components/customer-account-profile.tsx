@@ -38,7 +38,15 @@ export function CustomerAccountProfile() {
     const nextErrors = profileErrors(value.name, value.phone, value.name !== baseline.name);
     setErrors(nextErrors);
     setFeedback("");
-    if (Object.keys(nextErrors).length) return;
+    if (Object.keys(nextErrors).length) {
+      const form = event.currentTarget as HTMLFormElement;
+      requestAnimationFrame(() => {
+        const field = form.querySelector<HTMLInputElement>('[aria-invalid="true"]');
+        field?.focus();
+        field?.scrollIntoView?.({ block: "center", behavior: "instant" });
+      });
+      return;
+    }
     const changes = {
       ...(value.name !== baseline.name ? { name: value.name.trim() } : {}),
       ...(value.phone !== baseline.phone ? { phone: value.phone.trim() || null } : {}),
@@ -61,7 +69,7 @@ export function CustomerAccountProfile() {
       <div><label htmlFor="account-email" className="mb-2 block text-sm font-semibold">Email</label><Input id="account-email" type="email" autoComplete="email" value={customer.email} readOnly aria-describedby="account-email-note" className="bg-[var(--color-surface-disabled)]" /><p id="account-email-note" className="mt-1 text-xs text-[var(--color-text-secondary)]">Email changes are not currently supported.</p></div>
       <div><label htmlFor="account-phone" className="mb-2 block text-sm font-semibold">Phone <span className="font-normal text-[var(--color-text-secondary)]">(optional)</span></label><Input id="account-phone" type="tel" autoComplete="tel" maxLength={40} value={value.phone} onChange={(event) => edit("phone", event.target.value)} disabled={busy} aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone ? "account-phone-error" : undefined} />{errors.phone ? <p id="account-phone-error" className="mt-1 text-sm text-[var(--color-danger-strong)]">{errors.phone}</p> : null}</div>
       <div className="flex flex-wrap items-center gap-3"><Button type="submit" disabled={!dirty || busy}>{busy ? "Saving…" : "Save profile"}</Button>{dirty ? <span className="text-xs text-[var(--color-text-secondary)]">Unsaved changes</span> : null}</div>
-      {feedback ? <p role={feedback === "Profile saved." ? "status" : "alert"} className="text-sm">{feedback}</p> : null}
+      {feedback ? <p role={feedback === "Profile saved." ? "status" : "alert"} className={feedback === "Profile saved." ? "text-sm" : "rounded-xl border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] p-3 text-sm text-[var(--color-danger-strong)]"}>{feedback}</p> : null}
     </form>
   </section>;
 }

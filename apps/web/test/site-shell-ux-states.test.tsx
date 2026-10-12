@@ -16,6 +16,8 @@ import { EmptyMenuState } from "@/features/menu/components/empty-menu-state";
 import { MenuBrowser } from "@/features/menu/components/menu-browser";
 import type { MenuCategory } from "@/features/menu/types";
 import { makeStore } from "@/store/store";
+import { customerAuthApi } from "@/features/customer-auth/api/customer-auth-api";
+import { ApiError } from "@/lib/api-fetch";
 
 const pushMock = jest.fn();
 const refreshMock = jest.fn();
@@ -26,6 +28,7 @@ jest.mock("next/navigation", () => ({
 }));
 
 jest.mock("@/features/menu/api/get-menu", () => ({ getMenu: jest.fn() }));
+jest.mock("@/features/customer-auth/api/customer-auth-api", () => ({ customerAuthApi: { me: jest.fn() } }));
 
 const categories: MenuCategory[] = [
   {
@@ -56,6 +59,7 @@ function renderWithStore(node: React.ReactNode) {
 }
 
 beforeEach(() => {
+  jest.mocked(customerAuthApi.me).mockRejectedValue(new ApiError(401, "Not signed in"));
   jest.mocked(getMenu).mockResolvedValue({
     store: {
       name: "Orderly Kitchen",
@@ -70,12 +74,13 @@ beforeEach(() => {
   });
 });
 
-it("renders one customer banner, main and content-info landmark with only approved footer links", () => {
-  renderWithStore(
+it("renders one customer banner, main and content-info landmark with only approved footer links", async () => {
+  const { store } = renderWithStore(
     <CustomerShell>
       <h1>Page content</h1>
     </CustomerShell>,
   );
+  await waitFor(() => expect(store.getState().customerAuth).toMatchObject({ status: "unauthenticated", operation: null }));
 
   expect(screen.getAllByRole("banner")).toHaveLength(1);
   expect(screen.getAllByRole("main")).toHaveLength(1);
@@ -108,8 +113,9 @@ it("focuses the customer error heading and retries through the route reset callb
   expect(reset).toHaveBeenCalledTimes(1);
 });
 
-it("uses the customer shell and approved recovery destinations for 404s", () => {
-  renderWithStore(<NotFound />);
+it("uses the customer shell and approved recovery destinations for 404s", async () => {
+  const { store } = renderWithStore(<NotFound />);
+  await waitFor(() => expect(store.getState().customerAuth).toMatchObject({ status: "unauthenticated", operation: null }));
 
   expect(screen.getAllByRole("banner")).toHaveLength(1);
   expect(screen.getAllByRole("main")).toHaveLength(1);

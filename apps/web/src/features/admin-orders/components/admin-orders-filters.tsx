@@ -1,4 +1,4 @@
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -59,6 +59,7 @@ export function AdminOrdersFilters({
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[var(--color-text-muted)]" />
 
             <Input
+              aria-label="Search orders, customers or items"
               value={searchTerm}
               onChange={(event) => onSearchTermChange(event.target.value)}
               placeholder="Search orders, customers or items"
@@ -145,16 +146,6 @@ export function AdminOrdersFilters({
               </Button>
             ) : null}
 
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="w-fit shrink-0"
-              disabled
-            >
-              <SlidersHorizontal className="size-4" />
-              Filters
-            </Button>
           </div>
         </div>
       </div>

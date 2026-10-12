@@ -7,6 +7,8 @@ import { PRODUCT_IMAGE_PATH_MESSAGE } from "@/lib/product-image-path";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+import { useAdminAiAvailability } from "../../../../hooks/use-admin-ai-availability";
+
 import type { AdminProductFormValues } from "../../../../types/admin-product-form.types";
 import type { AdminProductCategoryFilterOption } from "../../../../types/admin-product.types";
 import {
@@ -48,6 +50,7 @@ export function AdminProductBasicFields({
   categories,
   isSubmitting,
 }: AdminProductBasicFieldsProps) {
+  const aiAvailable = useAdminAiAvailability();
   const {
     register,
     formState: { errors },
@@ -143,7 +146,7 @@ export function AdminProductBasicFields({
             message={errors.description?.message}
           />
 
-          {process.env.NEXT_PUBLIC_AI_ASSISTANT_ENABLED === "true" ? (
+          {aiAvailable ? (
             <AdminProductDescriptionAssistant
               categories={categories}
               isSubmitting={isSubmitting}

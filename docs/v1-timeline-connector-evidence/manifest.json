@@ -1,0 +1,290 @@
+﻿[
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/accepted-1440.png",
+        "bytes":  22193,
+        "sha256":  "83e8668361f35a568dec686686dc0105596ee0859f3e80f3eebec5efb8acf63f",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/accepted-320.png",
+        "bytes":  21624,
+        "sha256":  "81d985d9e74937bf5503a648bdeeaeff03b4cb4e8ccccb86dd948e758f7452c8",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/accepted-390.png",
+        "bytes":  21964,
+        "sha256":  "77d70b31ff92150894aa9ca0d22e79660d5daf74a2b7afac4ffd3909cf6ca01d",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/accepted-768.png",
+        "bytes":  19604,
+        "sha256":  "536f7cfb31f90ed6ba9d759cbfd0b28c3378867ebfbfee0f97d76102491319ba",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/cancelled-1440.png",
+        "bytes":  11225,
+        "sha256":  "1ea6e7cba6ab3908ee6913477e27f9ddd11a8af3c121853a6713d11c3126bddc",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/cancelled-320.png",
+        "bytes":  7790,
+        "sha256":  "25c1ee373eae982431951753b12c747b3f7c8596f68f3f702954f552c96e3972",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/cancelled-390.png",
+        "bytes":  8131,
+        "sha256":  "b36681e3cbd5110d4f5dc50dfa7c904ce1d1aae87b884903557283ae1b2b4217",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/cancelled-768.png",
+        "bytes":  9208,
+        "sha256":  "9a6c5a5c5374593aa21962fe5c1a597ce3e857146947abb070869a5998f1c99e",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/completed-1440.png",
+        "bytes":  20435,
+        "sha256":  "395d9ec4d9aab37b682c7691849ab6c4766cb92e9eed209f3a1e6bd8b52615aa",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/completed-320.png",
+        "bytes":  20372,
+        "sha256":  "1f15b0f754dfbf976f791c9b0238136fbec70fecb5e5d11a5e2777320ceaf329",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/completed-390.png",
+        "bytes":  20723,
+        "sha256":  "57b72154951f22a1fc0450cdfe8723ad51a7a4034dd2ac7f90972e4b330006e8",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/completed-768.png",
+        "bytes":  17796,
+        "sha256":  "c4c5ebd00f002b893648cfb38a899811d986bac71154eac22fef63dcc40463a4",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/pending-1440.png",
+        "bytes":  21818,
+        "sha256":  "2979e849294113869ce61b22d8d3a93b32bfcdcb2192bc7633c1e1e07778f3df",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/pending-320.png",
+        "bytes":  21152,
+        "sha256":  "e742f267380556021b6fe1b94c6f2cdd3f9ca116de4514fc054d128492346140",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/pending-390.png",
+        "bytes":  21484,
+        "sha256":  "d1e7add92ca2e8d1d229ae48a24ece200f214464c6f47c86b5062670b04de530",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/pending-768.png",
+        "bytes":  19238,
+        "sha256":  "fd22264a28ba20de4c351f340c77c7d939533be94d923b0bb9c9c9bf6e316d22",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/preparing-1440.png",
+        "bytes":  22244,
+        "sha256":  "54ed6311ebf3974b3e677bb65d9702843d0411a17b3f8dda9a8a44381679a68e",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/preparing-320.png",
+        "bytes":  20990,
+        "sha256":  "f30c83a0084b2f0960973531d06951741c7eff55e0565fd28b9f835d1a29615f",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/preparing-390.png",
+        "bytes":  21327,
+        "sha256":  "ecfeb1c8fc16425c8b7d5f8a4d48b7d77f14a6e7956310ffa85f5968ff806dae",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/preparing-768.png",
+        "bytes":  19808,
+        "sha256":  "252d37a1371c8ef9761f372f0de61d7200f09cbba5eca54f220990a342f5311e",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/ready-1440.png",
+        "bytes":  22551,
+        "sha256":  "3d1d0366eeb7d89d07cda2e6ecb319da8f939444192b5aace9ca3a9f0549b772",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/ready-320.png",
+        "bytes":  21311,
+        "sha256":  "319f2fcc7e2e7a7eeca73fcb482b1db0ba1d97acb84fd8b163cb5141f16ffbbf",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/ready-390.png",
+        "bytes":  21660,
+        "sha256":  "4ee2f2755ba3cec076bfd8215ee13035d75dd9b29fef3b247db5316a07e34de5",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/after/ready-768.png",
+        "bytes":  20308,
+        "sha256":  "b59532f1e616886ea447d735f3dc380d4757050dbd54880d6a23f9b2fa998a9b",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/accepted-1440.png",
+        "bytes":  22176,
+        "sha256":  "edc7d00d1f5be3cbfb7242902cc54bfd9bfbe647021e404822680faaf1e74562",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/accepted-320.png",
+        "bytes":  21570,
+        "sha256":  "caa36aee0c25b0a80df8a57cb977dfd85083e7a4559a6bd0722018df21ee7118",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/accepted-390.png",
+        "bytes":  21907,
+        "sha256":  "04f9341c4c7eaa0293ed521161ba3b86565aec9043df246a3cccfe60e47f0c70",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/accepted-768.png",
+        "bytes":  19584,
+        "sha256":  "bb92baa6cd3388e85b21360d8a330d7fd5ecfcfa613fa339b7696e964bb0bf16",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/cancelled-1440.png",
+        "bytes":  11225,
+        "sha256":  "1ea6e7cba6ab3908ee6913477e27f9ddd11a8af3c121853a6713d11c3126bddc",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/cancelled-320.png",
+        "bytes":  7790,
+        "sha256":  "25c1ee373eae982431951753b12c747b3f7c8596f68f3f702954f552c96e3972",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/cancelled-390.png",
+        "bytes":  8131,
+        "sha256":  "b36681e3cbd5110d4f5dc50dfa7c904ce1d1aae87b884903557283ae1b2b4217",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/cancelled-768.png",
+        "bytes":  9208,
+        "sha256":  "9a6c5a5c5374593aa21962fe5c1a597ce3e857146947abb070869a5998f1c99e",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/completed-1440.png",
+        "bytes":  20418,
+        "sha256":  "5b30440fc0a29d2a0873a5d57eb49554f311f659ce85ad6ddc9a0216fea07c03",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/completed-320.png",
+        "bytes":  20311,
+        "sha256":  "2b2b6eb221dcc3d29364ea9367fe175271e21f458d8ce205142cac5880fec5bb",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/completed-390.png",
+        "bytes":  20666,
+        "sha256":  "e0bc1d47a07e4210778bb4c12ace44032126414bc16a96473e96073105d74442",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/completed-768.png",
+        "bytes":  17781,
+        "sha256":  "870c1ed3b0c8e591698bb180fe91bcd8a00af1c4283b6b8e4c053499150d6eb0",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/pending-1440.png",
+        "bytes":  21800,
+        "sha256":  "f127428efa225d5bcc6af9d2bc7efce4361bd8670058041b60cdc9c5b86d4bb7",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/pending-320.png",
+        "bytes":  21108,
+        "sha256":  "4c79695d3a0779244578a8e6563419a6a1d649e43898e5f3c80f21158ce62f2a",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/pending-390.png",
+        "bytes":  21437,
+        "sha256":  "cf031b7846667117d3dd2eb100d558e93e989e32a4044619f1e7d926124fe171",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/pending-768.png",
+        "bytes":  19219,
+        "sha256":  "8299e22440c6dcb7f61b1e7cd1f0b12b21ae1da47d6cc253e3ad016a7a9f6a25",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/preparing-1440.png",
+        "bytes":  22249,
+        "sha256":  "91b803103fd5c3be0e15d54643c43cb1149ca9208383c17696d86c36667501ad",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/preparing-320.png",
+        "bytes":  20941,
+        "sha256":  "44bda642df34e36673167576946ba06187dc43771984a22a6c9cbc2c6fb1f70a",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/preparing-390.png",
+        "bytes":  21274,
+        "sha256":  "7b44f894f81cf7f94e741c8abbab3c022343b24ae372b6990075205bffb4115a",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/preparing-768.png",
+        "bytes":  19811,
+        "sha256":  "cc756417039ffb6c11d12968200620df22492260600a0a7f56ec54abbe305231",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/ready-1440.png",
+        "bytes":  22527,
+        "sha256":  "f6f8214037cc6401167c5f7a075205fd11e16e2e1e7359c298d8fcdc0fe13b0b",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/ready-320.png",
+        "bytes":  21255,
+        "sha256":  "d01e17b18fc179b289fda9dd14d7d9bbb6533d6b18eec0b66278a221fd5d6b85",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/ready-390.png",
+        "bytes":  21605,
+        "sha256":  "fd5ec7eab48554f1a50777c3cc5809f0600ac6b38fe1f2c5c89ff24566245f0c",
+        "kind":  "isolated synthetic timeline screenshot"
+    },
+    {
+        "path":  "docs/v1-timeline-connector-evidence/before/ready-768.png",
+        "bytes":  20286,
+        "sha256":  "f2b00c4e8ffbf71c512422e9b0a05375bba0df05fef7af300b259f5a4d41ddfc",
+        "kind":  "isolated synthetic timeline screenshot"
+    }
+]

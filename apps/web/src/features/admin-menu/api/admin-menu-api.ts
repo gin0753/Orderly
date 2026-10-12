@@ -22,6 +22,13 @@ import type {
   UpdateAdminProductParameters,
 } from "../types/admin-product.types";
 
+export function getAdminAiCapability() {
+  return apiFetch<{ available: boolean }>("/admin/menu/ai/capability", {
+    auth: "required",
+    cache: "no-store",
+  });
+}
+
 export function createAdminContentSuggestion(
   request: AdminContentSuggestionRequest,
 ) {

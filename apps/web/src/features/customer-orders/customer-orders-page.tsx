@@ -43,17 +43,17 @@ export function CustomerOrdersPage() {
     </div>
 
     <Card variant="surface" className="mb-6 space-y-5 p-4 sm:p-6">
-      <nav aria-label="Filter orders by status"><p className="mb-2 text-sm font-semibold">Status</p>
-        <div className="flex flex-wrap gap-2">{ORDER_STATUSES.map((status) => <Link key={status} href={customerOrdersHref({ ...queryParams, status, page: 1 })} scroll={false}
+      <nav aria-label="Filter orders by status"><p className="mb-2 flex items-center justify-between gap-2 text-sm font-semibold">Status<span className="text-xs font-normal text-[var(--color-text-secondary)] sm:hidden">Scroll for more</span></p>
+        <div className="flex gap-2 overflow-x-auto p-1 sm:flex-wrap sm:overflow-visible sm:p-0">{ORDER_STATUSES.map((status) => <Link key={status} href={customerOrdersHref({ ...queryParams, status, page: 1 })} scroll={false}
           aria-current={queryParams.status === status ? "true" : undefined}
-          className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-semibold transition ${queryParams.status === status ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-soft)] text-[var(--color-brand-text)]" : "border-[var(--color-control-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-brand-strong)]"}`}>
+          className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-semibold transition ${queryParams.status === status ? "border-[var(--color-brand-strong)] bg-[var(--color-brand-soft)] text-[var(--color-brand-text)]" : "border-[var(--color-control-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-brand-strong)]"}`}>
           {queryParams.status === status ? <span aria-hidden="true">✓</span> : null}
           {status === "all" ? "All" : ORDER_STATUS_LABELS[status]}</Link>)}</div>
       </nav>
-      <nav aria-label="Sort orders"><p className="mb-2 text-sm font-semibold">Sort by</p>
-        <div className="flex flex-wrap gap-2">{ORDER_SORTS.map((sort) => <Link key={sort} href={customerOrdersHref({ ...queryParams, sort, page: 1 })} scroll={false}
+      <nav aria-label="Sort orders"><p className="mb-2 flex items-center justify-between gap-2 text-sm font-semibold">Sort by<span className="text-xs font-normal text-[var(--color-text-secondary)] sm:hidden">Scroll for more</span></p>
+        <div className="flex gap-2 overflow-x-auto p-1 sm:flex-wrap sm:overflow-visible sm:p-0">{ORDER_SORTS.map((sort) => <Link key={sort} href={customerOrdersHref({ ...queryParams, sort, page: 1 })} scroll={false}
           aria-current={queryParams.sort === sort ? "true" : undefined}
-          className={`inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold underline-offset-4 ${queryParams.sort === sort ? "bg-[var(--color-surface-muted)] text-[var(--color-text-primary)] underline" : "text-[var(--color-text-secondary)] hover:underline"}`}>
+          className={`inline-flex min-h-11 shrink-0 items-center rounded-xl px-3 text-sm font-semibold underline-offset-4 ${queryParams.sort === sort ? "bg-[var(--color-surface-muted)] text-[var(--color-text-primary)] underline" : "text-[var(--color-text-secondary)] hover:underline"}`}>
           {SORT_LABELS[sort]}</Link>)}</div>
       </nav>
     </Card>
