@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { CustomerRegistrationService } from './customer-registration.service';
 import { RegistrationMailer } from './registration-mailer';
+import { CustomerDeletionService } from './customer-deletion.service';
 import { CustomerAuthConfig } from './customer-auth.config';
 import { CustomerAccountController } from './customer-account.controller';
 import { CustomerAuthController } from './customer-auth.controller';
@@ -24,6 +25,7 @@ import { CustomerJwtStrategy } from './strategies/customer-jwt.strategy';
     CustomerRegistrationService,
     RegistrationMailer,
     CustomerAuthService,
+    CustomerDeletionService,
     CustomerGoogleOAuthService,
     GoogleOAuthConfig,
     GoogleProvider,

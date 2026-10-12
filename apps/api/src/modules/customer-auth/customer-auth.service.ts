@@ -11,6 +11,8 @@ import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import type { CookieOptions, Response } from 'express';
 
 import { PrismaService } from '../../prisma/prisma.service';
+import { lockCustomerDeletion } from './customer-deletion-lock';
+import { deletionDigest } from './customer-deletion.service';
 import { CUSTOMER_COOKIES, CustomerAuthConfig } from './customer-auth.config';
 import {
   CustomerAuthResult,
@@ -74,16 +76,37 @@ export class CustomerAuthService {
     if (!user?.isActive || !user.passwordHash || !matches) {
       throw new UnauthorizedException('Invalid email or password.');
     }
-    return this.prisma.$transaction((tx) => this.createSession(tx, user));
+    return this.prisma.$transaction(async (tx) => {
+      await lockCustomerDeletion(tx);
+      const current = await tx.customerUser.findUnique({
+        where: { id: user.id },
+      });
+      if (!current?.isActive || current.passwordHash !== user.passwordHash)
+        throw new UnauthorizedException('Invalid email or password.');
+      return this.createSession(tx, current);
+    });
   }
 
-  async signInWithGoogle(identity: {
-    subject: string;
-    email: string;
-    name: string | null;
-  }): Promise<CustomerAuthResult> {
+  async signInWithGoogle(
+    identity: {
+      subject: string;
+      email: string;
+      name: string | null;
+    },
+    startedAt = new Date(),
+  ): Promise<CustomerAuthResult> {
     try {
       return await this.prisma.$transaction(async (tx) => {
+        await lockCustomerDeletion(tx);
+        const barrier = await tx.customerDeletedGoogleSubject.findUnique({
+          where: { subjectHash: deletionDigest(identity.subject) },
+        });
+        if (
+          barrier &&
+          barrier.expiresAt > new Date() &&
+          startedAt <= barrier.deletedAt
+        )
+          throw new UnauthorizedException('Start Google sign-in again.');
         let user = await tx.customerUser.findUnique({
           where: { googleSubject: identity.subject },
         });
@@ -118,9 +141,15 @@ export class CustomerAuthService {
           where: { googleSubject: identity.subject },
         });
         if (bySubject?.isActive)
-          return this.prisma.$transaction((tx) =>
-            this.createSession(tx, bySubject),
-          );
+          return this.prisma.$transaction(async (tx) => {
+            await lockCustomerDeletion(tx);
+            const current = await tx.customerUser.findUnique({
+              where: { id: bySubject.id },
+            });
+            if (!current?.isActive)
+              throw new UnauthorizedException('Account is unavailable.');
+            return this.createSession(tx, current);
+          });
         throw new ConflictException(
           'Unable to sign in with this Google account.',
         );
@@ -306,6 +335,7 @@ export class CustomerAuthService {
       throw new BadRequestException('Current password is incorrect.');
     const passwordHash = await bcrypt.hash(dto.newPassword, PASSWORD_COST);
     return this.prisma.$transaction(async (tx) => {
+      await lockCustomerDeletion(tx);
       const updated = await tx.customerUser.updateMany({
         where: {
           id: customerId,

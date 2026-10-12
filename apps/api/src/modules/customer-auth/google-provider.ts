@@ -12,6 +12,7 @@ export type GoogleIdentity = {
   subject: string;
   email: string;
   name: string | null;
+  authTime?: number;
 };
 
 @Injectable()
@@ -50,6 +51,7 @@ export class GoogleProvider {
     state: string,
     nonce: string,
     verifier: string,
+    deletion = false,
   ): Promise<string> {
     if (!this.config.enabled)
       throw new ServiceUnavailableException(
@@ -67,6 +69,14 @@ export class GoogleProvider {
       response_type: 'code',
       scope: 'openid email profile',
       prompt: 'select_account',
+      ...(deletion
+        ? {
+            max_age: '0',
+            claims: JSON.stringify({
+              id_token: { auth_time: { essential: true } },
+            }),
+          }
+        : {}),
       state,
       nonce,
       code_challenge: challenge,
@@ -79,6 +89,7 @@ export class GoogleProvider {
     state: string,
     nonce: string,
     verifier: string,
+    deletionStartedAt?: Date,
   ): Promise<GoogleIdentity> {
     const library = await loadOpenIdClient();
     if (this.config.fixture) {
@@ -107,6 +118,11 @@ export class GoogleProvider {
           'Google authentication could not be verified.',
         );
       }
+      if (deletionStartedAt)
+        assertDeletionAuthentication(
+          issued.identity.authTime,
+          deletionStartedAt,
+        );
       return issued.identity;
     }
     try {
@@ -133,7 +149,10 @@ export class GoogleProvider {
           'Google did not provide a verified email address.',
         );
       }
+      if (deletionStartedAt)
+        assertDeletionAuthentication(claims.auth_time, deletionStartedAt);
       return {
+        ...(deletionStartedAt ? { authTime: claims.auth_time as number } : {}),
         subject: claims.sub,
         email: claims.email.trim().toLowerCase(),
         name:
@@ -185,6 +204,23 @@ export class GoogleProvider {
         name: 'Web Link',
       },
     };
+    if (choice.startsWith('delete-')) {
+      const base = identities.new;
+      identities['delete-fresh'] = {
+        ...base,
+        authTime: Math.floor(Date.now() / 1000),
+      };
+      identities['delete-wrong'] = {
+        ...base,
+        subject: 'wrong-deletion-subject',
+        authTime: Math.floor(Date.now() / 1000),
+      };
+      identities['delete-stale'] = {
+        ...base,
+        authTime: Math.floor(Date.now() / 1000) - 600,
+      };
+      identities['delete-silent'] = { ...base };
+    }
     const identity = identities[choice];
     if (!identity) throw new UnauthorizedException('Unknown test identity.');
     const code = randomUUID();
@@ -193,5 +229,25 @@ export class GoogleProvider {
     callback.searchParams.set('code', code);
     callback.searchParams.set('state', state);
     return callback.href;
+  }
+}
+
+/** New signed authentication evidence must post-date deletion intent (one second for integer rounding). */
+export function assertDeletionAuthentication(
+  authTime: unknown,
+  startedAt: Date,
+  now = Date.now(),
+) {
+  if (
+    typeof authTime !== 'number' ||
+    !Number.isSafeInteger(authTime) ||
+    authTime <= 0 ||
+    authTime * 1000 < startedAt.getTime() - 1000 ||
+    authTime * 1000 < now - 5 * 60_000 ||
+    authTime * 1000 > now + 30_000
+  ) {
+    throw new UnauthorizedException(
+      'Google must authenticate you afresh for account deletion.',
+    );
   }
 }

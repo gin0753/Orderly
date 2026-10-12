@@ -3,7 +3,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { CustomerRouteGuard } from "@/features/customer-auth/components/customer-route-guard";
-import { bootstrapCustomer, customerSessionExpired } from "@/features/customer-auth/store/customer-auth-slice";
+import { bootstrapCustomer, customerAccountDeleted, customerSessionExpired } from "@/features/customer-auth/store/customer-auth-slice";
 import { makeStore } from "@/store/store";
 
 const replaceMock = jest.fn();
@@ -54,4 +54,12 @@ it("shows a recoverable error instead of redirecting after infrastructure failur
   expect(screen.getByRole("alert")).toHaveTextContent("Unable to check your session");
   expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
   expect(replaceMock).not.toHaveBeenCalled();
+});
+
+it("routes completed deletion to the storefront even when a late session-ended event arrives", async () => {
+  const store = makeStore(); store.dispatch(customerAccountDeleted()); store.dispatch(customerSessionExpired());
+  render(<Provider store={store}><CustomerRouteGuard><p>Private account data</p></CustomerRouteGuard></Provider>);
+  await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/"));
+  expect(replaceMock).not.toHaveBeenCalledWith(expect.stringContaining("/login"));
+  expect(screen.queryByText("Private account data")).not.toBeInTheDocument();
 });

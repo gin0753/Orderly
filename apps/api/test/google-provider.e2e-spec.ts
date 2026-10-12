@@ -114,7 +114,7 @@ describe('Google OIDC provider validation', () => {
     seenVerifier = null;
   });
 
-  function exchange(state = 'expected-state') {
+  function exchange(state = 'expected-state', deletionStartedAt?: Date) {
     const callback = new URL(
       `http://localhost:3000/api/customer/auth/google/callback?code=fixture-code&state=${state}`,
     );
@@ -123,6 +123,7 @@ describe('Google OIDC provider validation', () => {
       'expected-state',
       'expected-nonce',
       'expected-verifier',
+      deletionStartedAt,
     );
   }
 
@@ -152,6 +153,51 @@ describe('Google OIDC provider validation', () => {
       );
     }
   });
+
+  it('requests fresh deletion authentication evidence without altering normal sign-in', async () => {
+    const url = new URL(
+      await provider.authorizationUrl(
+        'delete-state',
+        'delete-nonce',
+        'delete-verifier',
+        true,
+      ),
+    );
+    expect(url.searchParams.get('max_age')).toBe('0');
+    expect(url.searchParams.get('claims')).toBe(
+      JSON.stringify({ id_token: { auth_time: { essential: true } } }),
+    );
+  });
+
+  it('accepts cryptographically validated authentication after deletion intent', async () => {
+    tokenClaims.auth_time = Math.floor(Date.now() / 1000);
+    const result = await exchange('expected-state', new Date());
+    expect(result.authTime).toBe(tokenClaims.auth_time);
+  });
+
+  it.each(['missing', 'old-sso', 'stale', 'future', 'string', 'bad-signature'])(
+    'rejects deletion authentication with %s evidence',
+    async (kind) => {
+      const now = Math.floor(Date.now() / 1000);
+      if (kind !== 'missing')
+        tokenClaims.auth_time =
+          kind === 'old-sso'
+            ? now - 60
+            : kind === 'stale'
+              ? now - 600
+              : kind === 'future'
+                ? now + 300
+                : kind === 'string'
+                  ? String(now)
+                  : now;
+      if (kind === 'bad-signature') signingKey = wrongKeys.privateKey;
+      const accepted = await exchange('expected-state', new Date()).then(
+        () => true,
+        () => false,
+      );
+      expect(accepted).toBe(false);
+    },
+  );
 
   it('validates a signed Google identity and sends the PKCE verifier', async () => {
     await expect(exchange()).resolves.toEqual({

@@ -1,7 +1,7 @@
 import type { GuestOrderLookupRequest } from "../types/order-tracking.types";
 
 const TRACKING_LOOKUP_STORAGE_KEY = "orderly:tracking-lookup";
-export type StoredTrackingLookup = GuestOrderLookupRequest & { expiresAt?: string };
+export type StoredTrackingLookup = GuestOrderLookupRequest & { expiresAt?: string; customerUserId?: string };
 let memoryReceipt: StoredTrackingLookup | null = null;
 
 function valid(value: StoredTrackingLookup): boolean {
@@ -12,6 +12,7 @@ export function saveTrackingLookup(payload: StoredTrackingLookup) {
   memoryReceipt = valid(payload) ? {
     orderNumber: payload.orderNumber, receiptCode: payload.receiptCode,
     ...(payload.expiresAt !== undefined ? { expiresAt: payload.expiresAt } : {}),
+    ...(typeof payload.customerUserId === "string" ? { customerUserId: payload.customerUserId } : {}),
   } : null;
   if (typeof window === "undefined") return;
   try {
@@ -27,7 +28,7 @@ export function getTrackingLookup(): StoredTrackingLookup | null {
     if (raw) {
       const parsed = JSON.parse(raw) as StoredTrackingLookup;
       if (parsed && valid(parsed)) {
-        memoryReceipt = { orderNumber: parsed.orderNumber, receiptCode: parsed.receiptCode, ...(parsed.expiresAt !== undefined ? { expiresAt: parsed.expiresAt } : {}) };
+        memoryReceipt = { orderNumber: parsed.orderNumber, receiptCode: parsed.receiptCode, ...(parsed.expiresAt !== undefined ? { expiresAt: parsed.expiresAt } : {}), ...(typeof parsed.customerUserId === "string" ? { customerUserId: parsed.customerUserId } : {}) };
         return { ...memoryReceipt };
       }
     }

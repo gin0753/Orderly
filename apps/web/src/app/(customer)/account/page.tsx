@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import { CustomerDeleteAccount } from "@/features/customer-auth/components/customer-delete-account";
 import { CustomerAccountProfile } from "@/features/customer-auth/components/customer-account-profile";
 import { CustomerGoogleMethods } from "@/features/customer-auth/components/customer-google-methods";
 import { CustomerPasswordForm } from "@/features/customer-auth/components/customer-password-form";
@@ -19,6 +20,7 @@ export default function AccountPage() {
         <p className="mt-2 text-sm text-[var(--color-text-secondary)]">Manage how you sign in and keep your account secure.</p>
         <Suspense fallback={null}><CustomerGoogleMethods collapsible /></Suspense>
         <CustomerPasswordForm collapsible />
+        <Suspense fallback={null}><CustomerDeleteAccount /></Suspense>
       </section>
     </div>
   </div>;

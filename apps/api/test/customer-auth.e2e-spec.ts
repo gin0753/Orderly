@@ -382,7 +382,7 @@ describe('Customer authentication API', () => {
     const response = await mutation(server, 'logout')
       .set('Cookie', cookie(initial, CUSTOMER_COOKIES.refresh))
       .expect(204);
-    expect(cookies(response)).toHaveLength(2);
+    expect(cookies(response)).toHaveLength(4);
     expect(await prisma.customerSession.count()).toBe(0);
     await request(server)
       .get('/api/customer/auth/me')

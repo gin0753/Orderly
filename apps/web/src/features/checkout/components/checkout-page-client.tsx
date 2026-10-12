@@ -215,6 +215,7 @@ export function CheckoutPageClient({
         orderNumber: order.orderNumber,
         receiptCode: order.receiptCode,
         expiresAt: order.receiptExpiresAt,
+        ...(customer ? { customerUserId: customer.id } : {}),
       });
 
       clearCheckoutReturnDraft();

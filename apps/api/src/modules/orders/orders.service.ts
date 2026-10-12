@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   OptionGroupType,
@@ -14,6 +15,7 @@ import {
 } from '@prisma/client';
 import type { StoreSettings } from '@prisma/client';
 
+import { lockCustomerDeletion } from '../customer-auth/customer-deletion-lock';
 import { PrismaService } from '../../prisma/prisma.service';
 import { moneyToCents } from '../../utils/moneyToCents';
 
@@ -81,6 +83,16 @@ export class OrdersService {
     const customerPhone = this.normalizeCustomerPhone(dto.customer.phone);
 
     return this.prisma.$transaction(async (tx) => {
+      if (customerUserId) {
+        await lockCustomerDeletion(tx);
+        const owner = await tx.customerUser.findUnique({
+          where: { id: customerUserId },
+        });
+        if (!owner?.isActive)
+          throw new UnauthorizedException(
+            'Your customer session is no longer valid.',
+          );
+      }
       const storeSettings = await tx.storeSettings.findUnique({
         where: {
           id: 'default',

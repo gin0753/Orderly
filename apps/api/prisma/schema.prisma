@@ -46,6 +46,7 @@ enum AdminRole {
 enum CustomerOAuthPurpose {
   SIGN_IN
   CONNECT_GOOGLE
+  DELETE_ACCOUNT
 }
 
 enum ProductOptionGroupKind {
@@ -330,8 +331,29 @@ model CustomerSession {
 
   customerUser CustomerUser @relation(fields: [customerUserId], references: [id], onDelete: Cascade)
   oauthTransactions CustomerOAuthTransaction[]
+  deletionGrants CustomerDeletionGrant[]
 
   @@index([customerUserId])
+  @@index([expiresAt])
+}
+
+model CustomerDeletionGrant {
+  id String @id @default(uuid()) @db.Uuid
+  secretHash String @unique @db.Char(64)
+  browserBindingHash String @db.Char(64)
+  customerUserId String @db.Uuid
+  customerSessionId String @db.Uuid
+  googleSubject String @db.VarChar(255)
+  purpose CustomerOAuthPurpose
+  expiresAt DateTime
+  customerSession CustomerSession @relation(fields: [customerSessionId], references: [id], onDelete: Cascade)
+  @@index([expiresAt])
+}
+
+model CustomerDeletedGoogleSubject {
+  subjectHash String @id @db.Char(64)
+  deletedAt DateTime
+  expiresAt DateTime
   @@index([expiresAt])
 }
 

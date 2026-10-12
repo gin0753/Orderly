@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { createHash, randomBytes } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { lockCustomerDeletion } from './customer-deletion-lock';
 import { CustomerAuthConfig } from './customer-auth.config';
 import { CustomerAuthService } from './customer-auth.service';
 import { RegistrationMailer } from './registration-mailer';
@@ -44,6 +45,7 @@ export class CustomerRegistrationService {
     let claimed = false;
     try {
       claimed = await this.prisma.$transaction(async (tx) => {
+        await lockCustomerDeletion(tx);
         const current = await tx.customerPendingRegistration.findUnique({
           where: { email },
         });
@@ -117,6 +119,7 @@ export class CustomerRegistrationService {
     const passwordHash = await this.auth.hashRegistrationPassword(dto.password);
     try {
       return await this.prisma.$transaction(async (tx) => {
+        await lockCustomerDeletion(tx);
         const tokenHash = registrationDigest(dto.token);
         const pending = await tx.customerPendingRegistration.findUnique({
           where: { tokenHash },

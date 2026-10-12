@@ -14,8 +14,9 @@ type CustomerAuthState = {
   operation: "bootstrap" | "login" | "register" | "logout" | null;
   error: string | null;
   notice: string | null;
+  accountDeleted: boolean;
 };
-const initialState: CustomerAuthState = { status: "idle", customer: null, requestId: null, operation: null, error: null, notice: null };
+const initialState: CustomerAuthState = { status: "idle", customer: null, requestId: null, operation: null, error: null, notice: null, accountDeleted: false };
 function failure(error: unknown): Failure {
   return { status: error instanceof ApiError ? error.status : undefined, message: error instanceof ApiError && error.status < 500 ? error.message : "We couldn’t reach your account. Please try again." };
 }
@@ -53,11 +54,15 @@ const slice = createSlice({
     },
     customerSessionReplaced(state, action: { payload: PublicCustomer }) {
       state.customer = action.payload;
+      state.accountDeleted = false;
       state.status = "authenticated";
       state.operation = null;
       state.requestId = null;
       state.error = null;
       state.notice = null;
+    },
+    customerAccountDeleted(state) {
+      Object.assign(state, { ...initialState, status: "unauthenticated", notice: "Your customer account has been deleted.", accountDeleted: true });
     },
     customerSessionExpired(state) {
       Object.assign(state, { status: "unauthenticated", customer: null, requestId: null, operation: null, error: null, notice: "Your session expired. Sign in again to continue." });
@@ -87,7 +92,7 @@ const slice = createSlice({
     for (const thunk of [bootstrapCustomer, loginCustomer]) {
       builder.addCase(thunk.fulfilled, (state, action) => {
         if (state.requestId !== action.meta.requestId) return;
-        state.customer = action.payload; state.status = "authenticated"; state.operation = null; state.requestId = null; state.error = null; state.notice = null;
+        state.customer = action.payload; state.accountDeleted = false; state.status = "authenticated"; state.operation = null; state.requestId = null; state.error = null; state.notice = null;
       });
     }
     builder.addCase(registerCustomer.fulfilled, (state, action) => {
@@ -101,5 +106,5 @@ const slice = createSlice({
     });
   },
 });
-export const { customerSessionExpired, customerSessionChanged, customerProfileUpdated, customerSessionReplaced, clearCustomerFeedback } = slice.actions;
+export const { customerAccountDeleted, customerSessionExpired, customerSessionChanged, customerProfileUpdated, customerSessionReplaced, clearCustomerFeedback } = slice.actions;
 export default slice.reducer;

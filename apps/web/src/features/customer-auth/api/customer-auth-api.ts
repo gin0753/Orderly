@@ -12,6 +12,15 @@ export const customerAuthApi = {
   googleStatus: () => customerApiFetch<{ enabled: boolean }>("/customer/auth/google/status"),
   googleStart: (returnTo: string) => customerClient.sessionLock(() => customerApiFetch<{ authorizationUrl: string }>("/customer/auth/google/start", { method: "POST", body: JSON.stringify({ returnTo }) })),
   googleConnect: (password: string) => customerClient.sessionLock(() => customerApiFetch<{ authorizationUrl: string }>("/customer/auth/google/connect", { method: "POST", body: JSON.stringify({ password }), auth: "required" })),
+  deletionStatus: () => customerApiFetch<{ ready: boolean }>("/customer/account/deletion/status", { auth: "required" }),
+  googleDeleteStart: async () => {
+    await customerApiFetch<CustomerAuthResponse>("/customer/auth/me", { auth: "required" });
+    return customerClient.sessionLock(() => customerApiFetch<{ authorizationUrl: string }>("/customer/auth/google/delete-account", { method: "POST" }));
+  },
+  deleteAccount: async (input: { confirmation: "DELETE"; currentPassword?: string; savedReceiptNumber?: string }) => {
+    await customerApiFetch<CustomerAuthResponse>("/customer/auth/me", { auth: "required" });
+    return customerClient.sessionLock(() => customerApiFetch<{ clearSavedReceipt: boolean }>("/customer/account/delete", { method: "POST", body: JSON.stringify(input) }));
+  },
   updateProfile: (input: { name?: string; phone?: string | null }) => customerApiFetch<CustomerAuthResponse>("/customer/account", { method: "PATCH", body: JSON.stringify(input), auth: "required" }),
   changePassword: async (input: { currentPassword: string; newPassword: string }) => {
     await customerApiFetch<CustomerAuthResponse>("/customer/auth/me", { auth: "required" });
