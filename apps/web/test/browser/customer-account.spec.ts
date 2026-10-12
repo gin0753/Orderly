@@ -103,8 +103,7 @@ test("profile persists and password change replaces the session across browsers"
   await expect(peer).toHaveURL(/\/login\?returnTo=%2Faccount/);
   await peerContext.close();
 
-  await page.getByRole("button", { name: "Account options" }).click();
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await signOutAndVerifyRevocation(page);
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password", { exact: true }).fill(oldPassword);
@@ -137,8 +136,7 @@ test("linked and Google-only accounts show their available methods", async ({
     page.locator("summary").filter({ hasText: "Change password" }),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: /Unlink/ })).toHaveCount(0);
-  await page.getByRole("button", { name: "Account options" }).click();
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await signOutAndVerifyRevocation(page);
   await page.goto("/login");
   await page.getByRole("button", { name: "Continue with Google" }).click();
   await page
@@ -185,13 +183,11 @@ test("pending logout completes across ordinary Menu navigation before another lo
   page,
 }) => {
   await page.goto("/register");
-  await page.getByLabel("Name").fill("Logout Navigation Fixture");
-  await page
-    .getByLabel("Email")
-    .fill("logout.navigation.synthetic@example.test");
-  await page.getByLabel("Password", { exact: true }).fill(oldPassword);
-  await page.getByLabel("Confirm password").fill(oldPassword);
-  await page.getByRole("button", { name: "Create account" }).click();
+  await verifiedRegistration(page, {
+    name: "Logout Navigation Fixture",
+    email: "logout.navigation.synthetic@example.test",
+    password: oldPassword,
+  });
   await expect(page).toHaveURL(/\/account$/);
 
   let release!: () => void;
