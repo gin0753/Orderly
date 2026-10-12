@@ -1,5 +1,6 @@
 /** @jest-environment jsdom */
-import { act, Suspense, useEffect } from "react";
+import { Suspense, useEffect } from "react";
+import { act } from "@testing-library/react";
 import { hydrateRoot, type Root } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { StoreProvider } from "@/store/store-provider";
