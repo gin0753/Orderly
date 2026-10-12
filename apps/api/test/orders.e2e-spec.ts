@@ -1,8 +1,9 @@
+import { verifiedCustomer } from './support/verified-customer';
 /// <reference types="jest" />
 
 import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import {
   OptionGroupType,
   PrismaClient,
@@ -15,6 +16,8 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import { createTestApp } from './support/create-test-app';
 
 type CreatedOrderBody = {
+  receiptCode: string;
+  receiptExpiresAt: string;
   orderId: string;
   orderNumber: string;
   status: string;
@@ -25,9 +28,7 @@ type CreatedOrderBody = {
 
 type ErrorBody = { message: string };
 type TrackingBody = {
-  id: string;
   orderNumber: string;
-  customerEmail: string;
   totalCents: number;
 };
 
@@ -52,17 +53,12 @@ describe('Guest orders API (e2e)', () => {
     await prisma.customerUser.deleteMany();
   });
 
-  async function passwordCustomer() {
-    const response = await request(httpServer)
-      .post('/api/customer/auth/register')
-      .set('Origin', 'http://localhost:3000')
-      .set('X-Orderly-Client', 'customer-web')
-      .send({
-        email: 'owner@example.test',
-        name: 'Order Owner',
-        password: 'An owner password 123!',
-      })
-      .expect(201);
+  async function passwordCustomer(email = 'owner@example.test') {
+    const response = await verifiedCustomer(app, {
+      email,
+      name: 'Order Owner',
+      password: 'An owner password 123!',
+    });
     const setCookies = response.headers['set-cookie'] as unknown as string[];
     const access = setCookies
       .find((value) => value.startsWith('orderly_customer_access='))!
@@ -449,65 +445,261 @@ describe('Guest orders API (e2e)', () => {
     await expect(prisma.order.count()).resolves.toBe(0);
   });
 
-  it('looks up an order using a # number and normalized email or phone', async () => {
+  async function receiptOrder(ownerCookie?: string) {
     const fixture = await createCheckoutFixture(prisma);
-    const created = await request(httpServer)
-      .post('/api/orders')
+    const call = request(httpServer).post('/api/orders');
+    if (ownerCookie) call.set('Cookie', ownerCookie);
+    const response = await call
       .send(createPickupRequest(fixture.productId, [fixture.smallOptionId]))
       .expect(201);
-    const createdBody = created.body as unknown as CreatedOrderBody;
+    expect(response.headers['cache-control']).toBe('private, no-store');
+    return response.body as CreatedOrderBody;
+  }
 
-    const byEmail = await request(httpServer)
-      .post('/api/orders/guest/lookup')
-      .send({
-        orderNumber: `#${createdBody.orderNumber}`,
-        email: 'CUSTOMER@EXAMPLE.COM',
-      })
-      .expect(201);
-    const emailTrackingBody = byEmail.body as unknown as TrackingBody;
-    expect(emailTrackingBody).toMatchObject({
-      orderNumber: createdBody.orderNumber,
-      customerEmail: 'customer@example.com',
-      totalCents: 1520,
+  async function lookup(body: object, cookie?: string) {
+    const call = request(httpServer).post('/api/orders/guest/lookup');
+    if (cookie) call.set('Cookie', cookie);
+    return call.send(body);
+  }
+
+  it.each([false, true])(
+    'issues hash-only receipts for guest/owned orders (%s) and allows repeated minimal tracking',
+    async (owned) => {
+      const owner = owned ? await passwordCustomer() : null;
+      const created = await receiptOrder(owner?.access);
+      const stored = await prisma.order.findUniqueOrThrow({
+        where: { id: created.orderId },
+      });
+      expect(
+        stored.receiptCapabilityHash ===
+          createHash('sha256').update(created.receiptCode).digest('hex'),
+      ).toBe(true);
+      expect(JSON.stringify(stored).includes(created.receiptCode)).toBe(false);
+      expect(
+        new Date(created.receiptExpiresAt).getTime() -
+          stored.createdAt.getTime(),
+      ).toBe(30 * 86400000);
+      for (let count = 0; count < 2; count++) {
+        const response = await lookup({
+          orderNumber: '#' + created.orderNumber,
+          receiptCode: created.receiptCode,
+        });
+        expect(response.status).toBe(201);
+        expect(response.headers['cache-control']).toBe('private, no-store');
+        const body = response.body as TrackingBody;
+        expect(body).toMatchObject({
+          orderNumber: created.orderNumber,
+          totalCents: 1520,
+        });
+        for (const field of [
+          'id',
+          'customerName',
+          'customerEmail',
+          'customerPhone',
+          'addressLine1',
+          'addressLine2',
+          'city',
+          'state',
+          'postcode',
+          'notes',
+          'receiptCapabilityHash',
+          'receiptCode',
+        ])
+          expect(Object.hasOwn(body, field)).toBe(false);
+        expect(JSON.stringify(body).includes(created.receiptCode)).toBe(false);
+      }
+    },
+  );
+
+  it('fails closed for missing, invalid, wrong-order, expired and revoked receipts with identical non-disclosing responses', async () => {
+    const created = await receiptOrder();
+    const product = await prisma.product.findFirstOrThrow({
+      include: { optionGroups: { include: { options: true } } },
     });
-
-    const byPhone = await request(httpServer)
-      .post('/api/orders/guest/lookup')
-      .send({
-        orderNumber: createdBody.orderNumber,
-        phone: '+61 (02) 5555 0100',
-      })
+    const size = product.optionGroups.find(
+      (group) => group.kind === ProductOptionGroupKind.SIZE,
+    )!.options[0];
+    const second = await request(httpServer)
+      .post('/api/orders')
+      .send(createPickupRequest(product.id, [size.id]))
       .expect(201);
-    const phoneTrackingBody = byPhone.body as unknown as TrackingBody;
-    expect(phoneTrackingBody.id).toBe(createdBody.orderId);
+    const otherOrder = second.body as CreatedOrderBody;
+    const failures = [
+      await lookup({
+        orderNumber: otherOrder.orderNumber,
+        receiptCode: created.receiptCode,
+      }),
+      await lookup({ orderNumber: created.orderNumber }),
+      await lookup({
+        orderNumber: created.orderNumber,
+        receiptCode: 'a'.repeat(43),
+      }),
+      await lookup({
+        orderNumber: '99999999',
+        receiptCode: created.receiptCode,
+      }),
+      await lookup({ orderNumber: created.orderNumber, receiptCode: '' }),
+    ];
+    await prisma.order.update({
+      where: { id: created.orderId },
+      data: { receiptCapabilityExpiresAt: new Date(0) },
+    });
+    failures.push(
+      await lookup({
+        orderNumber: created.orderNumber,
+        receiptCode: created.receiptCode,
+      }),
+    );
+    await prisma.order.update({
+      where: { id: created.orderId },
+      data: {
+        receiptCapabilityExpiresAt: new Date(Date.now() + 86400000),
+        receiptCapabilityRevokedAt: new Date(),
+      },
+    });
+    failures.push(
+      await lookup({
+        orderNumber: created.orderNumber,
+        receiptCode: created.receiptCode,
+      }),
+    );
+    for (const response of failures) {
+      expect(response.status).toBe(404);
+      expect((response.body as ErrorBody).message).toBe(
+        'Order tracking is unavailable with these credentials.',
+      );
+      expect(Object.keys(response.body as object).sort()).toEqual([
+        'error',
+        'message',
+        'statusCode',
+      ]);
+      expect(JSON.stringify(response.body).includes(created.receiptCode)).toBe(
+        false,
+      );
+    }
+    // Legacy contact-only requests are rejected by whitelist validation, not used as proof.
+    for (const contact of [
+      { email: 'customer@example.com' },
+      { phone: '610255550100' },
+    ]) {
+      const response = await lookup({
+        orderNumber: created.orderNumber,
+        ...contact,
+      });
+      expect(response.status).toBe(400);
+      expect(Object.hasOwn(response.body as object, 'items')).toBe(false);
+    }
+    const nullCode = await lookup({
+      orderNumber: created.orderNumber,
+      receiptCode: null,
+    });
+    expect(nullCode.status).toBe(400);
   });
 
-  it('returns the same privacy-safe response when guest verification fails', async () => {
-    const fixture = await createCheckoutFixture(prisma);
-    const created = await request(httpServer)
-      .post('/api/orders')
-      .send(createPickupRequest(fixture.productId, [fixture.smallOptionId]))
-      .expect(201);
-    const createdBody = created.body as unknown as CreatedOrderBody;
-
-    const wrongEmail = await request(httpServer)
-      .post('/api/orders/guest/lookup')
-      .send({
-        orderNumber: createdBody.orderNumber,
-        email: 'wrong@example.com',
-      })
-      .expect(404);
-    const unknownOrder = await request(httpServer)
-      .post('/api/orders/guest/lookup')
-      .send({ orderNumber: '99999999', email: 'customer@example.com' })
-      .expect(404);
-    const wrongEmailBody = wrongEmail.body as unknown as ErrorBody;
-    const unknownOrderBody = unknownOrder.body as unknown as ErrorBody;
-
-    expect(wrongEmailBody.message).toBe(
-      'Order not found. Please check your order number and contact detail.',
+  it('preserves owner-only access and legacy ownership with different contact email, without invalid-code fallback', async () => {
+    const owner = await passwordCustomer();
+    const created = await receiptOrder(owner.access);
+    const otherCustomer = await passwordCustomer('other.owner@example.test');
+    expect(
+      (await lookup({ orderNumber: created.orderNumber }, otherCustomer.access))
+        .status,
+    ).toBe(404);
+    expect(
+      (
+        await lookup(
+          {
+            orderNumber: created.orderNumber,
+            receiptCode: created.receiptCode,
+          },
+          otherCustomer.access,
+        )
+      ).status,
+    ).toBe(201);
+    // Receipt possession works independently of stale/invalid customer cookies.
+    expect(
+      (
+        await lookup(
+          {
+            orderNumber: created.orderNumber,
+            receiptCode: created.receiptCode,
+          },
+          'orderly_customer_access=invalid',
+        )
+      ).status,
+    ).toBe(201);
+    expect(
+      (
+        await lookup(
+          { orderNumber: created.orderNumber, receiptCode: '' },
+          owner.access,
+        )
+      ).status,
+    ).toBe(404);
+    const ownerAccess = await lookup(
+      { orderNumber: created.orderNumber },
+      owner.access,
     );
-    expect(unknownOrderBody.message).toBe(wrongEmailBody.message);
+    expect(ownerAccess.status).toBe(201);
+    const invalid = await lookup(
+      { orderNumber: created.orderNumber, receiptCode: 'a'.repeat(43) },
+      owner.access,
+    );
+    expect(invalid.status).toBe(404);
+    await prisma.order.update({
+      where: { id: created.orderId },
+      data: { receiptCapabilityHash: null, receiptCapabilityExpiresAt: null },
+    });
+    expect(
+      (await lookup({ orderNumber: created.orderNumber }, owner.access)).status,
+    ).toBe(201);
+    expect(
+      (
+        await lookup({
+          orderNumber: created.orderNumber,
+          receiptCode: created.receiptCode,
+        })
+      ).status,
+    ).toBe(404);
+    const other = await prisma.customerUser.create({
+      data: { email: 'other@example.test' },
+    });
+    await prisma.order.update({
+      where: { id: created.orderId },
+      data: { customerUserId: other.id },
+    });
+    expect(
+      (await lookup({ orderNumber: created.orderNumber }, owner.access)).status,
+    ).toBe(404);
+    await prisma.order.update({
+      where: { id: created.orderId },
+      data: { customerUserId: null },
+    });
+    expect((await lookup({ orderNumber: created.orderNumber })).status).toBe(
+      404,
+    );
+    expect(
+      (await lookup({ orderNumber: created.orderNumber }, owner.access)).status,
+    ).toBe(404);
+  });
+
+  it('enforces the focused anonymous lookup throttle without revealing order data', async () => {
+    const guardedApp = await createTestApp();
+    try {
+      const server = guardedApp.getHttpServer() as Server;
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const response = await request(server)
+          .post('/api/orders/guest/lookup')
+          .send({ orderNumber: 'missing' });
+        expect(response.status).toBe(404);
+      }
+      const throttled = await request(server)
+        .post('/api/orders/guest/lookup')
+        .send({ orderNumber: 'missing' });
+      expect(throttled.status).toBe(429);
+      expect(Object.hasOwn(throttled.body as object, 'items')).toBe(false);
+    } finally {
+      await guardedApp.close();
+    }
   });
 });
 

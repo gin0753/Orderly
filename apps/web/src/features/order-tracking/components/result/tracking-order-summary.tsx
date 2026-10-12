@@ -9,7 +9,9 @@ type TrackingOrderSummaryProps = {
 const getItemMeta = (item: OrderTrackingResponse["items"][number]) => {
   const labels = [
     item.sizeName,
-    ...item.options.map((option) => `${option.optionGroupName}: ${option.name}`),
+    ...item.options.map(
+      (option) => `${option.optionGroupName}: ${option.name}`,
+    ),
   ].filter(Boolean);
 
   return labels.length > 0 ? labels.join(" · ") : null;
@@ -17,10 +19,16 @@ const getItemMeta = (item: OrderTrackingResponse["items"][number]) => {
 
 export function TrackingOrderSummary({ order }: TrackingOrderSummaryProps) {
   return (
-    <section aria-labelledby="tracking-summary-heading" className="rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-6">
+    <section
+      aria-labelledby="tracking-summary-heading"
+      className="rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-surface)] sm:p-6"
+    >
       <div className="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 id="tracking-summary-heading" className="text-xl font-bold tracking-tight text-[var(--color-text-primary)]">
+          <h2
+            id="tracking-summary-heading"
+            className="text-xl font-bold tracking-tight text-[var(--color-text-primary)]"
+          >
             Order summary
           </h2>
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">
@@ -35,17 +43,13 @@ export function TrackingOrderSummary({ order }: TrackingOrderSummaryProps) {
 
       {order.items.length > 0 ? (
         <ul className="divide-y divide-[var(--color-border)]">
-          {order.items.map((item) => {
+          {order.items.map((item, index) => {
             const itemMeta = getItemMeta(item);
 
             return (
-              <li key={item.id} className="flex gap-3 py-4 first:pt-0">
+              <li key={index} className="flex gap-3 py-4 first:pt-0">
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[var(--color-surface-muted)]">
-                  <ProductImage
-                    src={item.imageUrl}
-                    alt=""
-                    sizes="64px"
-                  />
+                  <ProductImage src={item.imageUrl} alt="" sizes="64px" />
                 </div>
 
                 <div className="min-w-0 flex-1">
@@ -90,9 +94,11 @@ export function TrackingOrderSummary({ order }: TrackingOrderSummaryProps) {
         <div className="flex justify-between text-sm text-[var(--color-text-secondary)]">
           <dt>Delivery fee</dt>
           <dd>
-            {order.orderType === "PICKUP" ? "Not applicable" : order.deliveryFeeCents > 0
-              ? formatMoneyFromCents(order.deliveryFeeCents)
-              : "Free"}
+            {order.orderType === "PICKUP"
+              ? "Not applicable"
+              : order.deliveryFeeCents > 0
+                ? formatMoneyFromCents(order.deliveryFeeCents)
+                : "Free"}
           </dd>
         </div>
 

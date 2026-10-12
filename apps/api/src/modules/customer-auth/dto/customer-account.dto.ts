@@ -1,6 +1,8 @@
 import { Transform } from 'class-transformer';
 import {
   IsString,
+  Equals,
+  IsOptional,
   Matches,
   MaxLength,
   MinLength,
@@ -43,4 +45,18 @@ export class CustomerPasswordChangeDto {
   @MinLength(15)
   @PasswordBytes()
   newPassword!: string;
+}
+
+export class CustomerDeleteDto {
+  @Equals('DELETE')
+  confirmation!: string;
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @PasswordBytes()
+  currentPassword?: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  savedReceiptNumber?: string;
 }

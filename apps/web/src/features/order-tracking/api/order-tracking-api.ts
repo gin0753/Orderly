@@ -1,11 +1,12 @@
-import { API_BASE_URL } from "@/lib/api-base-url";
+import { customerApiFetch } from "@/features/customer-auth/api/customer-api-fetch";
+import { ApiError } from "@/lib/api-fetch";
 import type {
   GuestOrderLookupRequest,
   OrderTrackingResponse,
 } from "../types/order-tracking.types";
 
 export const INVALID_TRACKING_DETAILS_MESSAGE =
-  "We couldn’t find an order matching those details. Check the order number and the email or phone used at checkout, then try again.";
+  "Tracking access could not be verified. Check your order number and receipt code, or sign in to the account that placed the order.";
 
 export const TRACKING_UNAVAILABLE_MESSAGE =
   "Tracking is temporarily unavailable. Try again in a moment.";
@@ -26,31 +27,13 @@ export class OrderTrackingLookupError extends Error {
 export async function lookupGuestOrder(
   payload: GuestOrderLookupRequest,
 ): Promise<OrderTrackingResponse> {
-  let response: Response;
-
   try {
-    response = await fetch(`${API_BASE_URL}/orders/guest/lookup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+    return await customerApiFetch<OrderTrackingResponse>("/orders/guest/lookup", {
+      method: "POST", body: JSON.stringify(payload),
+      // Bearer receipts need no session refresh; owner-only access uses existing session handling.
+      auth: payload.receiptCode !== undefined ? "public" : "optional",
     });
-  } catch {
-    throw new OrderTrackingLookupError("unavailable");
-  }
-
-  if (!response.ok) {
-    throw new OrderTrackingLookupError(
-      response.status === 400 || response.status === 404
-        ? "invalid-details"
-        : "unavailable",
-    );
-  }
-
-  try {
-    return (await response.json()) as OrderTrackingResponse;
-  } catch {
-    throw new OrderTrackingLookupError("unavailable");
+  } catch (error) {
+    throw new OrderTrackingLookupError(error instanceof ApiError && [400, 401, 404].includes(error.status) ? "invalid-details" : "unavailable");
   }
 }

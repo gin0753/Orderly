@@ -1,3 +1,4 @@
+import { verifiedCustomer } from './support/verified-customer';
 /// <reference types="jest" />
 
 import type { INestApplication } from '@nestjs/common';
@@ -49,16 +50,11 @@ describe('Customer order history (e2e)', () => {
   });
 
   async function customer(email: string) {
-    const response = await request(server)
-      .post('/api/customer/auth/register')
-      .set('Origin', 'http://localhost:3000')
-      .set('X-Orderly-Client', 'customer-web')
-      .send({
-        email,
-        name: email.split('@')[0],
-        password: 'Order history password 123!',
-      })
-      .expect(201);
+    const response = await verifiedCustomer(app, {
+      email,
+      name: email.split('@')[0],
+      password: 'Order history password 123!',
+    });
     const cookies = response.headers['set-cookie'] as unknown as string[];
     return {
       id: (response.body as { user: { id: string } }).user.id,

@@ -1,10 +1,4 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { IsNotEmpty, ValidateIf, IsString, MaxLength } from 'class-validator';
 
 export class GuestOrderLookupDto {
   @IsString()
@@ -12,14 +6,8 @@ export class GuestOrderLookupDto {
   @MaxLength(32)
   orderNumber!: string;
 
-  @IsOptional()
-  @IsEmail()
-  @MaxLength(120)
-  email?: string;
-
-  @IsOptional()
+  @ValidateIf((_object, value: unknown) => value !== undefined)
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(32)
-  phone?: string;
+  @MaxLength(128)
+  receiptCode?: string;
 }

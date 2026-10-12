@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { clearDeletedCustomerData } from "../lib/deletion-cleanup";
 import { customerClient } from "../api/customer-api-fetch";
 import { registerCustomerPrivateQueryClient } from "../lib/private-data";
 import { subscribeCustomerSessionEvents, publishCustomerSessionEvent } from "../lib/session-events";
@@ -24,6 +25,12 @@ export function CustomerAuthBootstrap() {
       }
     });
     const unsubscribeEvents = subscribeCustomerSessionEvents((event) => {
+      if (typeof event === "object") {
+        const matches = knownCustomer.current?.id === event.customerId;
+        clearDeletedCustomerData(event.customerId, false, matches);
+        if (matches) { customerClient.invalidate(); dispatch(customerSessionExpired()); }
+        return;
+      }
       customerClient.invalidate();
       if (event === "ended") dispatch(customerSessionExpired());
       else { dispatch(customerSessionChanged()); void dispatch(bootstrapCustomer()); }

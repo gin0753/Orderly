@@ -1,4 +1,7 @@
+import { verifiedRegistration } from "./verified-registration-helpers";
 import { expect, test, type Page } from "@playwright/test";
+
+test.use({ trace: "off", screenshot: "off", video: "off" });
 import { createRequire } from "node:module";
 
 const requireFromTest = createRequire(__filename);
@@ -59,20 +62,17 @@ test("guest tracking remains separate from later account history", async ({ page
   await page.getByLabel("Phone number").fill("0400 321 654");
   await page.getByLabel("Email address").fill("guest.history@example.test");
   guestNumber = await place(page);
+  const receiptCode = await page.getByLabel("Receipt code", { exact: true }).inputValue();
   await page.goto("/track-order");
   await page.getByLabel("Order number").fill(guestNumber);
-  await page.getByLabel("Email or phone").fill("guest.history@example.test");
+  await page.getByLabel("Receipt code").fill(receiptCode);
   await page.getByRole("button", { name: "Track Order" }).click();
   await expect(page).toHaveURL(new RegExp(`/track-order/${guestNumber}$`));
 });
 
 test("password customer sees an owned checkout in history and historical detail", async ({ page }) => {
   await page.goto("/register");
-  await page.getByLabel("Name").fill("History Owner");
-  await page.getByLabel("Email").fill(ownerEmail);
-  await page.getByLabel("Password", { exact: true }).fill(password);
-  await page.getByLabel("Confirm password").fill(password);
-  await page.getByRole("button", { name: "Create account" }).click();
+  await verifiedRegistration(page, { name: "History Owner", email: ownerEmail, password: password });
   await expect(page).toHaveURL(/\/account$/);
   ownerId = (await database((prisma) => prisma.customerUser.findUniqueOrThrow({ where: { email: ownerEmail }, select: { id: true } }))).id;
   await addPizza(page);
@@ -151,11 +151,7 @@ test("Google customer can open owned history and detail", async ({ page }) => {
 
 test("another customer gets the same not-found detail state for an owned order", async ({ page }) => {
   await page.goto("/register");
-  await page.getByLabel("Name").fill("History Other");
-  await page.getByLabel("Email").fill(otherEmail);
-  await page.getByLabel("Password", { exact: true }).fill(password);
-  await page.getByLabel("Confirm password").fill(password);
-  await page.getByRole("button", { name: "Create account" }).click();
+  await verifiedRegistration(page, { name: "History Other", email: otherEmail, password: password });
   await expect(page).toHaveURL(/\/account$/);
   await page.goto(`/account/orders/${ownedId}`);
   await expect(page.getByRole("heading", { name: "Order not found" })).toBeVisible();

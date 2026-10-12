@@ -1,3 +1,4 @@
+import { verifiedCustomer } from './support/verified-customer';
 /// <reference types="jest" />
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -80,11 +81,11 @@ describe('Customer account management', () => {
       .send(body);
   }
   async function register(address = email) {
-    return mutation('post', 'auth/register', {
+    return verifiedCustomer(app, {
       email: address,
       name: 'First Name',
       password: oldPassword,
-    }).expect(201);
+    });
   }
   function cookies(response: request.Response) {
     return [

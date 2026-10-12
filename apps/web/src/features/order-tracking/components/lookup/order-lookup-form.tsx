@@ -11,42 +11,11 @@ import {
   OrderTrackingLookupError,
   TRACKING_UNAVAILABLE_MESSAGE,
 } from "../../api/order-tracking-api";
-import type {
-  GuestOrderLookupRequest,
-  SubmitStatus,
-} from "../../types/order-tracking.types";
+import type { SubmitStatus } from "../../types/order-tracking.types";
 import { saveTrackingLookup } from "../../utils/order-tracking-storage";
 
 const normalizeOrderNumber = (value: string) => {
   return value.trim().replace(/^#/, "");
-};
-
-const normalizePhone = (value: string) => {
-  return value.replace(/\D/g, "");
-};
-
-const isEmail = (value: string) => {
-  return /\S+@\S+\.\S+/.test(value);
-};
-
-const buildLookupPayload = (
-  orderNumber: string,
-  contact: string,
-): GuestOrderLookupRequest => {
-  const cleanOrderNumber = normalizeOrderNumber(orderNumber);
-  const cleanContact = contact.trim();
-
-  if (isEmail(cleanContact)) {
-    return {
-      orderNumber: cleanOrderNumber,
-      email: cleanContact.toLowerCase(),
-    };
-  }
-
-  return {
-    orderNumber: cleanOrderNumber,
-    phone: normalizePhone(cleanContact),
-  };
 };
 
 const getSubmitButtonLabel = (status: SubmitStatus) => {
@@ -71,15 +40,20 @@ export function OrderLookupForm({
   const router = useRouter();
 
   const [orderNumber, setOrderNumber] = useState(initialOrderNumber);
-  const [contact, setContact] = useState("");
+  const [receiptCode, setReceiptCode] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [invalidField, setInvalidField] = useState<"orderNumber" | "contact" | null>(null);
+  const [invalidField, setInvalidField] = useState<
+    "orderNumber" | "receiptCode" | null
+  >(null);
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
   const errorRef = useRef<HTMLDivElement>(null);
 
   const isBusy = submitStatus !== "idle";
 
-  function showError(message: string, field: "orderNumber" | "contact" | null = null) {
+  function showError(
+    message: string,
+    field: "orderNumber" | "receiptCode" | null = null,
+  ) {
     setError(message);
     setInvalidField(field);
     requestAnimationFrame(() => {
@@ -93,24 +67,21 @@ export function OrderLookupForm({
     event.preventDefault();
 
     const cleanOrderNumber = normalizeOrderNumber(orderNumber);
-    const cleanContact = contact.trim();
+    const cleanReceiptCode = receiptCode.trim();
 
     if (!cleanOrderNumber) {
       showError("Please enter your order number.", "orderNumber");
       return;
     }
 
-    if (!cleanContact) {
-      showError("Please enter the email or phone number used at checkout.", "contact");
+    if (cleanReceiptCode && !/^[A-Za-z0-9_-]{43}$/.test(cleanReceiptCode)) {
+      showError("Please enter the complete receipt code.", "receiptCode");
       return;
     }
-
-    const payload = buildLookupPayload(orderNumber, contact);
-
-    if (!payload.email && (!payload.phone || payload.phone.length < 6)) {
-      showError("Please enter a valid phone number.", "contact");
-      return;
-    }
+    const payload = {
+      orderNumber: cleanOrderNumber,
+      ...(cleanReceiptCode ? { receiptCode: cleanReceiptCode } : {}),
+    };
 
     setError(null);
     setInvalidField(null);
@@ -121,8 +92,10 @@ export function OrderLookupForm({
 
       saveTrackingLookup({
         orderNumber: order.orderNumber,
-        email: payload.email,
-        phone: payload.phone,
+        receiptCode: payload.receiptCode,
+        expiresAt: new Date(
+          Date.parse(order.createdAt) + 30 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
       });
 
       setSubmitStatus("navigating");
@@ -140,7 +113,13 @@ export function OrderLookupForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate aria-label="Find your order" className="space-y-5" aria-busy={isBusy}>
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      aria-label="Find your order"
+      className="space-y-5"
+      aria-busy={isBusy}
+    >
       <div className="space-y-2">
         <label
           htmlFor="orderNumber"
@@ -152,39 +131,74 @@ export function OrderLookupForm({
         <Input
           id="orderNumber"
           value={orderNumber}
-          onChange={(event) => { setOrderNumber(event.target.value); if (invalidField === "orderNumber") { setError(null); setInvalidField(null); } }}
+          onChange={(event) => {
+            setOrderNumber(event.target.value);
+            if (invalidField === "orderNumber") {
+              setError(null);
+              setInvalidField(null);
+            }
+          }}
           placeholder="e.g. #10045"
           autoComplete="off"
           disabled={isBusy}
           aria-invalid={invalidField === "orderNumber"}
-          aria-describedby={invalidField === "orderNumber" ? "tracking-number-error" : undefined}
+          aria-describedby={
+            invalidField === "orderNumber" ? "tracking-number-error" : undefined
+          }
         />
-        {invalidField === "orderNumber" ? <p id="tracking-number-error" className="text-sm text-[var(--color-danger-strong)]">{error}</p> : null}
+        {invalidField === "orderNumber" ? (
+          <p
+            id="tracking-number-error"
+            className="text-sm text-[var(--color-danger-strong)]"
+          >
+            {error}
+          </p>
+        ) : null}
       </div>
 
       <div className="space-y-2">
         <label
-          htmlFor="contact"
+          htmlFor="receiptCode"
           className="text-sm font-medium text-[var(--color-text-primary)]"
         >
-          Email or phone
+          Receipt code
         </label>
 
         <Input
-          id="contact"
-          value={contact}
-          onChange={(event) => { setContact(event.target.value); if (invalidField === "contact") { setError(null); setInvalidField(null); } }}
-          placeholder="you@email.com or phone number"
+          id="receiptCode"
+          value={receiptCode}
+          onChange={(event) => {
+            setReceiptCode(event.target.value);
+            if (invalidField === "receiptCode") {
+              setError(null);
+              setInvalidField(null);
+            }
+          }}
+          placeholder="Code from your order confirmation"
           autoComplete="off"
+          spellCheck={false}
+          data-private="true"
           disabled={isBusy}
-          aria-invalid={invalidField === "contact"}
-          aria-describedby={`tracking-contact-help${invalidField === "contact" ? " tracking-contact-error" : ""}`}
+          aria-invalid={invalidField === "receiptCode"}
+          aria-describedby={`tracking-receiptCode-help${invalidField === "receiptCode" ? " tracking-receiptCode-error" : ""}`}
         />
 
-        <p id="tracking-contact-help" className="text-sm text-[var(--color-text-muted)]">
-          Use the same contact detail you entered at checkout.
+        <p
+          id="tracking-receiptCode-help"
+          className="text-sm text-[var(--color-text-muted)]"
+        >
+          Use the saved code from confirmation, or leave blank to use your
+          signed-in account. Codes expire after 30 days. Lost, expired, revoked
+          and legacy guest receipts cannot be recovered online.
         </p>
-        {invalidField === "contact" ? <p id="tracking-contact-error" className="text-sm text-[var(--color-danger-strong)]">{error}</p> : null}
+        {invalidField === "receiptCode" ? (
+          <p
+            id="tracking-receiptCode-error"
+            className="text-sm text-[var(--color-danger-strong)]"
+          >
+            {error}
+          </p>
+        ) : null}
       </div>
 
       {error && !invalidField ? (
@@ -210,7 +224,9 @@ export function OrderLookupForm({
           {getSubmitButtonLabel(submitStatus)}
         </span>
       </Button>
-      <p role="status" className="sr-only">{isBusy ? getSubmitButtonLabel(submitStatus) : ""}</p>
+      <p role="status" className="sr-only">
+        {isBusy ? getSubmitButtonLabel(submitStatus) : ""}
+      </p>
 
       {submitStatus === "navigating" ? (
         <p className="text-center text-xs text-[var(--color-text-muted)]">

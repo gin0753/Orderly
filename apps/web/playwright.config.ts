@@ -2,6 +2,9 @@ import { createRequire } from "node:module";
 
 import { defineConfig, devices } from "@playwright/test";
 
+// Playwright failure page snapshots can include bearer credentials, even without traces.
+if (process.env.ORDERLY_RECEIPT_SECURITY_TESTS === "1") process.env.PLAYWRIGHT_NO_COPY_PROMPT = "1";
+
 const require = createRequire(__filename);
 const { assertDestructiveTestDatabaseAllowed } = require(
   "../api/test/test-database-url.cjs",
@@ -25,8 +28,9 @@ export default defineConfig({
   reporter: "list",
   use: {
     baseURL: "http://localhost:3000",
-    screenshot: "only-on-failure",
-    trace: "retain-on-failure",
+    // Receipt credentials must not enter diagnostic artifacts during security regressions.
+    screenshot: process.env.ORDERLY_RECEIPT_SECURITY_TESTS === "1" ? "off" : "only-on-failure",
+    trace: process.env.ORDERLY_RECEIPT_SECURITY_TESTS === "1" ? "off" : "retain-on-failure",
   },
   projects: [
     {

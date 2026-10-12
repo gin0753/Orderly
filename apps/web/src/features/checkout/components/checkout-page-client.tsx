@@ -213,8 +213,9 @@ export function CheckoutPageClient({
 
       saveTrackingLookup({
         orderNumber: order.orderNumber,
-        email: createOrderRequest.customer.email,
-        phone: createOrderRequest.customer.phone,
+        receiptCode: order.receiptCode,
+        expiresAt: order.receiptExpiresAt,
+        ...(customer ? { customerUserId: customer.id } : {}),
       });
 
       clearCheckoutReturnDraft();

@@ -58,3 +58,10 @@ export function clearCheckoutReturnDraft() {
   if (typeof window === "undefined") return;
   try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* Storage is optional. */ }
 }
+
+/** Remove automatic account prefills, preserving independently typed guest details and cart. */
+export function scrubAccountCheckoutDraft() {
+  const draft = readCheckoutReturnDraft();
+  if (!draft) return;
+  saveCheckoutReturnDraft({ ...draft, form: withCustomerPrefill(draft.form, draft.touched, null) });
+}

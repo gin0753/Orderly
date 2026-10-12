@@ -8,7 +8,7 @@ import { hydrateCart, openCart } from "@/features/cart/cart-slice";
 import { CartDrawer } from "@/features/cart/components/cart-drawer/cart-drawer";
 import { CheckoutPageClient } from "@/features/checkout/components/checkout-page-client";
 import { OrderTrackingResult } from "@/features/order-tracking/components/result/order-tracking-result";
-import { lookupGuestOrder } from "@/features/order-tracking/api/order-tracking-api";
+import { lookupGuestOrder, OrderTrackingLookupError } from "@/features/order-tracking/api/order-tracking-api";
 import { saveTrackingLookup } from "@/features/order-tracking/utils/order-tracking-storage";
 import { SiteHeader } from "@/components/layout/site-header";
 import { AdminHeader } from "@/components/layout/admin-header";
@@ -25,10 +25,8 @@ jest.mock("next/navigation", () => ({
   usePathname: () => pathname,
 }));
 jest.mock("@/features/order-tracking/api/order-tracking-api", () => ({
+  ...jest.requireActual("@/features/order-tracking/api/order-tracking-api"),
   lookupGuestOrder: jest.fn(),
-  OrderTrackingLookupError: class OrderTrackingLookupError extends Error {
-    kind = "unavailable";
-  },
   TRACKING_UNAVAILABLE_MESSAGE:
     "Tracking is temporarily unavailable. Try again in a moment.",
 }));
@@ -110,19 +108,20 @@ it("keeps checkout review and fees available while preserving delivery details a
   expect(screen.getByRole("textbox", { name: "Address" })).toHaveValue("10 Example Street");
 });
 
-it("requires contact verification and preserves the order number on recovery", async () => {
+it("requires receipt authorization and preserves the order number on recovery", async () => {
+  jest.mocked(lookupGuestOrder).mockRejectedValue(new OrderTrackingLookupError("invalid-details"));
   render(<OrderTrackingResult orderNumber="ORD-123&next=/admin" />);
   await userEvent.click(await screen.findByRole("button", { name: "Track order" }));
-  expect(lookupGuestOrder).not.toHaveBeenCalled();
+  expect(lookupGuestOrder).toHaveBeenCalledWith({ orderNumber: "ORD-123&next=/admin" });
   expect(pushMock).toHaveBeenCalledWith("/track-order?orderNumber=ORD-123%26next%3D%2Fadmin");
 });
 
 it("preserves the order number when a verified lookup fails", async () => {
-  saveTrackingLookup({ orderNumber: "ORD-123", email: "sam@example.com" });
+  saveTrackingLookup({ orderNumber: "ORD-123", receiptCode: "a".repeat(43) });
   jest.mocked(lookupGuestOrder).mockRejectedValue(new Error("Unable to load order"));
   render(<OrderTrackingResult orderNumber="ORD-123" />);
   await userEvent.click(await screen.findByRole("button", { name: "Re-enter details" }));
-  expect(lookupGuestOrder).toHaveBeenCalledWith({ orderNumber: "ORD-123", email: "sam@example.com", phone: undefined });
+  expect(lookupGuestOrder).toHaveBeenCalledWith({ orderNumber: "ORD-123", receiptCode: "a".repeat(43) });
   expect(pushMock).toHaveBeenCalledWith("/track-order?orderNumber=ORD-123");
 });
 

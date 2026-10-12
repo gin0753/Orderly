@@ -1,3 +1,4 @@
+import { verifiedCustomer } from './support/verified-customer';
 /// <reference types="jest" />
 
 import { INestApplication, ValidationPipe } from '@nestjs/common';
@@ -103,15 +104,15 @@ describe('Customer authentication API', () => {
   });
 
   async function register() {
-    return mutation(server, 'register', input).expect(201);
+    return verifiedCustomer(app, input);
   }
 
   it('registers a normalized identity, preserves password whitespace and persists only hashes', async () => {
-    const response = await mutation(server, 'register', {
+    const response = await verifiedCustomer(app, {
       ...input,
       email: '  CUSTOMER@EXAMPLE.TEST  ',
       name: '  Ada Lovelace  ',
-    }).expect(201);
+    });
     const body = response.body as IdentityBody;
     expect(Object.keys(body)).toEqual(['user']);
     expect(Object.keys(body.user).sort()).toEqual([
@@ -189,34 +190,31 @@ describe('Customer authentication API', () => {
   });
 
   it('accepts exactly 72 UTF-8 password bytes', async () => {
-    await mutation(server, 'register', {
-      ...input,
-      password: '😀'.repeat(18),
-    }).expect(201);
+    await verifiedCustomer(app, { ...input, password: '😀'.repeat(18) });
     await mutation(server, 'login', {
       email: input.email,
       password: '😀'.repeat(18),
     }).expect(200);
   });
 
-  it('rejects normalized duplicate registration without creating a new session', async () => {
+  it('acknowledges normalized duplicate registration without creating a new session', async () => {
     await register();
     await mutation(server, 'register', {
       ...input,
       email: input.email.toUpperCase(),
-    }).expect(409);
+    }).expect(201);
     expect(await prisma.customerUser.count()).toBe(1);
     expect(await prisma.customerSession.count()).toBe(1);
   });
 
-  it('handles concurrent duplicate registrations through the unique constraint', async () => {
+  it('concurrent requests create only pending registrations', async () => {
     const results = await Promise.all([
       mutation(server, 'register', input),
       mutation(server, 'register', input),
     ]);
-    expect(results.map((result) => result.status).sort()).toEqual([201, 409]);
-    expect(await prisma.customerUser.count()).toBe(1);
-    expect(await prisma.customerSession.count()).toBe(1);
+    expect(results.map((result) => result.status).sort()).toEqual([201, 201]);
+    expect(await prisma.customerUser.count()).toBe(0);
+    expect(await prisma.customerSession.count()).toBe(0);
   });
 
   it('logs in using normalized email and returns sanitized identity', async () => {
@@ -262,7 +260,7 @@ describe('Customer authentication API', () => {
     const user = await prisma.customerUser.create({
       data: { email: input.email, googleSubject: 'google-subject' },
     });
-    await mutation(server, 'register', input).expect(409);
+    await mutation(server, 'register', input).expect(201);
     expect(
       await prisma.customerUser.findUniqueOrThrow({ where: { id: user.id } }),
     ).toMatchObject({
@@ -384,7 +382,7 @@ describe('Customer authentication API', () => {
     const response = await mutation(server, 'logout')
       .set('Cookie', cookie(initial, CUSTOMER_COOKIES.refresh))
       .expect(204);
-    expect(cookies(response)).toHaveLength(2);
+    expect(cookies(response)).toHaveLength(4);
     expect(await prisma.customerSession.count()).toBe(0);
     await request(server)
       .get('/api/customer/auth/me')
@@ -562,5 +560,25 @@ describe('Customer auth real rate limits', () => {
       email: 'absent@rate.test',
       password: 'wrong',
     }).expect(429);
+  });
+  it.each([
+    ['register', 5, 201, { email: 'quota@rate.example.test', name: 'Quota' }],
+    ['registration/resend', 5, 200, { email: 'resend@rate.example.test' }],
+    ['registration/check', 10, 400, { token: 'a'.repeat(43) }],
+    [
+      'registration/complete',
+      5,
+      400,
+      {
+        token: 'b'.repeat(43),
+        name: 'Quota',
+        password: 'Quota synthetic password',
+      },
+    ],
+  ] as const)('rate limits %s', async (path, limit, status, body) => {
+    const server = app.getHttpServer() as Server;
+    for (let attempt = 0; attempt < limit; attempt++)
+      await mutation(server, path, body).expect(status);
+    await mutation(server, path, body).expect(429);
   });
 });

@@ -11,7 +11,11 @@ import { CustomerAuthConfig } from './customer-auth.config';
 import { CustomerAuthService } from './customer-auth.service';
 import { safeCustomerReturnPath } from './customer-return-path';
 import { GoogleOAuthConfig } from './google-oauth.config';
-import { GoogleProvider } from './google-provider';
+import { CustomerDeletionService } from './customer-deletion.service';
+import {
+  GoogleProvider,
+  assertDeletionAuthentication,
+} from './google-provider';
 import { loadOpenIdClient } from './openid-client-loader';
 
 const EXPIRY_MS = 5 * 60 * 1000;
@@ -26,6 +30,7 @@ export class CustomerGoogleOAuthService {
     private readonly customerConfig: CustomerAuthConfig,
     private readonly googleConfig: GoogleOAuthConfig,
     private readonly provider: GoogleProvider,
+    private readonly deletion: CustomerDeletionService,
   ) {}
 
   get enabled() {
@@ -74,6 +79,28 @@ export class CustomerGoogleOAuthService {
     return this.createTransaction('CONNECT_GOOGLE', '/account', sessionId);
   }
 
+  async startDeletion(sessionId: string) {
+    const session = await this.prisma.customerSession.findUnique({
+      where: { id: sessionId },
+      include: { customerUser: true },
+    });
+    if (
+      !session ||
+      !session.customerUser.isActive ||
+      session.expiresAt <= new Date() ||
+      session.customerUser.passwordHash ||
+      !session.customerUser.googleSubject
+    )
+      throw new UnauthorizedException(
+        'Use the current password for password accounts.',
+      );
+    return this.createTransaction(
+      'DELETE_ACCOUNT',
+      '/account?deletion=verified#security',
+      sessionId,
+    );
+  }
+
   private async createTransaction(
     purpose: CustomerOAuthPurpose,
     returnPath: string,
@@ -84,7 +111,12 @@ export class CustomerGoogleOAuthService {
     const binding = randomBytes(32).toString('base64url');
     const nonce = this.nonce(state);
     const verifier = library.randomPKCECodeVerifier();
-    const url = await this.provider.authorizationUrl(state, nonce, verifier);
+    const url = await this.provider.authorizationUrl(
+      state,
+      nonce,
+      verifier,
+      purpose === 'DELETE_ACCOUNT',
+    );
     await this.prisma.customerOAuthTransaction.deleteMany({
       where: { expiresAt: { lte: new Date() } },
     });
@@ -135,7 +167,10 @@ export class CustomerGoogleOAuthService {
     const nonce = this.nonce(state);
     if (transaction.nonceHash !== digest(nonce))
       throw new UnauthorizedException('Google request is invalid.');
-    if (transaction.purpose === 'CONNECT_GOOGLE') {
+    if (
+      transaction.purpose === 'CONNECT_GOOGLE' ||
+      transaction.purpose === 'DELETE_ACCOUNT'
+    ) {
       const current = await this.auth.currentSessionId(refreshCookie);
       if (!current || current !== transaction.customerSessionId)
         throw new UnauthorizedException(
@@ -157,7 +192,12 @@ export class CustomerGoogleOAuthService {
       state,
       nonce,
       transaction.codeVerifier,
+      transaction.purpose === 'DELETE_ACCOUNT'
+        ? transaction.createdAt
+        : undefined,
     );
+    if (transaction.expiresAt <= new Date())
+      throw new UnauthorizedException('Google request has expired.');
     if (
       !identity.subject ||
       identity.subject.length > 255 ||
@@ -166,6 +206,26 @@ export class CustomerGoogleOAuthService {
     ) {
       throw new UnauthorizedException('Google identity is invalid.');
     }
+    if (transaction.purpose === 'DELETE_ACCOUNT') {
+      assertDeletionAuthentication(identity.authTime, transaction.createdAt);
+      if (
+        (await this.auth.currentSessionId(refreshCookie)) !==
+        transaction.customerSessionId
+      )
+        throw new UnauthorizedException(
+          'Session changed during reauthentication.',
+        );
+      const deletionGrant = await this.deletion.grant(
+        transaction.customerSessionId!,
+        identity.subject,
+        binding,
+      );
+      return {
+        purpose: transaction.purpose,
+        returnPath: transaction.returnPath,
+        deletionGrant,
+      } as const;
+    }
     if (transaction.purpose === 'CONNECT_GOOGLE') {
       await this.auth.connectGoogle(transaction.customerSessionId!, identity);
       return {
@@ -173,7 +233,10 @@ export class CustomerGoogleOAuthService {
         returnPath: '/account?google=connected',
       } as const;
     }
-    const result = await this.auth.signInWithGoogle(identity);
+    const result = await this.auth.signInWithGoogle(
+      identity,
+      transaction.createdAt,
+    );
     return {
       purpose: transaction.purpose,
       returnPath: transaction.returnPath,

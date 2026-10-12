@@ -6,8 +6,12 @@ import { OptionalCustomerJwtAuthGuard } from '../customer-auth/guards/optional-c
 import { CreateOrderDto } from './dto/create-order.dto';
 import { GuestOrderLookupDto } from './dto/guest-order-lookup.dto';
 import { OrdersService } from './orders.service';
+import { PrivateResponse } from '../../http/private-response.interceptor';
+import { Throttle } from '@nestjs/throttler';
+import { ReceiptTrackingGuard } from './receipt-tracking.guard';
 
 @Controller('orders')
+@PrivateResponse()
 export class OrdersPublicController {
   constructor(private readonly ordersService: OrdersService) {}
 
@@ -21,7 +25,12 @@ export class OrdersPublicController {
   }
 
   @Post('guest/lookup')
-  lookupGuestOrder(@Body() dto: GuestOrderLookupDto) {
-    return this.ordersService.lookupGuestOrder(dto);
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @UseGuards(ReceiptTrackingGuard)
+  lookupGuestOrder(
+    @Body() dto: GuestOrderLookupDto,
+    @CurrentCustomer() customer?: CustomerPrincipal,
+  ) {
+    return this.ordersService.lookupGuestOrder(dto, customer?.id ?? null);
   }
 }

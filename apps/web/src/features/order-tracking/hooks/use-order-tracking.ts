@@ -8,19 +8,12 @@ import {
   TRACKING_UNAVAILABLE_MESSAGE,
   type OrderTrackingErrorKind,
 } from "../api/order-tracking-api";
-import { TRACKING_LOOKUP_STORAGE_KEY } from "../constants/order-tracking-storage";
+import { getTrackingLookup } from "../utils/order-tracking-storage";
 import type {
   GuestOrderLookupRequest,
   OrderTrackingResponse,
 } from "../types/order-tracking.types";
 import { isTerminalOrderStatus } from "../utils/order-status-copy";
-
-type StoredTrackingLookup = {
-  orderNumber: string;
-  email?: string;
-  phone?: string;
-  verifiedAt?: number;
-};
 
 function normaliseOrderNumber(value: string) {
   return value.trim().replace(/^#/, "");
@@ -45,36 +38,12 @@ export function useOrderTracking(orderNumber: string) {
 
   const getStoredLookupPayload =
     useCallback((): GuestOrderLookupRequest | null => {
-      const rawValue = window.sessionStorage.getItem(
-        TRACKING_LOOKUP_STORAGE_KEY,
-      );
-
-      if (!rawValue) {
-        return null;
+      const receipt = getTrackingLookup();
+      if (receipt && normaliseOrderNumber(receipt.orderNumber) === normalisedOrderNumber) {
+        return { orderNumber: normalisedOrderNumber, receiptCode: receipt.receiptCode };
       }
-
-      try {
-        const parsed = JSON.parse(rawValue) as StoredTrackingLookup;
-        const storedOrderNumber = normaliseOrderNumber(
-          parsed.orderNumber ?? "",
-        );
-
-        if (storedOrderNumber !== normalisedOrderNumber) {
-          return null;
-        }
-
-        if (!parsed.email && !parsed.phone) {
-          return null;
-        }
-
-        return {
-          orderNumber: normalisedOrderNumber,
-          email: parsed.email,
-          phone: parsed.phone,
-        };
-      } catch {
-        return null;
-      }
+      // No receipt: the server may authorize only the authenticated matching owner.
+      return { orderNumber: normalisedOrderNumber };
     }, [normalisedOrderNumber]);
 
   const loadOrder = useCallback(
@@ -110,6 +79,11 @@ export function useOrderTracking(orderNumber: string) {
           setRefreshMessage("Order status refreshed.");
         }
       } catch (err) {
+        setOrder(null);
+        if (err instanceof OrderTrackingLookupError && err.kind === "invalid-details") {
+          // Retain the submitted proof on retry. Never silently switch to owner access.
+          if (payload.receiptCode === undefined) setNeedsVerification(true);
+        }
         setError({
           kind:
             err instanceof OrderTrackingLookupError

@@ -18,6 +18,8 @@ import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import type { CookieRequest } from '../auth/auth.types';
 import { CUSTOMER_COOKIES } from './customer-auth.config';
+import { CustomerRegistrationService } from './customer-registration.service';
+import { CustomerDeletionService } from './customer-deletion.service';
 import { CustomerAuthService } from './customer-auth.service';
 import { CustomerGoogleOAuthService } from './customer-google-oauth.service';
 import { GoogleProvider } from './google-provider';
@@ -28,6 +30,9 @@ import { RequireCustomer } from './decorators/require-customer.decorator';
 import {
   CustomerLoginDto,
   CustomerRegisterDto,
+  CustomerEmailDto,
+  VerificationTokenDto,
+  CompleteRegistrationDto,
 } from './dto/customer-credentials.dto';
 import {
   GoogleConnectDto,
@@ -40,6 +45,8 @@ import { CustomerMutationGuard } from './guards/customer-mutation.guard';
 export class CustomerAuthController {
   constructor(
     private readonly service: CustomerAuthService,
+    private readonly deletion: CustomerDeletionService,
+    private readonly registration: CustomerRegistrationService,
     private readonly google: CustomerGoogleOAuthService,
     private readonly googleProvider: GoogleProvider,
   ) {}
@@ -82,6 +89,21 @@ export class CustomerAuthController {
     return { authorizationUrl: started.url };
   }
 
+  @Post('google/delete-account')
+  @HttpCode(HttpStatus.OK)
+  @RequireCustomer()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  async googleDelete(
+    @CurrentCustomer() customer: CustomerPrincipal,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const started = await this.google.startDeletion(customer.sessionId);
+    this.setGoogleBinding(response, started.binding);
+    this.deletion.clearCookies(response);
+    this.deletion.setBrowser(response, started.binding);
+    return { authorizationUrl: started.url };
+  }
+
   @Get('google/callback')
   @Header('Cache-Control', 'private, no-store')
   async googleCallback(
@@ -89,7 +111,7 @@ export class CustomerAuthController {
     @Res() response: Response,
   ) {
     response.clearCookie('orderly_customer_oauth', this.googleCookieOptions());
-    let purpose: 'SIGN_IN' | 'CONNECT_GOOGLE' | null = null;
+    let purpose: 'SIGN_IN' | 'CONNECT_GOOGLE' | 'DELETE_ACCOUNT' | null = null;
     try {
       purpose = await this.google.callbackPurpose(
         request.query.state,
@@ -102,8 +124,11 @@ export class CustomerAuthController {
         request.cookies?.[CUSTOMER_COOKIES.refresh],
       );
       if (completed.result) this.service.setCookies(response, completed.result);
+      if (completed.deletionGrant)
+        this.deletion.setGrant(response, completed.deletionGrant);
       const destination = new URL(completed.returnPath, this.google.webOrigin);
-      destination.searchParams.set('orderlyOAuth', 'complete');
+      if (completed.purpose !== 'DELETE_ACCOUNT')
+        destination.searchParams.set('orderlyOAuth', 'complete');
       return response.redirect(303, destination.href);
     } catch (error) {
       const mode =
@@ -112,6 +137,13 @@ export class CustomerAuthController {
           : request.query.error === 'access_denied'
             ? 'cancelled'
             : 'failed';
+      if (purpose === 'DELETE_ACCOUNT') {
+        this.deletion.clearCookies(response);
+        return response.redirect(
+          303,
+          this.google.webOrigin + '/account?deletion=failed#security',
+        );
+      }
       const destination = purpose === 'CONNECT_GOOGLE' ? '/account' : '/login';
       return response.redirect(
         303,
@@ -133,6 +165,10 @@ export class CustomerAuthController {
       'other',
       'web-conflict',
       'web-link',
+      'delete-fresh',
+      'delete-wrong',
+      'delete-stale',
+      'delete-silent',
     ]
       .map(
         (choice) =>
@@ -177,12 +213,36 @@ export class CustomerAuthController {
   }
 
   @Post('register')
+  @Header('Cache-Control', 'private, no-store')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
-  async register(
-    @Body() dto: CustomerRegisterDto,
+  register(@Body() dto: CustomerRegisterDto) {
+    return this.registration.start(dto);
+  }
+
+  @Post('registration/resend')
+  @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'private, no-store')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  resend(@Body() dto: CustomerEmailDto) {
+    return this.registration.start(dto);
+  }
+
+  @Post('registration/check')
+  @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'private, no-store')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  checkRegistration(@Body() dto: VerificationTokenDto) {
+    return this.registration.check(dto.token);
+  }
+
+  @Post('registration/complete')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  async completeRegistration(
+    @Body() dto: CompleteRegistrationDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const result = await this.service.register(dto);
+    const result = await this.registration.complete(dto);
     this.service.setCookies(response, result);
     return { user: result.user };
   }
@@ -229,6 +289,7 @@ export class CustomerAuthController {
   ): Promise<void> {
     await this.service.logout(request.cookies?.[CUSTOMER_COOKIES.refresh]);
     this.service.clearCookies(response);
+    this.deletion.clearCookies(response);
   }
 
   @Get('me')

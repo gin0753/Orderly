@@ -93,7 +93,7 @@ it("allows an exact-minimum pickup order without delivery fees", async () => {
   const submit = await screen.findByRole("button", { name: /^Place Order$/ });
   expect(submit).toBeEnabled();
   expect(screen.queryByText(/Minimum order/)).not.toBeInTheDocument();
-  orderApi.mockResolvedValueOnce({ orderId: "order", orderNumber: "10001", status: "PENDING", paymentStatus: "UNPAID", orderType: "PICKUP", totalCents: 1620, createdAt: new Date().toISOString() });
+  orderApi.mockResolvedValueOnce({ receiptCode: "a".repeat(43), receiptExpiresAt: new Date(Date.now() + 86400000).toISOString(), orderId: "order", orderNumber: "10001", status: "PENDING", paymentStatus: "UNPAID", orderType: "PICKUP", totalCents: 1620, createdAt: new Date().toISOString() });
   await user.click(submit);
   await waitFor(() => expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("totalCents=1620")));
   expect(orderApi).toHaveBeenCalledTimes(1);
@@ -171,7 +171,7 @@ it("offers explicit terminal-expiry recovery and submits as guest only after cle
   expect(store.getState().cart.items).toHaveLength(1);
   await user.type(screen.getByPlaceholderText("Enter your full name"), "Guest Person");
   await user.type(screen.getByPlaceholderText("you@email.com"), "guest@example.test");
-  orderApi.mockResolvedValueOnce({ orderId: "order", orderNumber: "10001", status: "PENDING", paymentStatus: "UNPAID", orderType: "PICKUP", totalCents: 1620, createdAt: new Date().toISOString() });
+  orderApi.mockResolvedValueOnce({ receiptCode: "a".repeat(43), receiptExpiresAt: new Date(Date.now() + 86400000).toISOString(), orderId: "order", orderNumber: "10001", status: "PENDING", paymentStatus: "UNPAID", orderType: "PICKUP", totalCents: 1620, createdAt: new Date().toISOString() });
   await user.click(screen.getByRole("button", { name: /^Place Order$/ }));
   await waitFor(() => expect(orderApi).toHaveBeenCalledTimes(2));
   expect(orderApi).toHaveBeenLastCalledWith(expect.anything(), { expectCustomer: false });
@@ -216,7 +216,7 @@ it("reaches success after a persisted order even when tracking storage is unavai
   const user = userEvent.setup();
   const store = show();
   orderApi.mockResolvedValueOnce({
-    orderId: "order",
+    receiptCode: "a".repeat(43), receiptExpiresAt: new Date(Date.now() + 86400000).toISOString(), orderId: "order",
     orderNumber: "10001",
     status: "PENDING",
     paymentStatus: "UNPAID",
