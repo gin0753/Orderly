@@ -1,4 +1,7 @@
+import { verifiedRegistration } from "./verified-registration-helpers";
 import { expect, test } from "@playwright/test";
+
+test.use({ trace: "off", screenshot: "off", video: "off" });
 
 test("anonymous navigation stays restrained and guest tracking is accessible", async ({ page }) => {
   await page.goto("/");
@@ -28,11 +31,7 @@ test("anonymous navigation stays restrained and guest tracking is accessible", a
 
 test("account disclosure and sections preserve focus, drafts, responsive layout and logout recovery", async ({ page }) => {
   await page.goto("/register");
-  await page.getByLabel("Name").fill("Navigation Customer");
-  await page.getByLabel("Email").fill("stage153.navigation@example.test");
-  await page.getByLabel("Password", { exact: true }).fill("Navigation browser password 123!");
-  await page.getByLabel("Confirm password").fill("Navigation browser password 123!");
-  await page.getByRole("button", { name: "Create account" }).click();
+  await verifiedRegistration(page, { name: "Navigation Customer", email: "stage153.navigation@example.test", password: "Navigation browser password 123!" });
   await expect(page).toHaveURL(/\/account$/);
   const trigger = page.getByRole("button", { name: "Account options" });
   await expect(page.getByRole("button", { name: "Sign out" })).toHaveCount(0);

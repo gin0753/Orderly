@@ -1,10 +1,13 @@
 import { customerApiFetch, customerClient } from "./customer-api-fetch";
-import type { CustomerAuthResponse, CustomerLoginInput, CustomerRegisterInput } from "../types";
+import type { CustomerAuthResponse, CustomerLoginInput, CustomerRegisterInput, RegistrationResponse } from "../types";
 
 export const customerAuthApi = {
   me: () => customerApiFetch<CustomerAuthResponse>("/customer/auth/me", { auth: "required" }),
   login: (input: CustomerLoginInput) => customerClient.sessionLock(() => customerApiFetch<CustomerAuthResponse>("/customer/auth/login", { method: "POST", body: JSON.stringify(input) })),
-  register: (input: CustomerRegisterInput) => customerClient.sessionLock(() => customerApiFetch<CustomerAuthResponse>("/customer/auth/register", { method: "POST", body: JSON.stringify(input) })),
+  register: (input: CustomerRegisterInput) => customerClient.sessionLock(() => customerApiFetch<RegistrationResponse>("/customer/auth/register", { method: "POST", body: JSON.stringify(input) })),
+  resendRegistration: (email: string) => customerApiFetch<RegistrationResponse>("/customer/auth/registration/resend", { method: "POST", body: JSON.stringify({ email }) }),
+  checkRegistration: (token: string) => customerApiFetch<{ status: "pending" }>("/customer/auth/registration/check", { method: "POST", body: JSON.stringify({ token }) }),
+  completeRegistration: (input: { token: string; password: string; name: string }) => customerClient.sessionLock(() => customerApiFetch<CustomerAuthResponse>("/customer/auth/registration/complete", { method: "POST", body: JSON.stringify(input) })),
   logout: () => customerClient.sessionLock(() => customerApiFetch<void>("/customer/auth/logout", { method: "POST" })),
   googleStatus: () => customerApiFetch<{ enabled: boolean }>("/customer/auth/google/status"),
   googleStart: (returnTo: string) => customerClient.sessionLock(() => customerApiFetch<{ authorizationUrl: string }>("/customer/auth/google/start", { method: "POST", body: JSON.stringify({ returnTo }) })),

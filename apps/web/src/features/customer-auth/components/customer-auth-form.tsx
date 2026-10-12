@@ -7,6 +7,8 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { RegistrationPending } from "./registration-pending";
+import type { RegistrationResponse } from "../types";
 import { GoogleAuthButton } from "./google-brand";
 import { safeCustomerReturnPath } from "../lib/return-path";
 import { customerAuthApi } from "../api/customer-auth-api";
@@ -22,6 +24,7 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
   const search = useSearchParams();
   const returnTo = safeCustomerReturnPath(search.get("returnTo"));
   const [values, setValues] = useState<AuthFormValues>({ name: "", email: "", password: "", confirmation: "" });
+  const [pending, setPending] = useState<{ email: string; result: RegistrationResponse } | null>(null);
   const [errors, setErrors] = useState<AuthFormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [googleAvailable, setGoogleAvailable] = useState(false);
@@ -34,6 +37,16 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
   const unresolved = auth.status === "idle" || auth.status === "loading";
 
   useEffect(() => { dispatch(clearCustomerFeedback()); }, [dispatch, mode]);
+  useEffect(() => {
+    let live = true;
+    if (registering) void Promise.resolve().then(() => {
+      try {
+        const email = sessionStorage.getItem("orderly-registration-email");
+        if (live && email) setPending({ email, result: { status: "pending", retryAfterSeconds: 60 } });
+      } catch { /* Storage is optional. */ }
+    });
+    return () => { live = false; };
+  }, [registering]);
   useEffect(() => {
     let live = true;
     void customerAuthApi.googleStatus().then((result) => { if (live) setGoogleAvailable(result.enabled); }).catch(() => { if (live) setGoogleError("Google sign-in is temporarily unavailable."); });
@@ -62,6 +75,7 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
     event.preventDefault();
     if (busy || unresolved) return;
     const nextErrors = customerAuthFormErrors(values, registering);
+    if (registering) { delete nextErrors.password; delete nextErrors.confirmation; }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
       requestAnimationFrame(() => {
@@ -72,7 +86,14 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
       return;
     }
     const credentials = { email: values.email.trim().toLowerCase(), password: values.password };
-    if (registering) await dispatch(registerCustomer({ ...credentials, name: values.name.trim() }));
+    if (registering) {
+      const action = await dispatch(registerCustomer({ email: credentials.email, name: values.name.trim() }));
+      if (registerCustomer.fulfilled.match(action)) {
+        try { sessionStorage.setItem("orderly-registration-email", credentials.email); } catch { /* Optional storage. */ }
+        setValues((current) => ({ ...current, password: "", confirmation: "" }));
+        setPending({ email: credentials.email, result: action.payload });
+      }
+    }
     else await dispatch(loginCustomer(credentials));
   }
 
@@ -99,6 +120,11 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
     </div>;
   }
 
+  if (registering && pending) return <RegistrationPending email={pending.email} initial={pending.result} onRestart={() => {
+    try { sessionStorage.removeItem("orderly-registration-email"); } catch { /* Optional storage. */ }
+    setPending(null);
+  }} />;
+
   return <section aria-labelledby="auth-heading" className="mx-auto w-full max-w-md px-4 py-8 sm:py-12">
     <header className="mb-6">
       <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[var(--color-brand-text)]">Your Orderly account</p>
@@ -114,10 +140,8 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
       <form ref={formRef} onSubmit={submit} noValidate aria-label={registering ? "Create your account" : "Sign in"} aria-busy={busy} className="space-y-5">
         {registering ? field("name", "Name", "name") : null}
         {field("email", "Email", "email", "email")}
-        {field("password", "Password", registering ? "new-password" : "current-password", showPassword ? "text" : "password")}
-        {registering ? <p id="customer-password-help" className="text-xs leading-5 text-[var(--color-text-secondary)]">At least 15 characters, up to 72 UTF-8 bytes. Spaces are kept.</p> : null}
-        {registering ? field("confirmation", "Confirm password", "new-password", showPassword ? "text" : "password") : null}
-        <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm"><input type="checkbox" checked={showPassword} onChange={(event) => setShowPassword(event.target.checked)} disabled={busy} className="size-5 accent-[var(--color-brand-strong)]" />Show password</label>
+        {!registering && field("password", "Password", "current-password", showPassword ? "text" : "password")}
+        {!registering && <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm"><input type="checkbox" checked={showPassword} onChange={(event) => setShowPassword(event.target.checked)} disabled={busy} className="size-5 accent-[var(--color-brand-strong)]" />Show password</label>}
         {auth.error ? <p ref={errorRef} role="alert" tabIndex={-1} className="rounded-xl bg-[var(--color-danger-background)] p-3 text-sm text-[var(--color-danger-strong)]">{auth.error}</p> : null}
         <Button type="submit" size="lg" className="w-full" disabled={busy || unresolved || auth.status === "authenticated"}>
           {busy ? (registering ? "Creating account…" : "Signing in…") : (registering ? "Create account" : "Sign in")}

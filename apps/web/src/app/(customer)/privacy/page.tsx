@@ -26,11 +26,11 @@ export default function PrivacyPage() {
       <section>
         <h2>How information is used and accessed</h2>
         <p>Information supports account access, profile updates, demonstration checkout, order history and tracking, administration, troubleshooting and abuse prevention. Administrators can view order details to demonstrate order management.</p>
-        <p>Guest tracking uses an order number together with a matching checkout email or phone number and can display order and contact details. Keep those lookup details private. Private account history is available through the signed-in account.</p>
+        <p>Detailed tracking requires an order number and a private receipt code issued at checkout, or the signed-in account that placed the order. Receipt codes are reusable for 30 days unless revoked. Tracking does not display contact details, addresses or notes. Legacy guest orders and lost, expired or revoked codes cannot be recovered online. Private account history remains available through its owning account.</p>
       </section>
       <section>
         <h2>Cookies and browser storage</h2>
-        <p>Cookies maintain sign-in sessions and the Google sign-in process. Local browser storage remembers your cart. Per-tab storage can retain checkout drafts and guest tracking details. Clearing browser data removes those local copies and may sign you out; it does not delete database records. Signing out also does not delete your account or orders.</p>
+        <p>Cookies maintain sign-in sessions and the Google sign-in process. Local browser storage remembers your cart. Per-tab storage can retain checkout drafts and private receipt codes; browser session restoration may retain this tab data. Save your code somewhere private before leaving. Clearing or forgetting the tab receipt removes its local copy without revoking a saved code. Clearing browser data may sign you out; it does not delete database records. Signing out also does not delete your account or orders.</p>
         <p>The application code does not include advertising trackers or an analytics integration. Hosting providers may still process technical request data.</p>
       </section>
       <section>

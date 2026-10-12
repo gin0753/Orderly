@@ -39,7 +39,7 @@ it.each([
     await expect(
       lookupGuestOrder({
         orderNumber: "123",
-        email: "customer@example.com",
+        receiptCode: "a".repeat(43),
       }),
     ).rejects.toMatchObject({
       kind,

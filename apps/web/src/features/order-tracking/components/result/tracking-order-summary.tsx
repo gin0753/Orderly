@@ -35,11 +35,11 @@ export function TrackingOrderSummary({ order }: TrackingOrderSummaryProps) {
 
       {order.items.length > 0 ? (
         <ul className="divide-y divide-[var(--color-border)]">
-          {order.items.map((item) => {
+          {order.items.map((item, index) => {
             const itemMeta = getItemMeta(item);
 
             return (
-              <li key={item.id} className="flex gap-3 py-4 first:pt-0">
+              <li key={index} className="flex gap-3 py-4 first:pt-0">
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[var(--color-surface-muted)]">
                   <ProductImage
                     src={item.imageUrl}

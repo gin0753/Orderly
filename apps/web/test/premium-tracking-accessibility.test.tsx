@@ -23,17 +23,18 @@ it("associates validation with the invalid field and focuses it on repeated subm
   await userEvent.click(submit);
   await waitFor(() => expect(number).toHaveFocus());
   await userEvent.type(number, "156001");
+  await userEvent.type(screen.getByLabelText("Receipt code"), "invalid");
   await userEvent.click(submit);
-  const contact = screen.getByLabelText("Email or phone");
+  const contact = screen.getByLabelText("Receipt code");
   await waitFor(() => expect(contact).toHaveFocus());
-  expect(contact).toHaveAccessibleDescription(/Use the same contact detail.*Please enter the email or phone/);
+  expect(contact).toHaveAccessibleDescription(/Use the saved code.*Please enter the complete receipt code/);
   expect(lookup).not.toHaveBeenCalled();
 });
 
 it("focuses safe server feedback, preserves entries and exposes pending lookup once", async () => {
   render(<OrderLookupForm />);
   await userEvent.type(screen.getByLabelText("Order number"), "156001");
-  await userEvent.type(screen.getByLabelText("Email or phone"), "alex@example.test");
+  await userEvent.type(screen.getByLabelText("Receipt code"), "a".repeat(43));
   let reject!: (error: Error) => void;
   lookup.mockReturnValue(new Promise((_, fail) => { reject = fail; }));
   await userEvent.click(screen.getByRole("button", { name: "Track Order" }));
@@ -42,7 +43,7 @@ it("focuses safe server feedback, preserves entries and exposes pending lookup o
   reject(new OrderTrackingLookupError("invalid-details"));
   await waitFor(() => expect(screen.getByRole("alert")).toHaveFocus());
   expect(screen.getByLabelText("Order number")).toHaveValue("156001");
-  expect(screen.getByLabelText("Email or phone")).toHaveValue("alex@example.test");
+  expect(screen.getByLabelText("Receipt code")).toHaveValue("a".repeat(43));
 });
 
 it.each(["PENDING", "ACCEPTED", "PREPARING", "READY", "COMPLETED"] as const)("uses ordered steps and truthful current semantics for %s", (status) => {

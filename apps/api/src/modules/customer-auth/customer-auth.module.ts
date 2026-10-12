@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { CustomerRegistrationService } from './customer-registration.service';
+import { RegistrationMailer } from './registration-mailer';
 import { CustomerAuthConfig } from './customer-auth.config';
 import { CustomerAccountController } from './customer-account.controller';
 import { CustomerAuthController } from './customer-auth.controller';
@@ -19,6 +21,8 @@ import { CustomerJwtStrategy } from './strategies/customer-jwt.strategy';
   controllers: [CustomerAuthController, CustomerAccountController],
   providers: [
     CustomerAuthConfig,
+    CustomerRegistrationService,
+    RegistrationMailer,
     CustomerAuthService,
     CustomerGoogleOAuthService,
     GoogleOAuthConfig,

@@ -5,6 +5,7 @@ import { Check, CircleAlert } from "lucide-react";
 import { CustomerStatePanel } from "@/components/ui/customer-state-panel";
 import { formatMoneyFromCents } from "@/lib/format-money";
 import { buttonStyles } from "@/components/ui/button";
+import { ReceiptCodePanel } from "@/features/order-tracking/components/receipt-code-panel";
 
 export const metadata: Metadata = {
   title: "Order received",
@@ -97,6 +98,7 @@ export default async function OrderSuccessPage({
           </div>
         </div>
 
+        <ReceiptCodePanel orderNumber={orderNumber} />
         <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row">
           <Link
             href={`/track-order/${encodeURIComponent(orderNumber)}`}

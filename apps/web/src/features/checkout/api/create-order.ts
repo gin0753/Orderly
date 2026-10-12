@@ -27,6 +27,8 @@ export type CreateOrderRequest = {
 };
 
 export type CreateOrderResponse = {
+  receiptCode: string;
+  receiptExpiresAt: string;
   orderId: string;
   orderNumber: string;
   status: string;

@@ -1,4 +1,7 @@
+import { verifiedRegistration } from "./verified-registration-helpers";
 import { expect, test, type Page } from "@playwright/test";
+
+test.use({ trace: "off", screenshot: "off", video: "off" });
 import { createRequire } from "node:module";
 import { openCustomerAccountActions } from "./customer-navigation-helpers";
 
@@ -69,11 +72,7 @@ test("new Google customer keeps a session across reload and returns to checkout"
 
 test("matching password email blocks anonymous Google linking, then explicit linking succeeds", async ({ page }) => {
   await page.goto("/register");
-  await page.getByLabel("Name").fill("Web Link Customer");
-  await page.getByLabel("Email").fill(linkedEmail);
-  await page.getByLabel("Password", { exact: true }).fill(password);
-  await page.getByLabel("Confirm password").fill(password);
-  await page.getByRole("button", { name: "Create account" }).click();
+  await verifiedRegistration(page, { name: "Web Link Customer", email: linkedEmail, password: password });
   await expect(page).toHaveURL(/\/account$/);
   const original = await customerIds(linkedEmail);
   expect(original).toHaveLength(1);

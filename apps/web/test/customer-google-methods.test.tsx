@@ -56,6 +56,6 @@ it.each(["disabled", "unreachable"])("does not offer Google connection when the 
 it.each(["cancelled", "conflict", "failed"])("explains a %s Google connection callback", async (outcome) => {
   searchParams = new URLSearchParams(`google=${outcome}`);
   show({ password: true, google: false });
-  expect(screen.getByRole("alert")).toHaveTextContent("Google connection did not complete");
+  expect(screen.getByRole("alert")).toHaveTextContent("Google connection unsuccessful");
   await screen.findByRole("button", { name: "Connect Google" });
 });

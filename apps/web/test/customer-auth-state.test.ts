@@ -28,16 +28,16 @@ it("models authenticated, unauthenticated and recoverable-error bootstrap outcom
   expect(store.getState().customerAuth).toMatchObject({ status: "error", customer: null });
 });
 
-it("hydrates identity on login and registration without storing credentials", async () => {
+it("hydrates login identity while registration stays pending without storing credentials", async () => {
   const store = makeStore();
   api.login.mockResolvedValue({ user: customer });
   await store.dispatch(loginCustomer({ email: customer.email, password: "secret password" }));
   expect(store.getState().customerAuth.customer).toEqual(customer);
   expect(JSON.stringify(store.getState().customerAuth)).not.toContain("secret password");
-  api.register.mockResolvedValue({ user: { ...customer, id: "customer-2" } });
+  api.register.mockResolvedValue({ status: "pending", retryAfterSeconds: 60 });
   await store.dispatch(registerCustomer({ name: "Ada", email: customer.email, password: "another password" }));
-  expect(store.getState().customerAuth.customer?.id).toBe("customer-2");
-  expect(customerClient.invalidate).toHaveBeenCalledTimes(2);
+  expect(store.getState().customerAuth.customer?.id).toBe("customer-1");
+  expect(customerClient.invalidate).toHaveBeenCalledTimes(1);
 });
 
 it("keeps the cart while logout clears customer identity", async () => {

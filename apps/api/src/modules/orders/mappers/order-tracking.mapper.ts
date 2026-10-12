@@ -16,27 +16,12 @@ export function mapOrderToTrackingResponse(
   order: OrderWithTrackingRelations,
 ): OrderTrackingResponse {
   return {
-    id: order.id,
     orderNumber: order.orderNumber,
     status: order.status,
     orderType: order.orderType,
     paymentStatus: order.paymentStatus,
 
-    customerName: order.customerName,
-    customerEmail: order.customerEmail,
-    customerPhone: order.customerPhone,
-
-    addressLine1: order.addressLine1,
-    addressLine2: order.addressLine2,
-    city: order.city,
-    state: order.state,
-    postcode: order.postcode,
-
-    notes: order.notes,
-
     items: order.items.map((item) => ({
-      id: item.id,
-      productId: item.productId,
       name: item.productNameSnapshot,
       imageUrl: item.productImageUrlSnapshot,
       sizeName: item.sizeNameSnapshot,
@@ -45,7 +30,6 @@ export function mapOrderToTrackingResponse(
       unitPriceCents: item.unitPriceCents,
       lineTotalCents: item.lineTotalCents,
       options: item.options.map((option) => ({
-        id: option.id,
         optionGroupName: option.optionGroupNameSnapshot,
         name: option.optionNameSnapshot,
         priceDeltaCents: option.priceDeltaCentsSnapshot,

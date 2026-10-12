@@ -26,6 +26,10 @@ import { ListOrdersQueryDto } from './dto/list-orders-query.dto';
 import { PerformOrderActionDto } from './dto/perform-order-action.dto';
 import { mapOrderToTrackingResponse } from './mappers/order-tracking.mapper';
 import { resolveOrderAction } from './order-action';
+import {
+  issueReceiptCapability,
+  validReceiptCapability,
+} from './receipt-capability';
 
 const SERVICE_FEE_CENTS = 120;
 const FREE_DELIVERY_THRESHOLD_CENTS = 5000;
@@ -119,10 +123,21 @@ export class OrdersService {
       const totalCents = subtotalCents + deliveryFeeCents + SERVICE_FEE_CENTS;
 
       const orderNumber = await this.generateOrderNumber(tx);
+      const createdAt = new Date();
+      const receipt = issueReceiptCapability(createdAt);
 
       const order = await tx.order.create({
+        omit: {
+          receiptCapabilityHash: true,
+          receiptCapabilityExpiresAt: true,
+          receiptCapabilityRevokedAt: true,
+        },
         data: {
           orderNumber,
+          createdAt,
+          updatedAt: createdAt,
+          receiptCapabilityHash: receipt.receiptCapabilityHash,
+          receiptCapabilityExpiresAt: receipt.receiptCapabilityExpiresAt,
 
           orderType:
             dto.fulfillmentType === CreateOrderFulfillmentType.PICKUP
@@ -167,7 +182,6 @@ export class OrdersService {
             })),
           },
         },
-
         include: {
           items: {
             include: {
@@ -185,6 +199,8 @@ export class OrdersService {
         orderType: order.orderType,
         totalCents: order.totalCents,
         createdAt: order.createdAt,
+        receiptCode: receipt.receiptCode,
+        receiptExpiresAt: receipt.receiptCapabilityExpiresAt,
       };
     });
   }
@@ -520,6 +536,11 @@ export class OrdersService {
 
     const [orders, total] = await this.prisma.$transaction([
       this.prisma.order.findMany({
+        omit: {
+          receiptCapabilityHash: true,
+          receiptCapabilityExpiresAt: true,
+          receiptCapabilityRevokedAt: true,
+        },
         where,
         include: {
           items: {
@@ -613,6 +634,11 @@ export class OrdersService {
 
   async findOne(id: string) {
     const order = await this.prisma.order.findUnique({
+      omit: {
+        receiptCapabilityHash: true,
+        receiptCapabilityExpiresAt: true,
+        receiptCapabilityRevokedAt: true,
+      },
       where: {
         id,
       },
@@ -655,6 +681,11 @@ export class OrdersService {
 
     try {
       return await this.prisma.order.update({
+        omit: {
+          receiptCapabilityHash: true,
+          receiptCapabilityExpiresAt: true,
+          receiptCapabilityRevokedAt: true,
+        },
         where: {
           id,
           status: existingOrder.status,
@@ -679,60 +710,25 @@ export class OrdersService {
     }
   }
 
-  async lookupGuestOrder(dto: GuestOrderLookupDto) {
-    const orderNumber = dto.orderNumber.trim().replace(/^#/, '');
-
-    const email = dto.email?.trim().toLowerCase();
-
-    const phone = dto.phone ? dto.phone.replace(/\D/g, '') : undefined;
-
-    if (!email && !phone) {
-      throw new BadRequestException(
-        'Please provide the email or phone number used at checkout.',
-      );
-    }
-
-    const order = await this.prisma.order.findFirst({
-      where: {
-        orderNumber,
-
-        OR: [
-          ...(email
-            ? [
-                {
-                  customerEmail: {
-                    equals: email,
-                    mode: Prisma.QueryMode.insensitive,
-                  },
-                },
-              ]
-            : []),
-
-          ...(phone
-            ? [
-                {
-                  customerPhone: phone,
-                },
-              ]
-            : []),
-        ],
-      },
-
-      include: {
-        items: {
-          include: {
-            options: true,
-          },
-        },
-      },
+  async lookupGuestOrder(
+    dto: GuestOrderLookupDto,
+    customerUserId: string | null = null,
+  ) {
+    const order = await this.prisma.order.findUnique({
+      where: { orderNumber: dto.orderNumber.trim().replace(/^#/, '') },
+      include: { items: { include: { options: true } } },
     });
-
-    if (!order) {
+    // Explicit credentials fail closed, including an empty code. Never try another proof.
+    const authorized =
+      order &&
+      (dto.receiptCode !== undefined
+        ? validReceiptCapability(dto.receiptCode, order)
+        : Boolean(customerUserId && order.customerUserId === customerUserId));
+    if (!authorized || !order) {
       throw new NotFoundException(
-        'Order not found. Please check your order number and contact detail.',
+        'Order tracking is unavailable with these credentials.',
       );
     }
-
     return mapOrderToTrackingResponse(order);
   }
 }

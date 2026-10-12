@@ -1,4 +1,7 @@
+import { verifiedRegistration } from "./verified-registration-helpers";
 import { expect, test, type Page } from "@playwright/test";
+
+test.use({ trace: "off", screenshot: "off", video: "off" });
 import { createHmac } from "node:crypto";
 
 type AuthResponse = { method: string; path: string; status: number };
@@ -97,11 +100,7 @@ test("same-context tabs discover login, refresh valid cookies, and keep logout a
   await settled(page);
   const peer = await context.newPage();
   await peer.goto("/register");
-  await peer.getByLabel("Name").fill("Anonymous Probe");
-  await peer.getByLabel("Email").fill("anonymous.probe.browser@example.test");
-  await peer.getByLabel("Password", { exact: true }).fill("Anonymous probe password 123!");
-  await peer.getByLabel("Confirm password").fill("Anonymous probe password 123!");
-  await peer.getByRole("button", { name: "Create account" }).click();
+  await verifiedRegistration(peer, { name: "Anonymous Probe", email: "anonymous.probe.browser@example.test", password: "Anonymous probe password 123!" });
   await expect(peer).toHaveURL(/\/account$/);
   await expect(page.getByRole("button", { name: "Account options", exact: true })).toBeVisible();
   await expect.poll(() => responses.length).toBe(4);

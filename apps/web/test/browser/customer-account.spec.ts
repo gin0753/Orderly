@@ -1,4 +1,7 @@
+import { verifiedRegistration } from "./verified-registration-helpers";
 import { expect, test } from "@playwright/test";
+
+test.use({ trace: "off", screenshot: "off", video: "off" });
 
 test.describe.configure({ mode: "serial" });
 
@@ -10,11 +13,7 @@ const linkedPassword = "Account link password 123!";
 
 test("profile persists and password change replaces the session across browsers", async ({ page, browser }) => {
   await page.goto("/register");
-  await page.getByLabel("Name").fill("Before Name");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password", { exact: true }).fill(oldPassword);
-  await page.getByLabel("Confirm password").fill(oldPassword);
-  await page.getByRole("button", { name: "Create account" }).click();
+  await verifiedRegistration(page, { name: "Before Name", email: email, password: oldPassword });
   await expect(page).toHaveURL(/\/account$/);
 
   const peerContext = await browser.newContext({ baseURL: "http://localhost:3000" });
@@ -60,11 +59,7 @@ test("profile persists and password change replaces the session across browsers"
 
 test("linked and Google-only accounts show their available methods", async ({ page }) => {
   await page.goto("/register");
-  await page.getByLabel("Name").fill("Linked Account");
-  await page.getByLabel("Email").fill(linkedEmail);
-  await page.getByLabel("Password", { exact: true }).fill(linkedPassword);
-  await page.getByLabel("Confirm password").fill(linkedPassword);
-  await page.getByRole("button", { name: "Create account" }).click();
+  await verifiedRegistration(page, { name: "Linked Account", email: linkedEmail, password: linkedPassword });
   await expect(page).toHaveURL(/\/account$/);
   await page.locator("summary").filter({ hasText: "Connect Google" }).click();
   await page.getByLabel("Current password to connect Google").fill(linkedPassword);

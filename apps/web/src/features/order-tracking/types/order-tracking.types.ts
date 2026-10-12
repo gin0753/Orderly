@@ -14,20 +14,18 @@ export type SubmitStatus = "idle" | "submitting" | "navigating";
 
 export type GuestOrderLookupRequest = {
   orderNumber: string;
-  email?: string;
-  phone?: string;
+  receiptCode?: string;
 };
 
 export type OrderTrackingItemOption = {
-  id: string;
+
   optionGroupName: string;
   name: string;
   priceDeltaCents: number;
 };
 
 export type OrderTrackingItem = {
-  id: string;
-  productId: string | null;
+
   name: string;
   imageUrl: string | null;
   sizeName: string | null;
@@ -39,23 +37,11 @@ export type OrderTrackingItem = {
 };
 
 export type OrderTrackingResponse = {
-  id: string;
+
   orderNumber: string;
   status: OrderStatus;
   orderType: OrderType;
   paymentStatus: PaymentStatus;
-
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-
-  addressLine1: string | null;
-  addressLine2: string | null;
-  city: string | null;
-  state: string | null;
-  postcode: string | null;
-
-  notes: string | null;
 
   items: OrderTrackingItem[];
 

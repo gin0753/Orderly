@@ -1,4 +1,7 @@
+import { verifiedRegistration } from "./verified-registration-helpers";
 import { expect, test, type Page } from "@playwright/test";
+
+test.use({ trace: "off", screenshot: "off", video: "off" });
 import { createRequire } from "node:module";
 
 const requireFromTest = createRequire(__filename);
@@ -51,20 +54,17 @@ test("guest checkout stays unowned and guest tracking works", async ({ page }) =
   const number = await place(page);
   const order = await database((prisma) => prisma.order.findUniqueOrThrow({ where: { orderNumber: number }, select: { customerUserId: true, customerEmail: true } }));
   expect(order).toEqual({ customerUserId: null, customerEmail: "guest.stage136@example.test" });
+  const receiptCode = await page.getByLabel("Receipt code", { exact: true }).inputValue();
   await page.goto("/track-order");
   await page.getByLabel("Order number").fill(number);
-  await page.getByLabel("Email or phone").fill("guest.stage136@example.test");
+  await page.getByLabel("Receipt code").fill(receiptCode);
   await page.getByRole("button", { name: "Track Order" }).click();
   await expect(page).toHaveURL(new RegExp(`/track-order/${number}$`));
 });
 
 test("password customer checkout owns the order but keeps contact edits out of the account", async ({ page }) => {
   await page.goto("/register");
-  await page.getByLabel("Name").fill("Owner Browser");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password", { exact: true }).fill(password);
-  await page.getByLabel("Confirm password").fill(password);
-  await page.getByRole("button", { name: "Create account" }).click();
+  await verifiedRegistration(page, { name: "Owner Browser", email: email, password: password });
   await expect(page).toHaveURL(/\/account$/);
   await page.getByLabel(/Phone/).fill("+61 400 123 456");
   await page.getByRole("button", { name: "Save profile" }).click();
@@ -98,6 +98,10 @@ test("Google customer checkout creates an owned order", async ({ page }) => {
 });
 
 test("expired access refreshes once and creates one owned order", async ({ page }) => {
+  page.on("response", (response) => {
+    const pathname = new URL(response.url()).pathname;
+    if (["/api/orders", "/api/customer/auth/refresh"].includes(pathname)) console.log(`Checkout recovery diagnostic: ${response.request().method()} ${pathname} ${response.status()}`);
+  });
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);

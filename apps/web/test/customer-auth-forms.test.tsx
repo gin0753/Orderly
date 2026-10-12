@@ -26,6 +26,7 @@ const customer = { id: "customer", email: "ada@example.test", name: "Ada Lovelac
 
 beforeEach(() => {
   jest.clearAllMocks();
+  sessionStorage.clear();
   searchParams = new URLSearchParams("returnTo=%2Fcheckout");
   api.googleStatus.mockResolvedValue({ enabled: false });
 });
@@ -60,44 +61,17 @@ it("uses a generic login error regardless of backend credential detail", async (
   expect(screen.getByRole("alert")).toHaveFocus();
 });
 
-it("keeps password policy and validation associated together", async () => {
-  renderForm("register");
-  const password = screen.getByLabelText("Password", { exact: true });
-  await userEvent.type(password, "short");
-  await userEvent.click(screen.getByRole("button", { name: "Create account" }));
-  expect(password).toHaveAccessibleDescription(/At least 15 characters.*Use at least 15 characters/);
-});
-
-it("validates registration against the API character and UTF-8 byte constraints", async () => {
-  renderForm("register");
-  const name = screen.getByLabelText("Name");
-  const email = screen.getByLabelText("Email");
-  const password = screen.getByLabelText("Password");
-  const confirmation = screen.getByLabelText("Confirm password");
-  expect(password).toHaveAttribute("autocomplete", "new-password");
-  await userEvent.type(name, "Ada");
-  await userEvent.type(email, "ada@example.test");
-  await userEvent.type(password, "😀".repeat(19));
-  await userEvent.type(confirmation, "different password");
-  await userEvent.click(screen.getByRole("button", { name: "Create account" }));
-  expect(screen.getByText(/^Use a password no longer than 72 UTF-8 bytes/)).toBeInTheDocument();
-  expect(screen.getByText("Your passwords don’t match.")).toBeInTheDocument();
-  expect(api.register).not.toHaveBeenCalled();
-});
-
-it("creates an authenticated registration session and disables the form while submitting", async () => {
-  renderForm("register");
-  let resolve!: (value: { user: typeof customer }) => void;
-  api.register.mockReturnValue(new Promise((done) => { resolve = done; }));
-  await userEvent.type(screen.getByLabelText("Name"), customer.name!);
+it("registration requests verification without creating a session or choosing a password", async () => {
+  const store = renderForm("register");
+  api.register.mockResolvedValue({ status: "pending", retryAfterSeconds: 60 });
+  expect(screen.queryByLabelText("Password")).not.toBeInTheDocument();
+  await userEvent.type(screen.getByLabelText("Name"), "Ada");
   await userEvent.type(screen.getByLabelText("Email"), customer.email);
-  await userEvent.type(screen.getByLabelText("Password"), "long password value");
-  await userEvent.type(screen.getByLabelText("Confirm password"), "long password value");
   await userEvent.click(screen.getByRole("button", { name: "Create account" }));
-  expect(screen.getByRole("button", { name: "Creating account…" })).toBeDisabled();
-  expect(screen.getByText("Creating your account")).toHaveAttribute("role", "status");
-  resolve({ user: customer });
-  await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/checkout"));
+  expect(await screen.findByRole("heading", { name: "Check your email" })).toBeInTheDocument();
+  expect(store.getState().customerAuth.customer).toBeNull();
+  expect(api.register).toHaveBeenCalledWith({ email: customer.email, name: "Ada" });
+  expect(screen.getByRole("button", { name: "Resend in 60s" })).toBeDisabled();
 });
 
 it("rejects unsafe return destinations before successful navigation", async () => {

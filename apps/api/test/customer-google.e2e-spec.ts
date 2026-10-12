@@ -1,3 +1,4 @@
+import { verifiedCustomer } from './support/verified-customer';
 /// <reference types="jest" />
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -74,11 +75,11 @@ describe('Customer Google OAuth', () => {
       .send(body);
   }
   async function register() {
-    return mutation('register', {
+    return verifiedCustomer(app, {
       email,
       password,
       name: 'Password Customer',
-    }).expect(201);
+    });
   }
   async function start(returnTo = '/account') {
     const response = await mutation('google/start', { returnTo }).expect(200);

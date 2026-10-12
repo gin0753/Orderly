@@ -11,6 +11,8 @@ import { OrderTrackingLoadingState } from "./order-tracking-loading-state";
 import { OrderTrackingVerificationState } from "./order-tracking-verification-state";
 import { TrackingOrderSummary } from "./tracking-order-summary";
 import { TRACKING_UNAVAILABLE_MESSAGE } from "../../api/order-tracking-api";
+import { clearTrackingLookup } from "../../utils/order-tracking-storage";
+import { Button } from "@/components/ui/button";
 
 type OrderTrackingResultProps = {
   orderNumber: string;
@@ -87,6 +89,7 @@ export function OrderTrackingResult({ orderNumber }: OrderTrackingResultProps) {
         isRefreshing={isRefreshing}
         onRefresh={refreshOrder}
       />
+      <Button type="button" variant="secondary" className="mb-5" onClick={() => { clearTrackingLookup(); refreshOrder(); }}>Forget receipt on this tab</Button>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_0.78fr]">
         <div className="space-y-6">

@@ -46,7 +46,10 @@ console.log(`host=${target.hostCategory}`);
 console.log(`database=${target.databaseName}`);
 console.log(`prismaTargetsMatch=${target.targetsMatch}`);
 
-const suites = playwrightArguments.length
+// Security suites need fresh process-local rate counters, without bypassing guards.
+const suites = playwrightArguments[0] === "--security-2a"
+  ? [["registration-verification.spec.ts"], ["critical-workflow.spec.ts"], ["customer-navigation.spec.ts"], ["google-oauth.spec.ts"], ["customer-account.spec.ts"], ["customer-checkout-ownership.spec.ts"], ["customer-order-history.spec.ts"], ["customer-anonymous-auth.spec.ts"], ["premium-auth-orders-tracking.spec.ts"], ["receipt-tracking-security.spec.ts"]]
+  : playwrightArguments.length
   ? [playwrightArguments]
   : process.env.ORDERLY_BROWSER_PRODUCTION === "1" || process.env.GITHUB_ACTIONS === "true"
     ? [["critical-workflow.spec.ts"], ["design-foundation.spec.ts"], ["customer-navigation.spec.ts"], ["google-oauth.spec.ts"], ["customer-account.spec.ts"], ["customer-checkout-ownership.spec.ts"], ["customer-order-history.spec.ts"], ["customer-anonymous-auth.spec.ts"], ["storefront-configurator.spec.ts"], ["premium-transactions.spec.ts"], ["premium-auth-orders-tracking.spec.ts"]]

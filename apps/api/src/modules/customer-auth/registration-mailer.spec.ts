@@ -1,0 +1,55 @@
+import { ConfigService } from '@nestjs/config';
+import { RegistrationMailer } from './registration-mailer';
+
+const settings = (values: Record<string, string>) => {
+  const config = new ConfigService(values);
+  Object.defineProperty(config, 'skipProcessEnv', { value: true });
+  return config;
+};
+afterEach(() => jest.restoreAllMocks());
+it('fails closed in production without mail configuration', () => {
+  expect(
+    () => new RegistrationMailer(settings({ NODE_ENV: 'production' })),
+  ).toThrow('Production registration requires');
+});
+it('never delivers real email in test mode even if keys are configured', async () => {
+  const fetchMock = jest.spyOn(globalThis, 'fetch');
+  const mailer = new RegistrationMailer(
+    settings({
+      NODE_ENV: 'test',
+      REGISTRATION_EMAIL_API_KEY: 'synthetic',
+      REGISTRATION_EMAIL_FROM: 'synthetic@example.test',
+    }),
+  );
+  await expect(
+    mailer.send(
+      'recipient@example.test',
+      'https://app.example.test/verify-email#token=synthetic',
+    ),
+  ).rejects.toThrow();
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+it('uses transactional plain-text delivery with a timeout and sanitizes provider failures', async () => {
+  const fetchMock = jest
+    .spyOn(globalThis, 'fetch')
+    .mockResolvedValue(new Response('secret-provider-error', { status: 500 }));
+  const mailer = new RegistrationMailer(
+    settings({
+      NODE_ENV: 'production',
+      REGISTRATION_EMAIL_API_KEY: 'synthetic-key',
+      REGISTRATION_EMAIL_FROM: 'Orderly <mail@example.test>',
+    }),
+  );
+  await expect(
+    mailer.send(
+      'recipient@example.test',
+      'https://app.example.test/verify-email#token=synthetic',
+    ),
+  ).rejects.toThrow('Registration delivery unavailable');
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://api.resend.com/emails',
+    expect.objectContaining({
+      method: 'POST',
+    }),
+  );
+});

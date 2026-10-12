@@ -25,8 +25,7 @@ export function OrderTrackingVerificationState({
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-[var(--color-text-muted)]">
-            For your privacy, we need your order number and the email or phone
-            used at checkout before showing order details.
+            Use your saved receipt code or sign in to the account that placed the order. Guest access cannot be recovered for legacy orders or lost, expired or revoked codes.
           </p>
 
           <Button

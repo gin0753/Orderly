@@ -68,7 +68,7 @@ describe("apiFetch authentication behavior", () => {
     const { lookupGuestOrder } = await import("@/features/order-tracking/api/order-tracking-api");
     fetchMock.mockResolvedValueOnce(jsonResponse({}));
 
-    await lookupGuestOrder({ orderNumber: "ORD-123", phone: "0400000000" });
+    await lookupGuestOrder({ orderNumber: "ORD-123", receiptCode: "a".repeat(43) });
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/orders/guest/lookup",

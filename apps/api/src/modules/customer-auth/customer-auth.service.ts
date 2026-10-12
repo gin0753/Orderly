@@ -21,7 +21,7 @@ import {
 } from './customer-auth.types';
 import {
   CustomerLoginDto,
-  CustomerRegisterDto,
+  CompleteRegistrationDto,
 } from './dto/customer-credentials.dto';
 import {
   CustomerPasswordChangeDto,
@@ -41,32 +41,26 @@ export class CustomerAuthService {
     private readonly config: CustomerAuthConfig,
   ) {}
 
-  async register(dto: CustomerRegisterDto): Promise<CustomerAuthResult> {
-    const passwordHash = await bcrypt.hash(dto.password, PASSWORD_COST);
-    try {
-      // Identity and initial session are committed together, or neither is persisted.
-      return await this.prisma.$transaction(async (tx) => {
-        const user = await tx.customerUser.create({
-          data: {
-            email: dto.email.trim().toLowerCase(),
-            passwordHash,
-            name: dto.name.trim(),
-            phone: dto.phone?.trim(),
-          },
-        });
-        return this.createSession(tx, user);
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        throw new ConflictException(
-          'An account with this email already exists. Please sign in.',
-        );
-      }
-      throw error;
-    }
+  async hashRegistrationPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, PASSWORD_COST);
+  }
+
+  async activateRegistration(
+    tx: Prisma.TransactionClient,
+    email: string,
+    dto: CompleteRegistrationDto,
+    passwordHash: string,
+  ): Promise<CustomerAuthResult> {
+    const user = await tx.customerUser.create({
+      data: {
+        email,
+        passwordHash,
+        name: dto.name.trim(),
+        phone: dto.phone?.trim(),
+        emailVerifiedAt: new Date(),
+      },
+    });
+    return this.createSession(tx, user);
   }
 
   async login(dto: CustomerLoginDto): Promise<CustomerAuthResult> {
@@ -106,6 +100,7 @@ export class CustomerAuthService {
             data: {
               email: identity.email,
               googleSubject: identity.subject,
+              emailVerifiedAt: new Date(),
               name: identity.name,
             },
           });
@@ -172,7 +167,7 @@ export class CustomerAuthService {
           googleSubject: null,
           isActive: true,
         },
-        data: { googleSubject: identity.subject },
+        data: { googleSubject: identity.subject, emailVerifiedAt: new Date() },
       });
       if (updated.count !== 1)
         throw new ConflictException(

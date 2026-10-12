@@ -18,6 +18,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import type { CookieRequest } from '../auth/auth.types';
 import { CUSTOMER_COOKIES } from './customer-auth.config';
+import { CustomerRegistrationService } from './customer-registration.service';
 import { CustomerAuthService } from './customer-auth.service';
 import { CustomerGoogleOAuthService } from './customer-google-oauth.service';
 import { GoogleProvider } from './google-provider';
@@ -28,6 +29,9 @@ import { RequireCustomer } from './decorators/require-customer.decorator';
 import {
   CustomerLoginDto,
   CustomerRegisterDto,
+  CustomerEmailDto,
+  VerificationTokenDto,
+  CompleteRegistrationDto,
 } from './dto/customer-credentials.dto';
 import {
   GoogleConnectDto,
@@ -40,6 +44,7 @@ import { CustomerMutationGuard } from './guards/customer-mutation.guard';
 export class CustomerAuthController {
   constructor(
     private readonly service: CustomerAuthService,
+    private readonly registration: CustomerRegistrationService,
     private readonly google: CustomerGoogleOAuthService,
     private readonly googleProvider: GoogleProvider,
   ) {}
@@ -177,12 +182,36 @@ export class CustomerAuthController {
   }
 
   @Post('register')
+  @Header('Cache-Control', 'private, no-store')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
-  async register(
-    @Body() dto: CustomerRegisterDto,
+  register(@Body() dto: CustomerRegisterDto) {
+    return this.registration.start(dto);
+  }
+
+  @Post('registration/resend')
+  @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'private, no-store')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  resend(@Body() dto: CustomerEmailDto) {
+    return this.registration.start(dto);
+  }
+
+  @Post('registration/check')
+  @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'private, no-store')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  checkRegistration(@Body() dto: VerificationTokenDto) {
+    return this.registration.check(dto.token);
+  }
+
+  @Post('registration/complete')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  async completeRegistration(
+    @Body() dto: CompleteRegistrationDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const result = await this.service.register(dto);
+    const result = await this.registration.complete(dto);
     this.service.setCookies(response, result);
     return { user: result.user };
   }

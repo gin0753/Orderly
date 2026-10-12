@@ -163,7 +163,7 @@ test(`rendered customer journey, axe and keyboard containment ${isolatedWidth ==
     await expect(page.getByLabel("Order number", { exact: true })).toBeFocused();
     await audit(page, browserName, "tracking-invalid", width);
     await page.getByLabel("Order number", { exact: true }).fill("157001");
-    await page.getByLabel("Email or phone", { exact: true }).fill(user.email);
+    await page.getByLabel("Receipt code", { exact: true }).fill("a".repeat(43));
     await page.getByRole("button", { name: "Track Order", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Order #157001", exact: true })).toBeFocused();
     await audit(page, browserName, "tracking-result", width);

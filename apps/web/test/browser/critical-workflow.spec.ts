@@ -1,4 +1,7 @@
+import { verifiedRegistration } from "./verified-registration-helpers";
 import { expect, test, type Page } from "@playwright/test";
+
+test.use({ trace: "off", screenshot: "off", video: "off" });
 import { createRequire } from "node:module";
 
 type TestPrismaClient = {
@@ -85,6 +88,7 @@ test("customer checkout to admin acceptance to guest tracking", async ({
   const orderNumber = orderNumberText?.replace("#", "");
   expect(orderNumber).toMatch(/^\d+$/);
 
+  const receiptCode = await page.getByLabel("Receipt code", { exact: true }).inputValue();
   await page.goto("/admin/orders");
   await expect(page).toHaveURL(/\/admin\/login\?next=/);
   await page.getByLabel("Email").fill(ADMIN_EMAIL);
@@ -131,7 +135,7 @@ test("customer checkout to admin acceptance to guest tracking", async ({
 
   await page.goto("/track-order");
   await page.getByLabel("Order number").fill(orderNumber ?? "");
-  await page.getByLabel("Email or phone").fill(CUSTOMER_EMAIL);
+  await page.getByLabel("Receipt code").fill(receiptCode);
   await page.getByRole("button", { name: "Track Order" }).click();
 
   await expect(page).toHaveURL(new RegExp(`/track-order/${orderNumber}$`), {
@@ -165,11 +169,7 @@ test("customer registration survives reload and logout preserves public browsing
   await page.getByRole("link", { name: "Sign in" }).click();
   await page.getByRole("link", { name: "Create an account" }).click();
   await expect(page).toHaveURL(/\/register/);
-  await page.getByLabel("Name").fill("Account Browser");
-  await page.getByLabel("Email").fill(ACCOUNT_EMAIL);
-  await page.getByLabel("Password", { exact: true }).fill(ACCOUNT_PASSWORD);
-  await page.getByLabel("Confirm password").fill(ACCOUNT_PASSWORD);
-  await page.getByRole("button", { name: "Create account" }).click();
+  await verifiedRegistration(page, { name: "Account Browser", email: ACCOUNT_EMAIL, password: ACCOUNT_PASSWORD });
   await expect(page).toHaveURL(/\/account$/);
   await expect(page.getByRole("heading", { name: "Account", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Account options" })).toBeVisible();

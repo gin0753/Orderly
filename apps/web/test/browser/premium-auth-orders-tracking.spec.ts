@@ -44,6 +44,7 @@ test("authentication and guest tracking presentation, errors and keyboard feedba
   let lookupStatus = 200;
   let release: (() => void) | undefined;
   await page.route("**/orders/guest/lookup", async (route) => {
+    if ((route.request().postDataJSON() as { orderNumber: string }).orderNumber === "unknown") return route.fulfill({ status: 404, json: {} });
     if (release) await new Promise<void>((resolve) => { release = resolve; });
     await route.fulfill({ status: lookupStatus, json: lookupStatus === 200 ? tracked : {} });
   });
@@ -60,10 +61,8 @@ test("authentication and guest tracking presentation, errors and keyboard feedba
     await page.goto("/register");
     await expect(page.getByRole("button", { name: "Create account", exact: true })).toBeEnabled();
     await capture(page, "register", viewport.width);
-    await page.getByLabel("Password", { exact: true }).fill("visible password");
-    await page.getByLabel("Show password").focus();
-    await page.keyboard.press("Space");
-    await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("type", "text");
+    await expect(page.getByLabel("Name")).toBeEditable();
+    await expect(page.getByLabel("Password", { exact: true })).toHaveCount(0);
     await page.goto("/track-order");
     await capture(page, "tracking-search", viewport.width);
     await page.getByRole("button", { name: "Track Order", exact: true }).click();
@@ -74,7 +73,7 @@ test("authentication and guest tracking presentation, errors and keyboard feedba
     }
     await capture(page, "tracking-invalid", viewport.width);
     await page.getByLabel("Order number", { exact: true }).fill("156001");
-    await page.getByLabel("Email or phone", { exact: true }).fill(user.email);
+    await page.getByLabel("Receipt code", { exact: true }).fill("a".repeat(43));
     await page.getByRole("button", { name: "Track Order", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Order #156001", exact: true })).toBeVisible();
     if (!baseline) {
