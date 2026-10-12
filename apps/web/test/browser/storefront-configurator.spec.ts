@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { createRequire } from "node:module";
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { assertRequiredImageReady, diagnoseOtherImages } from "./image-readiness";
 
@@ -15,18 +15,32 @@ test("storefront and configurator at desktop, mobile and short viewports", async
   const product = await prisma.product.findFirstOrThrow({ where: { name: "Golden Path Pizza" } });
   const captureDirectory = process.env.ORDERLY_STOREFRONT_CAPTURE_DIR;
   const visualProductIds: string[] = [];
-  const imageRequests: { path: string; status?: number; failure?: string }[] = [];
+  const imageRequests: Record<string, unknown>[] = [];
+  const imageObservationStarted = Date.now();
   const imagePath = (value: string) => {
     const url = new URL(value);
     const asset = url.searchParams.get("url");
-    return asset?.startsWith("/images/menu/") ? new URL(asset, url).pathname : url.pathname;
+    const safeAsset = asset?.match(/^\/images\/menu\/[a-z0-9-]+\.(?:webp|png|jpg|jpeg|svg)$/i)?.[0];
+    return url.pathname === "/_next/image" && safeAsset
+      ? `${url.pathname}?url=${encodeURIComponent(safeAsset)}&w=${Number(url.searchParams.get("w"))}&q=${Number(url.searchParams.get("q"))}`
+      : url.pathname;
   };
+  const record = (event: string, request: import("@playwright/test").Request, extra = {}) => {
+    if (request.resourceType() === "image") imageRequests.push({ event, path: imagePath(request.url()), viewport: page.viewportSize(), atMs: Date.now() - imageObservationStarted, ...extra });
+  };
+  page.on("request", (request) => record("request", request));
   page.on("response", (response) => {
-    if (response.request().resourceType() === "image") imageRequests.push({ path: imagePath(response.url()), status: response.status() });
+    record("response", response.request(), { status: response.status(), cache: response.headers()["x-nextjs-cache"], contentType: response.headers()["content-type"] });
   });
+  page.on("requestfinished", (request) => record("finished", request, { timing: request.timing() }));
   page.on("requestfailed", (request) => {
-    if (request.resourceType() === "image") imageRequests.push({ path: imagePath(request.url()), failure: request.failure()?.errorText.match(/^net::[A-Z_]+/)?.[0] ?? "request-failed" });
+    record("failed", request, { failure: request.failure()?.errorText.match(/^net::[A-Z_]+/)?.[0] ?? "request-failed" });
   });
+  // Do not attach raw console text: it may contain URLs or customer identifiers.
+  page.on("console", (message) => {
+    if (message.type() === "error") imageRequests.push({ event: "console-error", code: message.text().match(/net::[A-Z_]+|Minified React error #\d+/)?.[0] ?? "redacted-console-error", httpStatus: Number(message.text().match(/status of (\d{3})/)?.[1]) || undefined, viewport: page.viewportSize(), atMs: Date.now() - imageObservationStarted });
+  });
+  page.on("pageerror", () => imageRequests.push({ event: "page-error", viewport: page.viewportSize(), atMs: Date.now() - imageObservationStarted }));
   if (captureDirectory) await mkdir(path.resolve(captureDirectory), { recursive: true });
   try {
     // Use the same existing food photography before and after; restore the guarded test fixture.
@@ -39,6 +53,9 @@ test("storefront and configurator at desktop, mobile and short viewports", async
       visualProductIds.push(visualProduct.id);
     }
     for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }, { width: 320, height: 568 }]) {
+      // End the previous document before changing responsive image candidates.
+      // Otherwise resizing starts optimizer requests that the next navigation cancels.
+      await page.goto("about:blank");
       await page.setViewportSize(viewport);
       await page.goto("/");
       await expect(page.getByRole("link", { name: "Browse menu" })).toBeVisible();
@@ -109,7 +126,9 @@ test("storefront and configurator at desktop, mobile and short viewports", async
     await page.getByRole("button", { name: /^All/ }).click();
     await expect(page.getByRole("button", { name: /^All/ })).toHaveAttribute("aria-pressed", "true");
   } finally {
-    await testInfo.attach("storefront-image-requests", { body: JSON.stringify(imageRequests), contentType: "application/json" });
+    const requestPath = testInfo.outputPath("storefront-image-requests.json");
+    await writeFile(requestPath, JSON.stringify(imageRequests));
+    await testInfo.attach("storefront-image-requests", { path: requestPath, contentType: "application/json" });
     await prisma.product.deleteMany({ where: { id: { in: visualProductIds } } });
     await prisma.product.update({ where: { id: product.id }, data: { imageUrl: product.imageUrl } });
     await prisma.$disconnect();

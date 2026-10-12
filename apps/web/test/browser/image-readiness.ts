@@ -1,4 +1,5 @@
 import { type Locator, type Page, type TestInfo } from "@playwright/test";
+import { writeFile } from "node:fs/promises";
 
 // A Node deadline also bounds an evaluation when the page cannot run its own timer.
 async function bounded<T>(work: Promise<T>, timeoutMs: number): Promise<T> {
@@ -23,9 +24,25 @@ export async function assertRequiredImageReady(
 ) {
   const started = Date.now();
   let outcome: string;
+  const states: unknown[] = [];
+  const snapshot = async (stage: string) => {
+    states.push(await image.evaluate((node, stage) => {
+      const img = node as HTMLImageElement;
+      const safeSource = (value: string) => {
+        if (!value) return "empty-source";
+        const url = new URL(value || document.baseURI, document.baseURI);
+        const asset = url.searchParams.get("url")?.match(/^\/images\/menu\/[a-z0-9-]+\.(?:webp|png|jpg|jpeg|svg)$/i)?.[0];
+        return url.protocol === "data:" ? "data-image" : url.pathname === "/_next/image" && asset
+          ? `${url.pathname}?url=${encodeURIComponent(asset)}&w=${Number(url.searchParams.get("w"))}&q=${Number(url.searchParams.get("q"))}` : url.pathname;
+      };
+      const box = img.getBoundingClientRect();
+      return { stage, src: safeSource(img.src), currentSrc: safeSource(img.currentSrc), complete: img.complete, naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight, loading: img.loading, connected: img.isConnected, viewport: { width: innerWidth, height: innerHeight }, box: { x: box.x, y: box.y, width: box.width, height: box.height } };
+    }, stage, { timeout: 500 }));
+  };
   try {
     outcome = await bounded((async () => {
       await image.scrollIntoViewIfNeeded({ timeout: timeoutMs });
+      await snapshot("after-scroll").catch(() => states.push({ stage: "after-scroll", unavailable: true }));
       const remaining = Math.max(1, timeoutMs - (Date.now() - started));
       return image.evaluate(async (node, budget) => {
         const img = node as HTMLImageElement;
@@ -53,6 +70,10 @@ export async function assertRequiredImageReady(
       ? "page-operation-timeout"
       : "image-locator-or-page-error";
   }
+  await snapshot(outcome).catch(() => states.push({ stage: outcome, unavailable: true }));
+  const statePath = testInfo.outputPath(`image-state-${label.replace(/[^a-z0-9-]/gi, "-")}.json`);
+  await writeFile(statePath, JSON.stringify({ label, outcome, timeoutMs, elapsedMs: Date.now() - started, states }));
+  await testInfo.attach("required-image-state", { path: statePath, contentType: "application/json" });
   if (outcome !== "decoded") {
     await testInfo.attach("required-image-failure", {
       body: JSON.stringify({ label, outcome, timeoutMs, elapsedMs: Date.now() - started }),
