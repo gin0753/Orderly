@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { makeStore } from "@/store/store";
@@ -14,8 +14,11 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { AdminHeader } from "@/components/layout/admin-header";
 import CustomerLayout from "@/app/(customer)/layout";
 import TrackOrderPage from "@/app/(customer)/track-order/page";
+import { customerAuthApi } from "@/features/customer-auth/api/customer-auth-api";
+import { ApiError } from "@/lib/api-fetch";
 
 const pushMock = jest.fn();
+jest.mock("@/features/customer-auth/api/customer-auth-api", () => ({ customerAuthApi: { me: jest.fn() } }));
 let pathname = "/checkout";
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: pushMock }),
@@ -29,6 +32,7 @@ jest.mock("@/features/order-tracking/api/order-tracking-api", () => ({
 }));
 
 beforeEach(() => {
+  jest.mocked(customerAuthApi.me).mockRejectedValue(new ApiError(401, "Not signed in"));
   window.sessionStorage.clear();
   pathname = "/checkout";
 });
@@ -38,6 +42,7 @@ it("uses one customer header on tracking with Track order active and a working c
   const page = await TrackOrderPage({ searchParams: Promise.resolve({ orderNumber: "ORD-123" }) });
   const store = makeStore();
   render(<Provider store={store}><CustomerLayout>{page}</CustomerLayout></Provider>);
+  await waitFor(() => expect(store.getState().customerAuth).toMatchObject({ status: "unauthenticated", operation: null }));
   expect(screen.getAllByRole("banner")).toHaveLength(1);
   expect(within(screen.getByRole("navigation", { name: "Primary navigation" })).getByRole("link", { name: "Track order" })).toHaveAttribute("aria-current", "page");
   expect(screen.getAllByRole("link", { name: "Menu" })).toHaveLength(1);

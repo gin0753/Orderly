@@ -11,9 +11,7 @@ import {
   OrderTrackingLookupError,
   TRACKING_UNAVAILABLE_MESSAGE,
 } from "../../api/order-tracking-api";
-import type {
-  SubmitStatus,
-} from "../../types/order-tracking.types";
+import type { SubmitStatus } from "../../types/order-tracking.types";
 import { saveTrackingLookup } from "../../utils/order-tracking-storage";
 
 const normalizeOrderNumber = (value: string) => {
@@ -44,13 +42,18 @@ export function OrderLookupForm({
   const [orderNumber, setOrderNumber] = useState(initialOrderNumber);
   const [receiptCode, setReceiptCode] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [invalidField, setInvalidField] = useState<"orderNumber" | "receiptCode" | null>(null);
+  const [invalidField, setInvalidField] = useState<
+    "orderNumber" | "receiptCode" | null
+  >(null);
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
   const errorRef = useRef<HTMLDivElement>(null);
 
   const isBusy = submitStatus !== "idle";
 
-  function showError(message: string, field: "orderNumber" | "receiptCode" | null = null) {
+  function showError(
+    message: string,
+    field: "orderNumber" | "receiptCode" | null = null,
+  ) {
     setError(message);
     setInvalidField(field);
     requestAnimationFrame(() => {
@@ -75,7 +78,10 @@ export function OrderLookupForm({
       showError("Please enter the complete receipt code.", "receiptCode");
       return;
     }
-    const payload = { orderNumber: cleanOrderNumber, ...(cleanReceiptCode ? { receiptCode: cleanReceiptCode } : {}) };
+    const payload = {
+      orderNumber: cleanOrderNumber,
+      ...(cleanReceiptCode ? { receiptCode: cleanReceiptCode } : {}),
+    };
 
     setError(null);
     setInvalidField(null);
@@ -87,7 +93,9 @@ export function OrderLookupForm({
       saveTrackingLookup({
         orderNumber: order.orderNumber,
         receiptCode: payload.receiptCode,
-        expiresAt: new Date(Date.parse(order.createdAt) + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        expiresAt: new Date(
+          Date.parse(order.createdAt) + 30 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
       });
 
       setSubmitStatus("navigating");
@@ -105,7 +113,13 @@ export function OrderLookupForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate aria-label="Find your order" className="space-y-5" aria-busy={isBusy}>
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      aria-label="Find your order"
+      className="space-y-5"
+      aria-busy={isBusy}
+    >
       <div className="space-y-2">
         <label
           htmlFor="orderNumber"
@@ -117,14 +131,29 @@ export function OrderLookupForm({
         <Input
           id="orderNumber"
           value={orderNumber}
-          onChange={(event) => { setOrderNumber(event.target.value); if (invalidField === "orderNumber") { setError(null); setInvalidField(null); } }}
+          onChange={(event) => {
+            setOrderNumber(event.target.value);
+            if (invalidField === "orderNumber") {
+              setError(null);
+              setInvalidField(null);
+            }
+          }}
           placeholder="e.g. #10045"
           autoComplete="off"
           disabled={isBusy}
           aria-invalid={invalidField === "orderNumber"}
-          aria-describedby={invalidField === "orderNumber" ? "tracking-number-error" : undefined}
+          aria-describedby={
+            invalidField === "orderNumber" ? "tracking-number-error" : undefined
+          }
         />
-        {invalidField === "orderNumber" ? <p id="tracking-number-error" className="text-sm text-[var(--color-danger-strong)]">{error}</p> : null}
+        {invalidField === "orderNumber" ? (
+          <p
+            id="tracking-number-error"
+            className="text-sm text-[var(--color-danger-strong)]"
+          >
+            {error}
+          </p>
+        ) : null}
       </div>
 
       <div className="space-y-2">
@@ -138,7 +167,13 @@ export function OrderLookupForm({
         <Input
           id="receiptCode"
           value={receiptCode}
-          onChange={(event) => { setReceiptCode(event.target.value); if (invalidField === "receiptCode") { setError(null); setInvalidField(null); } }}
+          onChange={(event) => {
+            setReceiptCode(event.target.value);
+            if (invalidField === "receiptCode") {
+              setError(null);
+              setInvalidField(null);
+            }
+          }}
           placeholder="Code from your order confirmation"
           autoComplete="off"
           spellCheck={false}
@@ -148,10 +183,22 @@ export function OrderLookupForm({
           aria-describedby={`tracking-receiptCode-help${invalidField === "receiptCode" ? " tracking-receiptCode-error" : ""}`}
         />
 
-        <p id="tracking-receiptCode-help" className="text-sm text-[var(--color-text-muted)]">
-          Use the saved code from confirmation, or leave blank to use your signed-in account. Codes expire after 30 days. Lost, expired, revoked and legacy guest receipts cannot be recovered online.
+        <p
+          id="tracking-receiptCode-help"
+          className="text-sm text-[var(--color-text-muted)]"
+        >
+          Use the saved code from confirmation, or leave blank to use your
+          signed-in account. Codes expire after 30 days. Lost, expired, revoked
+          and legacy guest receipts cannot be recovered online.
         </p>
-        {invalidField === "receiptCode" ? <p id="tracking-receiptCode-error" className="text-sm text-[var(--color-danger-strong)]">{error}</p> : null}
+        {invalidField === "receiptCode" ? (
+          <p
+            id="tracking-receiptCode-error"
+            className="text-sm text-[var(--color-danger-strong)]"
+          >
+            {error}
+          </p>
+        ) : null}
       </div>
 
       {error && !invalidField ? (
@@ -177,7 +224,9 @@ export function OrderLookupForm({
           {getSubmitButtonLabel(submitStatus)}
         </span>
       </Button>
-      <p role="status" className="sr-only">{isBusy ? getSubmitButtonLabel(submitStatus) : ""}</p>
+      <p role="status" className="sr-only">
+        {isBusy ? getSubmitButtonLabel(submitStatus) : ""}
+      </p>
 
       {submitStatus === "navigating" ? (
         <p className="text-center text-xs text-[var(--color-text-muted)]">

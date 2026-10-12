@@ -34,35 +34,47 @@ export default async function OrderSuccessPage({
 
   if (!orderNumber || !hasValidTotal || !hasValidOrderType) {
     return (
-      <div className="mx-auto max-w-3xl"><CustomerStatePanel
-        eyebrow="Order confirmation"
-        title="Order details unavailable"
-        description="We couldn’t open this confirmation. You can track an existing order or return to the menu."
-        icon={<CircleAlert aria-hidden="true" className="size-7" />}
-        actions={
-          <>
-            <Link
-              href="/"
-              className={buttonStyles({ size: "lg", className: "min-h-12 flex-1" })}
-            >
-              Browse menu
-            </Link>
-            <Link
-              href="/track-order"
-              className={buttonStyles({ variant: "secondary", size: "lg", className: "min-h-12 flex-1" })}
-            >
-              Track order
-            </Link>
-          </>
-        }
-      /></div>
+      <div className="mx-auto max-w-3xl">
+        <CustomerStatePanel
+          eyebrow="Order confirmation"
+          title="Order details unavailable"
+          description="We couldn’t open this confirmation. You can track an existing order or return to the menu."
+          icon={<CircleAlert aria-hidden="true" className="size-7" />}
+          actions={
+            <>
+              <Link
+                href="/"
+                className={buttonStyles({
+                  size: "lg",
+                  className: "min-h-12 flex-1",
+                })}
+              >
+                Browse menu
+              </Link>
+              <Link
+                href="/track-order"
+                className={buttonStyles({
+                  variant: "secondary",
+                  size: "lg",
+                  className: "min-h-12 flex-1",
+                })}
+              >
+                Track order
+              </Link>
+            </>
+          }
+        />
+      </div>
     );
   }
 
   return (
     <div className="bg-[var(--color-background)] px-[var(--page-gutter)] py-8 lg:py-12">
       <div className="mx-auto flex max-w-2xl flex-col items-center rounded-[var(--radius-overlay)] bg-[var(--color-surface)] px-5 py-8 text-center shadow-[var(--shadow-surface)] sm:px-10 sm:py-10">
-        <div aria-hidden="true" className="transaction-confirmation-mark flex size-14 items-center justify-center rounded-full bg-[var(--color-success-surface)] text-[var(--color-success-strong)]">
+        <div
+          aria-hidden="true"
+          className="transaction-confirmation-mark flex size-14 items-center justify-center rounded-full bg-[var(--color-success-surface)] text-[var(--color-success-strong)]"
+        >
           <Check className="size-7" />
         </div>
 
@@ -81,8 +93,12 @@ export default async function OrderSuccessPage({
 
         <div className="mt-6 w-full overflow-hidden rounded-[var(--radius-card)] bg-[var(--color-surface-muted)] text-left">
           <div className="bg-[var(--color-brand-surface)] px-5 py-5 text-[var(--color-on-brand)]">
-            <p className="text-xs font-medium text-[var(--color-on-brand-secondary)]">Order number</p>
-            <p className="mt-2 break-all text-3xl font-bold tracking-tight tabular-nums">#{orderNumber}</p>
+            <p className="text-xs font-medium text-[var(--color-on-brand-secondary)]">
+              Order number
+            </p>
+            <p className="mt-2 break-all text-3xl font-bold tracking-tight tabular-nums">
+              #{orderNumber}
+            </p>
           </div>
 
           <div className="grid gap-4 p-5 text-sm">
@@ -102,19 +118,25 @@ export default async function OrderSuccessPage({
         <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row">
           <Link
             href={`/track-order/${encodeURIComponent(orderNumber)}`}
-            className={buttonStyles({ size: "lg", className: "min-h-12 flex-1" })}
+            className={buttonStyles({
+              size: "lg",
+              className: "min-h-12 flex-1",
+            })}
           >
             Track your order
           </Link>
 
           <Link
             href="/"
-            className={buttonStyles({ variant: "secondary", size: "lg", className: "min-h-12 flex-1" })}
+            className={buttonStyles({
+              variant: "secondary",
+              size: "lg",
+              className: "min-h-12 flex-1",
+            })}
           >
             Start another order
           </Link>
         </div>
-
       </div>
     </div>
   );
