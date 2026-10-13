@@ -21,6 +21,7 @@ jest.mock("@/features/customer-auth/api/customer-auth-api", () => ({
     login: jest.fn(),
     register: jest.fn(),
     logout: jest.fn(),
+    registrationStatus: jest.fn(),
     googleStatus: jest.fn(),
     googleStart: jest.fn(),
     googleConnect: jest.fn(),
@@ -50,6 +51,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   sessionStorage.clear();
   searchParams = new URLSearchParams("returnTo=%2Fcheckout");
+  api.registrationStatus.mockResolvedValue({ mode: "verified" });
   api.googleStatus.mockResolvedValue({ enabled: false });
 });
 
@@ -121,6 +123,75 @@ it("registration requests verification without creating a session or choosing a 
     name: "Ada",
   });
   expect(screen.getByRole("button", { name: "Resend in 60s" })).toBeDisabled();
+});
+
+it("direct registration authenticates, ignores saved pending UI and discloses unverified ownership", async () => {
+  api.registrationStatus.mockResolvedValue({ mode: "direct" });
+  sessionStorage.setItem("orderly-registration-email", "pending@example.test");
+  api.register.mockResolvedValue({
+    user: { ...customer, emailVerified: false },
+  });
+  const store = renderForm("register");
+  await screen.findByLabelText("Confirm password");
+  expect(screen.getByLabelText("Password")).toHaveAttribute(
+    "autocomplete",
+    "new-password",
+  );
+  await userEvent.type(screen.getByLabelText("Name"), "Ada");
+  await userEvent.type(screen.getByLabelText("Email"), customer.email);
+  await userEvent.type(
+    screen.getByLabelText("Password"),
+    "Direct password 123!",
+  );
+  await userEvent.type(
+    screen.getByLabelText("Confirm password"),
+    "Direct password 123!",
+  );
+  await userEvent.click(screen.getByRole("button", { name: "Create account" }));
+  await waitFor(() =>
+    expect(store.getState().customerAuth.status).toBe("authenticated"),
+  );
+  expect(api.register).toHaveBeenCalledWith({
+    email: customer.email,
+    name: "Ada",
+    password: "Direct password 123!",
+  });
+  expect(
+    screen.queryByRole("heading", { name: "Check your email" }),
+  ).not.toBeInTheDocument();
+  expect(store.getState().customerAuth.customer?.emailVerified).toBe(false);
+});
+
+it("fails closed when registration mode is unavailable", async () => {
+  api.registrationStatus.mockRejectedValue(new Error("Unavailable"));
+  renderForm("register");
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "Registration is temporarily unavailable",
+  );
+  expect(screen.getByRole("button", { name: "Create account" })).toBeDisabled();
+  expect(api.register).not.toHaveBeenCalled();
+});
+
+it("direct registration validates password confirmation before sending credentials", async () => {
+  api.registrationStatus.mockResolvedValue({ mode: "direct" });
+  renderForm("register");
+  await screen.findByLabelText("Confirm password");
+  await userEvent.type(screen.getByLabelText("Name"), "Ada");
+  await userEvent.type(screen.getByLabelText("Email"), customer.email);
+  await userEvent.type(
+    screen.getByLabelText("Password"),
+    "Direct password 123!",
+  );
+  await userEvent.type(
+    screen.getByLabelText("Confirm password"),
+    "Wrong password 123!",
+  );
+  await userEvent.click(screen.getByRole("button", { name: "Create account" }));
+  expect(screen.getByLabelText("Confirm password")).toHaveAttribute(
+    "aria-invalid",
+    "true",
+  );
+  expect(api.register).not.toHaveBeenCalled();
 });
 
 it("rejects unsafe return destinations before successful navigation", async () => {

@@ -8,6 +8,7 @@ import { CustomerAuthService } from './customer-auth.service';
 import { RegistrationMailer } from './registration-mailer';
 import {
   CompleteRegistrationDto,
+  CustomerRegisterDto,
   CustomerEmailDto,
 } from './dto/customer-credentials.dto';
 
@@ -30,7 +31,54 @@ export class CustomerRegistrationService {
     private readonly auth: CustomerAuthService,
   ) {}
 
+  get mode() {
+    return this.config.registrationMode;
+  }
+
+  private requireVerified() {
+    if (this.mode !== 'verified') throw invalid();
+  }
+
+  async direct(dto: CustomerRegisterDto) {
+    if (this.mode !== 'direct' || typeof dto.password !== 'string')
+      throw new BadRequestException(
+        'A password is required for direct registration.',
+      );
+    const email = dto.email.trim().toLowerCase();
+    const passwordHash = await this.auth.hashRegistrationPassword(dto.password);
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        await lockCustomerDeletion(tx);
+        const pending = await tx.customerPendingRegistration.findUnique({
+          where: { email },
+        });
+        if (pending && pending.expiresAt > new Date())
+          throw new BadRequestException(
+            'Registration unavailable for this address. Try again after the pending link expires.',
+          );
+        // Do not consume pending proof or adopt a pending registration's profile.
+        return this.auth.activateRegistration(
+          tx,
+          email,
+          dto,
+          passwordHash,
+          null,
+        );
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      )
+        throw new BadRequestException(
+          'Registration unavailable for this address.',
+        );
+      throw error;
+    }
+  }
+
   async start(dto: CustomerEmailDto) {
+    this.requireVerified();
     const now = new Date();
     const email = dto.email.trim().toLowerCase();
     const token = randomBytes(32).toString('base64url');
@@ -108,6 +156,7 @@ export class CustomerRegistrationService {
   }
 
   async check(token: string) {
+    this.requireVerified();
     const pending = await this.prisma.customerPendingRegistration.findUnique({
       where: { tokenHash: registrationDigest(token) },
     });
@@ -116,6 +165,7 @@ export class CustomerRegistrationService {
   }
 
   async complete(dto: CompleteRegistrationDto) {
+    this.requireVerified();
     const passwordHash = await this.auth.hashRegistrationPassword(dto.password);
     try {
       return await this.prisma.$transaction(async (tx) => {

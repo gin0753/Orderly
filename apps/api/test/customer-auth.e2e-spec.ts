@@ -118,6 +118,7 @@ describe('Customer authentication API', () => {
     expect(Object.keys(body.user).sort()).toEqual([
       'authMethods',
       'email',
+      'emailVerified',
       'id',
       'name',
       'phone',

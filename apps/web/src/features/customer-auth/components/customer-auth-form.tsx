@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { RegistrationPending } from "./registration-pending";
-import type { RegistrationResponse } from "../types";
+import type { RegistrationResponse, RegistrationMode } from "../types";
 import { GoogleAuthButton } from "./google-brand";
 import { safeCustomerReturnPath } from "../lib/return-path";
 import { customerAuthApi } from "../api/customer-auth-api";
@@ -38,6 +38,10 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
     password: "",
     confirmation: "",
   });
+  const [registrationMode, setRegistrationMode] =
+    useState<RegistrationMode | null>(null);
+  const [modeFailed, setModeFailed] = useState(false);
+  const direct = registrationMode === "direct";
   const [pending, setPending] = useState<{
     email: string;
     result: RegistrationResponse;
@@ -54,11 +58,28 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
   const unresolved = auth.status === "idle" || auth.status === "loading";
 
   useEffect(() => {
+    if (!registering) return;
+    let live = true;
+    void customerAuthApi
+      .registrationStatus()
+      .then((result) => {
+        if (result.mode !== "direct" && result.mode !== "verified")
+          throw new Error("Invalid registration mode");
+        if (live) setRegistrationMode(result.mode);
+      })
+      .catch(() => {
+        if (live) setModeFailed(true);
+      });
+    return () => {
+      live = false;
+    };
+  }, [registering]);
+  useEffect(() => {
     dispatch(clearCustomerFeedback());
   }, [dispatch, mode]);
   useEffect(() => {
     let live = true;
-    if (registering)
+    if (registering && registrationMode === "verified")
       void Promise.resolve().then(() => {
         try {
           const email = sessionStorage.getItem("orderly-registration-email");
@@ -74,7 +95,7 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
     return () => {
       live = false;
     };
-  }, [registering]);
+  }, [registering, registrationMode]);
   useEffect(() => {
     let live = true;
     void customerAuthApi
@@ -118,9 +139,14 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
   }
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (busy || unresolved) return;
+    if (
+      busy ||
+      unresolved ||
+      (registering && (!registrationMode || modeFailed))
+    )
+      return;
     const nextErrors = customerAuthFormErrors(values, registering);
-    if (registering) {
+    if (registering && !direct) {
       delete nextErrors.password;
       delete nextErrors.confirmation;
     }
@@ -144,9 +170,14 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
         registerCustomer({
           email: credentials.email,
           name: values.name.trim(),
+          ...(direct ? { password: values.password } : {}),
         }),
       );
-      if (registerCustomer.fulfilled.match(action)) {
+      if (
+        registerCustomer.fulfilled.match(action) &&
+        !("user" in action.payload)
+      ) {
+        setRegistrationMode("verified");
         try {
           sessionStorage.setItem(
             "orderly-registration-email",
@@ -221,7 +252,7 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
     );
   }
 
-  if (registering && pending)
+  if (registering && !modeFailed && registrationMode === "verified" && pending)
     return (
       <RegistrationPending
         email={pending.email}
@@ -313,14 +344,38 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
         >
           {registering ? field("name", "Name", "name") : null}
           {field("email", "Email", "email", "email")}
-          {!registering &&
+          {(!registering || direct) &&
             field(
               "password",
               "Password",
-              "current-password",
+              registering ? "new-password" : "current-password",
               showPassword ? "text" : "password",
             )}
-          {!registering && (
+          {registering && direct ? (
+            <>
+              <p id="customer-password-help" className="text-sm">
+                Use at least 15 characters and at most 72 UTF-8 bytes.
+              </p>
+              {field(
+                "confirmation",
+                "Confirm password",
+                "new-password",
+                showPassword ? "text" : "password",
+              )}
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                This demo creates your account immediately without verifying
+                email ownership. Use only an address you are authorized to use.
+              </p>
+            </>
+          ) : null}
+          {registering && (!registrationMode || modeFailed) ? (
+            <p role={modeFailed ? "alert" : "status"}>
+              {modeFailed
+                ? "Registration is temporarily unavailable. Reload to try again."
+                : "Checking registration availability..."}
+            </p>
+          ) : null}
+          {(!registering || direct) && (
             <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
               <input
                 type="checkbox"
@@ -346,7 +401,12 @@ export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
             type="submit"
             size="lg"
             className="w-full"
-            disabled={busy || unresolved || auth.status === "authenticated"}
+            disabled={
+              busy ||
+              unresolved ||
+              (registering && (!registrationMode || modeFailed)) ||
+              auth.status === "authenticated"
+            }
           >
             {busy
               ? registering

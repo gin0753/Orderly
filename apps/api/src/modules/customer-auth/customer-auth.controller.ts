@@ -212,11 +212,24 @@ export class CustomerAuthController {
     };
   }
 
+  @Get('registration/status')
+  @Header('Cache-Control', 'private, no-store')
+  registrationStatus() {
+    return { mode: this.registration.mode };
+  }
+
   @Post('register')
   @Header('Cache-Control', 'private, no-store')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
-  register(@Body() dto: CustomerRegisterDto) {
-    return this.registration.start(dto);
+  async register(
+    @Body() dto: CustomerRegisterDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    if (this.registration.mode === 'verified')
+      return this.registration.start(dto);
+    const result = await this.registration.direct(dto);
+    this.service.setCookies(response, result);
+    return { user: result.user };
   }
 
   @Post('registration/resend')

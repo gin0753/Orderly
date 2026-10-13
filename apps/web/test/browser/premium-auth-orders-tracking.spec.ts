@@ -103,6 +103,8 @@ test("authentication and guest tracking presentation, errors and keyboard feedba
   let releaseLogin: (() => void) | undefined;
   await page.route("**/customer/auth/**", async (route) => {
     const url = route.request().url();
+    if (url.endsWith("/registration/status"))
+      return route.fulfill({ json: { mode: "verified" } });
     if (url.endsWith("/google/status"))
       return route.fulfill({ json: { enabled: true } });
     if (url.endsWith("/google/start"))

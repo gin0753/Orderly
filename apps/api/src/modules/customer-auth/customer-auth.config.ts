@@ -1,6 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+export type CustomerRegistrationMode = 'direct' | 'verified';
+export function registrationMode(
+  config: ConfigService,
+): CustomerRegistrationMode {
+  const mode = config.get<string>('CUSTOMER_REGISTRATION_MODE') ?? 'verified';
+  if (mode !== 'direct' && mode !== 'verified')
+    throw new Error('CUSTOMER_REGISTRATION_MODE must be direct or verified.');
+  return mode;
+}
+
 export const CUSTOMER_COOKIES = {
   access: 'orderly_customer_access',
   refresh: 'orderly_customer_refresh',
@@ -8,6 +18,7 @@ export const CUSTOMER_COOKIES = {
 
 @Injectable()
 export class CustomerAuthConfig {
+  readonly registrationMode: CustomerRegistrationMode;
   readonly accessSecret: string;
   readonly refreshSecret: string;
   readonly issuer: string;
@@ -19,6 +30,7 @@ export class CustomerAuthConfig {
   readonly secure: boolean;
 
   constructor(config: ConfigService) {
+    this.registrationMode = registrationMode(config);
     this.accessSecret = config.getOrThrow<string>('CUSTOMER_JWT_ACCESS_SECRET');
     this.refreshSecret = config.getOrThrow<string>(
       'CUSTOMER_JWT_REFRESH_SECRET',

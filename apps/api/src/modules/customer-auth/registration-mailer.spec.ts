@@ -7,6 +7,35 @@ const settings = (values: Record<string, string>) => {
   return config;
 };
 afterEach(() => jest.restoreAllMocks());
+it('starts direct production without Resend and never sends even with credentials', async () => {
+  const fetchMock = jest.spyOn(globalThis, 'fetch');
+  const mailer = new RegistrationMailer(
+    settings({ NODE_ENV: 'production', CUSTOMER_REGISTRATION_MODE: 'direct' }),
+  );
+  await expect(
+    mailer.send('synthetic@example.test', 'synthetic'),
+  ).rejects.toThrow();
+  const configured = new RegistrationMailer(
+    settings({
+      NODE_ENV: 'production',
+      CUSTOMER_REGISTRATION_MODE: 'direct',
+      REGISTRATION_EMAIL_API_KEY: 'synthetic',
+      REGISTRATION_EMAIL_FROM: 'synthetic@example.test',
+    }),
+  );
+  await expect(
+    configured.send('synthetic@example.test', 'synthetic'),
+  ).rejects.toThrow();
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+it('rejects an unknown mode before provider startup', () => {
+  expect(
+    () =>
+      new RegistrationMailer(
+        settings({ CUSTOMER_REGISTRATION_MODE: 'unknown' }),
+      ),
+  ).toThrow('CUSTOMER_REGISTRATION_MODE');
+});
 it('fails closed in production without mail configuration', () => {
   expect(
     () => new RegistrationMailer(settings({ NODE_ENV: 'production' })),
