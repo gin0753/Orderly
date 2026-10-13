@@ -1,12 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { evidenceDirectory } from "./evidence-output";
 
 // Opt-in isolated render fixtures: no servers, credentials, API or database.
 // Generate HTML with pre-packaging-layout.test.tsx before/after the source edit.
 const root = path.resolve(__dirname, "../../../..");
 const artifacts = path.join(root, "audit-artifacts/pre-packaging");
-const screenshots = path.join(root, "docs/v1-pre-packaging-cleanup-evidence");
+const screenshots =
+  process.env.ORDERLY_CLEANUP_EVIDENCE_DIR ?? evidenceDirectory("cleanup-layout");
 
 test("isolated cleanup layouts retain geometry and keyboard access", async ({
   page,

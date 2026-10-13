@@ -41,4 +41,4 @@ The script reuses normalized chapter timing and advances two labels based on fra
 
 The original `admin-walkthrough.mp4` remains untouched. Before rendering, a byte-identical backup is created at `audit-artifacts/video-polish/admin-walkthrough.original.mp4`. If an existing backup differs, the script stops instead of overwriting it. The script may regenerate only the separate polished output; retain the original and backup until manual approval.
 
-[Polish validation and before/after comparison](../../docs/portfolio/video-polish-report.md). Review the separate polished MP4 manually before promoting it to the README's existing video link. The script does not change that link or commit, publish, deploy or upload media.
+[Polish validation and before/after comparison](../../docs/portfolio/review-report.md). Review the separate polished MP4 manually before promoting it to the README's existing video link. The script does not change that link or commit, publish, deploy or upload media.

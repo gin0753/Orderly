@@ -8,6 +8,8 @@ Orderly is a full-stack food-ordering portfolio project built with **Next.js, Re
 
 Admin functionality is presented through a recorded walkthrough using synthetic data. No public Admin access is provided in V1.
 
+The owner has confirmed successful manual functional acceptance of the deployed application. The [final portfolio audit](docs/portfolio/final-release-report.md) records this attestation, deployment-revision evidence and remaining release conditions; it does not invent a detailed UAT checklist or provider results.
+
 ## Product Showcase
 
 ### Customer storefront
@@ -66,7 +68,7 @@ Customer and Admin use separate identities, session tables, JWT keys, cookies an
 - **Frontend state ownership.** Redux holds the persistent cart and Customer auth state; TanStack Query owns menu, Admin and private order data; React Hook Form owns form state. Customer-private queries are removed on identity change/session expiry while public menu data is preserved.
 - **Transaction-safe checkout and history.** Catalog validation, server-calculated totals and order/item/option snapshots are persisted in one Prisma transaction. Owned checkout participates in the same advisory-lock coordination as account deletion, preventing an order from attaching to a deleted identity. Expired authenticated checkout requires an explicit guest choice; it is not silently downgraded. Later catalog edits do not rewrite historical item selections or prices.
 
-Details and contracts: [architecture/API overview](docs/portfolio/architecture-api.md), [customer authentication](docs/customer-auth.md), and [current security acceptance findings](docs/v1-final-customer-security-acceptance-report.md).
+Details and contracts: [architecture/API overview](docs/architecture/architecture-api.md), [customer authentication](docs/security/customer-auth.md), and [current security acceptance findings](docs/security/security-acceptance.md).
 
 ## Architecture
 
@@ -80,13 +82,13 @@ flowchart LR
     API -. optional drafts .-> AI[OpenAI]
 ```
 
-Production browser requests use same-origin `/api` routing, keeping cookie authentication on the web origin while the API remains a separate service. Optional providers are called server-side. Hosting labels describe the deployment design; console settings and exact deployed revisions still require operator verification.
+Production browser requests use same-origin `/api` routing, keeping cookie authentication on the web origin while the API remains a separate service. Optional providers are called server-side. Hosting labels describe the deployment design. Production revision and public-alias consistency are confirmed in the [final release audit](docs/portfolio/final-release-report.md); specific provider and operational acceptance remains documented separately.
 
 The database models categories/products/options, orders with stored item/price snapshots, and separate Customer/Admin session lifecycles. API money uses integer cents; catalog storage uses decimals. `CustomerUser` is the current customer identity; the schema also retains a legacy `User` model. The [Prisma schema](apps/api/prisma/schema.prisma) and [API controllers/DTOs](apps/api/src/modules) are authoritative.
 
 ## Testing & Quality Assurance
 
-The [dual-registration acceptance report](docs/v1-dual-registration-mode-report.md) records these **prior scoped local results**, not a fresh run for this README edit:
+The [dual-registration acceptance report](docs/testing/registration-modes.md) records these **prior scoped local results**, not a fresh run for this README edit:
 
 | Layer                    | Recorded passing evidence                                                                       |
 | ------------------------ | ----------------------------------------------------------------------------------------------- |
@@ -148,14 +150,16 @@ Local development uses `orderly_db`; database/browser runners reset only the gua
 
 ## Deployment & Verification Status
 
-| Evidence boundary | Status                                                                                                                         |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Implemented       | Features and engineering decisions above are present in current source; UI/API-only distinctions are explicit                  |
-| Locally tested    | Scoped acceptance and synthetic optimized-build media evidence are linked above                                                |
-| Publicly verified | Customer root and API health reachability only, checked during Stage 17 on 13 October 2026                                     |
-| Not established   | Current deployed revision/mode, full public workflows, real-provider acceptance and remaining operational/cross-engine staging |
+| Evidence boundary    | Status                                                                                                                                                                                  |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implemented          | Current source includes the features above, with UI/API-only distinctions explicit                                                                                                      |
+| Locally tested       | Scoped acceptance, passing main CI and synthetic optimized-build media evidence are linked above                                                                                        |
+| Publicly observed    | Customer storefront reachable; public registration mode is `direct`, Google configuration is enabled                                                                                    |
+| Owner-confirmed      | Successful manual functional acceptance; exact date, devices and per-flow/provider scope were not supplied                                                                              |
+| Revision evidence    | Vercel/Railway production revision and public aliases verified by deployment metadata and owner dashboard confirmation at `81da702`; candidate `9c33c34` has identical application code |
+| Remaining conditions | Specific provider/operational/cross-engine acceptance remains open; the [final exposure gate](docs/portfolio/final-release-gate.md) found no confirmed release blocker                                                                         |
 
-Read the [environment, Railway/Vercel and migration guide](docs/portfolio/release-guide.md) before release. API startup does **not** apply migrations; an explicit `prisma migrate deploy` step must precede activation of the matching API. Deployed databases must never use `migrate reset` or destructive test fixtures. Secrets stay server-side, outside `NEXT_PUBLIC_*` variables.
+Read the [environment, Railway/Vercel and migration guide](docs/operations/release-guide.md) before release. API startup does **not** apply migrations; an explicit `prisma migrate deploy` step must precede activation of the matching API. Deployed databases must never use `migrate reset` or destructive test fixtures. Secrets stay server-side, outside `NEXT_PUBLIC_*` variables.
 
 Outstanding release conditions include real Resend domain/inbox/link behavior, Google fresh-auth deletion behavior, recoverable backup/restore and populated migration/cutover, coordinated rollout, deployed secret redaction, and focused Firefox/Safari/mobile assistive-technology checks. Direct signup lacks mailbox proof; HTTP throttling is process-local and expired security metadata is cleaned lazily. Deletion retains business snapshots and does not promise erasure of backups/provider/browser copies. Security 2A/2B protections remain required in either registration mode.
 
@@ -163,11 +167,12 @@ The [packaging review](docs/portfolio/review-report.md) also records a blank cat
 
 ## Documentation & Roadmap
 
-- [Architecture, database and API](docs/portfolio/architecture-api.md)
-- [Customer authentication](docs/customer-auth.md), [Security 2A: email verification](docs/v1-registration-email-verification-report.md), [Security 2B: account deletion](docs/v1-customer-account-deletion-report.md)
-- [Guest receipt security](docs/v1-guest-tracking-security-hardening-report.md) and [final security acceptance](docs/v1-final-customer-security-acceptance-report.md)
-- [Registration modes and test evidence](docs/v1-dual-registration-mode-report.md)
-- [Release/environment guide](docs/portfolio/release-guide.md), [packaging review](docs/portfolio/review-report.md), and [portfolio presentation summary](docs/portfolio/presentation-summary.md)
+- [Architecture, database and API](docs/architecture/architecture-api.md)
+- [Customer authentication](docs/security/customer-auth.md), [Security 2A: email verification](docs/security/email-verification.md), [Security 2B: account deletion](docs/security/account-deletion.md)
+- [Guest receipt security](docs/security/guest-receipts.md) and [final security acceptance](docs/security/security-acceptance.md)
+- [Registration modes and test evidence](docs/testing/registration-modes.md)
+- [Final release audit](docs/portfolio/final-release-report.md) and [release preparation](docs/operations/release-guide.md#release-preparation-appendix)
+- [Release/environment guide](docs/operations/release-guide.md), [packaging review](docs/portfolio/review-report.md), and [documentation index](docs/README.md)
 - [Screenshot gallery](docs/portfolio/screenshots.md) and [reproducible recording workflow](scripts/portfolio/README.md)
 
 V1 uses a Customer demo plus recorded Admin presentation. A safely isolated interactive Admin demo is a possible **V1.1** enhancement; product lifecycle UI, category-column follow-up, operational cleanup/distributed throttling and remaining provider acceptance are separately scoped future work. They are not shipped or accepted enhancements.

@@ -1,4 +1,9 @@
 import { defineConfig } from "@playwright/test";
+import path from "node:path";
+import { evidenceDirectory } from "./test/browser/evidence-output";
+
+process.env.ORDERLY_TIMELINE_EVIDENCE_DIR ??= evidenceDirectory("timeline-connectors");
+process.env.ORDERLY_TIMELINE_EVIDENCE_DIRECTORY ??= evidenceDirectory("timeline-regression");
 
 export default defineConfig({
   testDir: "./test/browser",
@@ -8,6 +13,6 @@ export default defineConfig({
   retries: 0,
   use: { browserName: "chromium", trace: "retain-on-failure" },
   outputDir: process.env.ORDERLY_TIMELINE_REGRESSION === "1"
-    ? `${process.env.ORDERLY_TIMELINE_EVIDENCE_DIRECTORY ?? "../../audit-artifacts/timeline-regression/verified-after"}/traces`
-    : "../../audit-artifacts/timeline-connectors/results",
+    ? path.join(process.env.ORDERLY_TIMELINE_EVIDENCE_DIRECTORY, "traces")
+    : path.join(process.env.ORDERLY_TIMELINE_EVIDENCE_DIR, "results"),
 });

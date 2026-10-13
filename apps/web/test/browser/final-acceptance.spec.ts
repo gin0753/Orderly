@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { evidenceDirectory } from "./evidence-output";
 
 const require = createRequire(__filename);
 const {
@@ -45,7 +46,7 @@ test.afterAll(async () => {
 
 const evidence =
   process.env.ORDERLY_ACCEPTANCE_EVIDENCE_DIR ??
-  path.resolve(__dirname, "../../../..", "docs/stage-15.7-evidence");
+  evidenceDirectory("acceptance");
 const user = {
   id: "audit-customer",
   name: "Alex Taylor",
