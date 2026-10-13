@@ -1,0 +1,105 @@
+{
+  "date": "2026-10-13",
+  "synthetic": true,
+  "video": {
+    "durationSeconds": 74.96,
+    "width": 1440,
+    "height": 900,
+    "codec": "H.264",
+    "pixelFormat": "yuv420p",
+    "framesPerSecond": 25,
+    "audio": false
+  },
+  "files": [
+    {
+      "path": "assets/admin-categories.png",
+      "bytes": 73409,
+      "sha256": "61ba8024a6ea170f2d41038cf74217db5a064882ad0c76ef72c9168a85b8db15",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "assets/admin-orders.png",
+      "bytes": 70755,
+      "sha256": "5681c94dca2366cf6eacddac3e827c7b4da0fc22fe32e00f5028caf2a29f7cac",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "assets/admin-products.png",
+      "bytes": 106774,
+      "sha256": "3e4f9c5cf51b94691c43321a3370d63fc4bab8f851f40c14d8ef4652753d26e9",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "assets/admin-walkthrough.mp4",
+      "bytes": 2197915,
+      "sha256": "6678df8c62a090a42597a3ef844c66c4ac96218c33acb693b293fd2a76ac083e"
+    },
+    {
+      "path": "assets/admin-walkthrough.webm",
+      "bytes": 5208504,
+      "sha256": "2dec40390a969dd9627df52f149b08ecf607843bb10a8f21613261e9daabcf0a"
+    },
+    {
+      "path": "assets/customer-account.png",
+      "bytes": 48084,
+      "sha256": "814c70c3a4be2c85e185ec10d567153a3f413e51f6eb462383479ab9923c60fa",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "assets/customer-cart.png",
+      "bytes": 299840,
+      "sha256": "9826c0352cc544237097873bf5f37025be7cd5e4361950b3086f303fb55f7366",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "assets/customer-checkout.png",
+      "bytes": 84211,
+      "sha256": "45145f4603161921270f34cabae502e96fe722929a70455fa376fd9f4cfeb0f2",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "assets/customer-history.png",
+      "bytes": 63458,
+      "sha256": "6fc24b826cc56dd996b5c945bf227012642a0197f5628001c485a14c7f68c3f0",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "assets/customer-menu.png",
+      "bytes": 566652,
+      "sha256": "340e6cd86499892a1195bda40e0d88e72bb13ad3633b6deed078fe679c92b7e2",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "assets/customer-product.png",
+      "bytes": 475739,
+      "sha256": "194923b13a9464e0746ddad386f0c33bb11dc18fff09826dfdd352b26a15df49",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "assets/customer-storefront.png",
+      "bytes": 745050,
+      "sha256": "028d9cd54fdf40b5ca40854f5bd3373d82d6eeb211f1f6f1593b0f72f70f1588",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "assets/mp4-chapters.json",
+      "bytes": 1992,
+      "sha256": "33271fab5cbae52d5c8aa88214b8bf57d567845862fe18e11b5830f7cbbf08a9"
+    },
+    {
+      "path": "assets/walkthrough-chapters.json",
+      "bytes": 1924,
+      "sha256": "4a1617bb5a66a1b18eb37b623b46104a42c275049fbe14d73f69f170ede8386d"
+    }
+  ]
+}

@@ -1,744 +1,178 @@
 # Orderly
 
-A production-grade full-stack ordering platform built with **Next.js, React, NestJS, PostgreSQL, Prisma and TypeScript**.
+## Overview and Demo Links
 
-Orderly covers the complete ordering lifecycle across customers and administrators:
+Orderly is a full-stack food-ordering portfolio project built with **Next.js, React, NestJS, PostgreSQL and TypeScript**. It combines a customer storefront with a separately authenticated Admin workspace, with particular attention to checkout integrity, private order ownership and session security.
 
-- guest and authenticated checkout
-- customer accounts and Google sign-in
-- private order history
-- server-controlled order ownership
-- Admin order workflows
-- menu management
-- AI-assisted content editing
-- CI/CD and production deployment
+[Live Customer demo](https://orderly-web-gamma.vercel.app) · [Admin walkthrough (75-second MP4)](docs/portfolio/assets/admin-walkthrough.mp4) · [API health](https://orderly-production-1ac4.up.railway.app/api/health)
 
-The project focuses on production engineering rather than CRUD alone: authentication lifecycle, OAuth account linking, authorization boundaries, concurrency-safe order numbers, server-authoritative pricing, historical snapshots, rate limiting and real database/browser testing.
+Admin functionality is presented through a recorded walkthrough using synthetic data. No public Admin access is provided in V1.
 
----
+The owner has confirmed successful manual functional acceptance of the deployed application. The [final portfolio audit](docs/portfolio/final-release-report.md) records this attestation, deployment-revision evidence and remaining release conditions; it does not invent a detailed UAT checklist or provider results.
 
-## Live Demo
+## Product Showcase
 
-- **Web:** https://orderly-web-gamma.vercel.app
-- **API health:** https://orderly-production-1ac4.up.railway.app/api/health
+### Customer storefront
 
-Production architecture:
+![Customer storefront with a populated menu](docs/portfolio/assets/customer-storefront.png)
 
-```text
-Browser
-   ↓
-Vercel / Next.js
-   ↓ same-origin /api
-Railway / NestJS
-   ↓
-Neon PostgreSQL
-```
+### Product configuration and checkout
 
----
+| Configure an item                                                                   | Review and place an order                                                                       |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| ![Product size and crust configuration](docs/portfolio/assets/customer-product.png) | ![Pickup checkout with synthetic customer details](docs/portfolio/assets/customer-checkout.png) |
+
+### Admin orders
+
+![Admin order counts, filters, queue and selected order details](docs/portfolio/assets/admin-orders.png)
+
+### Admin catalog
+
+![Admin product catalog with search and category filters](docs/portfolio/assets/admin-products.png)
+
+[Full screenshot gallery](docs/portfolio/screenshots.md): [menu](docs/portfolio/assets/customer-menu.png), [cart](docs/portfolio/assets/customer-cart.png), [account](docs/portfolio/assets/customer-account.png), [order history](docs/portfolio/assets/customer-history.png), and [categories](docs/portfolio/assets/admin-categories.png).
+
+All media uses the local optimized build at 1440×900 with synthetic data. The account shown deliberately has unverified email ownership. The walkthrough performs real UI operations and explicitly labels protected API-only product lifecycle operations; captions are editorial overlays.
+
+## Key Features
+
+| Area                  | Implemented scope                                                                                                                                                                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Customer ordering     | API-driven menu; sizes, modifiers and add-ons; persistent cart; guest or signed-in pickup/delivery checkout; receipt-code guest tracking                                                                                                     |
+| Customer accounts     | Email/password and Google OIDC sign-in; explicit Google linking; profile/password management; private order history with URL-backed filters, sorting and pagination; reauthenticated account deletion with active-order checks               |
+| Admin UI              | Order counts, search, status/fulfillment filters, pagination, detail and validated transitions; category create/edit, availability, archive/restore and drag reorder; product create/edit, nested option groups and catalog search/filtering |
+| Admin API-only        | Product availability changes and archive are implemented in protected endpoints, but lack frontend mutation controls                                                                                                                         |
+| Optional AI assistant | Structured description suggestions become reviewable drafts; applying a suggestion still requires a normal product save                                                                                                                      |
+
+Registration is an explicit API configuration choice: `verified` (default) completes signup after mailbox proof; `direct` creates an account immediately with **unverified** email. Direct and historical accounts are not silently marked verified. Matching contact email never claims existing orders or automatically merges accounts. Provider-backed features are implemented and synthetically tested; real-provider acceptance remains conditional below.
 
 ## Tech Stack
 
-**Frontend**
-
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-- Redux Toolkit
-- TanStack Query
-- React Hook Form
-
-**Backend**
-
-- NestJS
-- TypeScript
-- PostgreSQL
-- Prisma
-
-**Infrastructure**
-
-- Docker
-- GitHub Actions
-- Vercel
-- Railway
-- Neon
-
-**Testing**
-
-- Jest
-- React Testing Library
-- Supertest
-- Playwright
-
-**AI**
-
-- OpenAI Responses API
-- Structured Outputs
-
----
-
-# Core Features
-
-## Customer Ordering
-
-Customers can:
-
-- browse API-driven menus
-- customise products with sizes and modifiers
-- manage a persistent cart
-- choose pickup or delivery
-- place orders as guests or signed-in users
-- track guest orders
-- review authenticated order history
-
-Pricing and order totals are recalculated by the backend before persistence.
-
-The browser never controls authoritative pricing.
-
----
-
-## Customer Authentication
-
-Customer authentication supports:
-
-- email/password registration
-- login/logout
-- session restoration
-- rotating refresh sessions
-- protected account routes
-- cross-tab session updates
-- password changes
-- session revocation
-
-Authentication uses HttpOnly cookies and database-backed sessions.
-
-Customer and Admin authentication remain intentionally separate.
-
----
-
-## Google Sign-In
-
-Google authentication uses:
-
-```text
-Authorization Code
-+ OpenID Connect
-+ PKCE
-+ state
-+ nonce
-```
-
-A successful Google login creates a normal Orderly `CustomerSession`.
-
-Google access tokens are not used as application sessions.
-
-A matching Google email does **not** automatically merge with an existing password account.
-
-Existing password users must sign in first and explicitly connect Google.
-
----
-
-## Account Management
-
-Customers can manage:
-
-- name
-- phone
-- password
-- connected authentication methods
-
-Email remains read-only in V1.
-
-Changing a password:
-
-```text
-verify current password
-→ update password
-→ revoke previous sessions
-→ issue replacement session
-```
-
----
-
-## Authenticated Checkout
-
-Guest checkout remains fully supported.
-
-For authenticated users, order ownership comes from the server-side CustomerSession:
-
-```text
-CustomerSession
-      ↓
-POST /orders
-      ↓
-server derives customerUserId
-      ↓
-Order
-```
-
-The browser cannot submit ownership IDs.
-
-Checkout contact details remain order-specific snapshots and may differ from the account profile.
-
-If authentication expires during submission, the order is **not** silently downgraded to a guest order.
-
-The user must explicitly choose to continue as guest.
-
----
-
-## Customer Order History
-
-Authenticated customers can view:
-
-```text
-/account/orders
-/account/orders/:id
-```
-
-History supports:
-
-- status filtering
-- newest / oldest sorting
-- highest / lowest total sorting
-- pagination
-- URL-backed state
-- browser back/forward restoration
-- responsive layouts
-
-Order access is scoped directly by ownership at the database query layer.
-
-Another customer's order, a guest order and a missing order all return the same 404 response.
-
----
-
-## Historical Order Snapshots
-
-Order details use stored snapshots rather than the current product catalog.
-
-Historical records retain:
-
-- product names
-- size selections
-- modifiers
-- prices
-- contact information
-- delivery information
-
-So later catalog changes do not rewrite order history.
-
----
-
-## Guest Order Tracking
-
-Guest orders can be retrieved using:
-
-```text
-order number
-+
-email or phone
-```
-
-Order number alone is not sufficient to expose order details.
-
-Authenticated customers can still use guest tracking for older unowned orders.
-
----
-
-## Admin Orders
-
-Admin users can:
-
-- search orders
-- filter by status and fulfillment type
-- paginate results
-- view order details
-- progress orders through the workflow
-
-```text
-PENDING
-   ↓
-ACCEPTED
-   ↓
-PREPARING
-   ↓
-READY
-   ↓
-COMPLETED
-```
-
-Backend rules control valid transitions.
-
----
-
-## Admin Menu Management
-
-The Admin interface supports:
-
-- categories
-- products
-- availability
-- archiving
-- search and filters
-- drag-and-drop ordering
-- nested product options
-
-Option groups support:
-
-```text
-SIZE
-MODIFIER
-ADD_ON
-```
-
-with single or multiple selection rules.
-
----
-
-## AI Menu Assistant
-
-The Admin product editor includes an optional AI-assisted description workflow.
-
-AI output is treated as a draft:
-
-```text
-Product Form
-   ↓
-AI Suggestion
-   ↓
-Structured Output Validation
-   ↓
-Human Review
-   ↓
-Apply / Discard
-   ↓
-Normal Product Save
-```
-
-AI responses never write directly to the database.
-
----
-
-# Engineering Highlights
-
-## Separate Customer and Admin Authentication
-
-Admin and Customer identity use separate:
-
-- user models
-- session models
-- JWT configuration
-- cookies
-- guards
-- frontend auth state
-
-Credentials from one domain cannot authenticate the other.
-
----
-
-## Rotating Sessions
-
-Refresh credentials use:
-
-- database-backed sessions
-- cryptographic token digests
-- refresh rotation
-- compare-and-swap updates
-- replay detection
-- explicit revocation
-
-This supports logout, password-change revocation and session expiry without relying on stateless JWTs alone.
-
----
-
-## Safe Google Account Linking
-
-Google's provider `sub` claim is authoritative.
-
-Email equality alone is not treated as proof of account ownership.
-
-This prevents unsafe automatic merging between Google identities and local password accounts.
-
----
-
-## Server-Controlled Ownership
-
-Authenticated order ownership never comes from request DTO data.
-
-The backend derives ownership from the validated session.
-
-This prevents users from assigning an order to another account.
-
----
-
-## IDOR Protection
-
-Customer order reads are scoped like:
-
-```text
-order.id
-+
-customerUserId
-```
-
-rather than loading an order globally and checking ownership afterwards.
-
-This keeps authorization at the query boundary.
-
----
-
-## Atomic Order Numbers
-
-Customer-visible order numbers use a PostgreSQL sequence rather than:
-
-```text
-read latest order
-→ +1
-→ create
-```
-
-This avoids collisions during concurrent checkout requests and works across application instances.
-
-Sequence gaps after failed transactions are intentionally acceptable.
-
----
-
-## Server-Authoritative Pricing
-
-The client submits product and option selections.
-
-The server reloads authoritative catalog data and calculates:
-
-- prices
-- option deltas
-- fees
-- totals
-
-before creating the order.
-
----
-
-## Signed Proxy Identity
-
-Production traffic crosses:
-
-```text
-Browser
-→ Vercel
-→ Railway
-```
-
-Vercel derives the normalized client IP and attaches an HMAC-signed identity.
-
-Railway verifies the signature before using that identity for rate limiting.
-
-This avoids relying on unstable proxy hop counts or caller-controlled forwarding headers.
-
----
-
-# Frontend State Strategy
-
-State is split by ownership.
-
-```text
-Redux Toolkit
-├─ cart
-└─ customer authentication
-
-TanStack Query
-├─ menu data
-├─ Admin server state
-└─ customer-private order state
-
-React Hook Form
-├─ checkout
-├─ authentication/account forms
-└─ Admin product editor
-```
-
-Customer-private query data is removed when identity changes or the session expires.
-
-Public menu cache remains intact.
-
----
-
-# Architecture
+| Layer                    | Technologies                                                                                                             |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Frontend                 | Next.js 16, React 19, TypeScript, Tailwind CSS, Redux Toolkit, TanStack Query, React Hook Form, dnd-kit                  |
+| API and data             | NestJS 11, Prisma 6, PostgreSQL, bcrypt, JWT access/refresh sessions in HttpOnly cookies                                 |
+| Testing and tooling      | Jest, React Testing Library, Supertest, Playwright, pnpm, Docker, GitHub Actions                                         |
+| Hosting and integrations | Vercel frontend/proxy, Railway API, PostgreSQL/Neon configuration; optional Google OIDC, Resend and OpenAI Responses API |
+
+## Engineering Highlights
+
+Customer and Admin use separate identities, session tables, JWT keys, cookies and guards. The following decisions are implemented in source; deployed acceptance is tracked separately.
+
+- **Atomic order numbers.** PostgreSQL `nextval` allocates customer-visible numbers, avoiding a “read latest, add one” race across concurrent checkouts and API instances. Failed transactions can leave sequence gaps; numbers are unique, not gapless.
+- **Server-authoritative pricing.** The client sends product IDs, quantities and option selections. The API reloads the catalog, validates availability/selection rules and calculates item prices, fees and totals in cents before persistence; submitted client totals are not authoritative.
+- **Ownership and IDOR prevention.** Checkout derives `customerUserId` from the validated session, never the request body or contact email. History detail reads query `{ id, customerUserId }` together, returning the same 404 for missing, guest or another customer's orders. Guest access uses a time-limited receipt capability.
+- **Refresh rotation and revocation.** Database-backed sessions store refresh digests and versions. Conditional compare-and-swap updates let one refresh rotate the credential; replay detection revokes the affected session. Logout, password change and deletion revoke access through live session checks, with an absolute lifetime cap for Customer sessions.
+- **Google identity and safe linking.** OIDC validates the provider subject (`sub`) using authorization code flow, PKCE, state and nonce. Email equality cannot merge accounts. Explicit linking requires the initiating live session, current-password proof and verified matching provider email; the final association is transactionally coordinated with revocation.
+- **Signed proxy identity.** The Next.js proxy removes caller-supplied Orderly identity headers, normalizes the forwarded client IP and signs it with HMAC. The API verifies that signature before using the identity for throttling; invalid/absent proof falls back to the transport peer, not arbitrary forwarding headers. HTTP rate counters remain process-local.
+- **Frontend state ownership.** Redux holds the persistent cart and Customer auth state; TanStack Query owns menu, Admin and private order data; React Hook Form owns form state. Customer-private queries are removed on identity change/session expiry while public menu data is preserved.
+- **Transaction-safe checkout and history.** Catalog validation, server-calculated totals and order/item/option snapshots are persisted in one Prisma transaction. Owned checkout participates in the same advisory-lock coordination as account deletion, preventing an order from attaching to a deleted identity. Expired authenticated checkout requires an explicit guest choice; it is not silently downgraded. Later catalog edits do not rewrite historical item selections or prices.
+
+Details and contracts: [architecture/API overview](docs/architecture/architecture-api.md), [customer authentication](docs/security/customer-auth.md), and [current security acceptance findings](docs/security/security-acceptance.md).
+
+## Architecture
 
 ```mermaid
-flowchart TD
-    Browser --> Vercel[Vercel / Next.js]
-    Vercel --> API[Railway / NestJS]
-    API --> DB[(Neon PostgreSQL)]
-    API --> Google[Google OIDC]
-    API --> OpenAI[OpenAI API]
+flowchart LR
+    Browser --> Web[Next.js / Vercel]
+    Web -->|same-origin /api proxy| API[NestJS / Railway]
+    API --> DB[(PostgreSQL / Prisma)]
+    API -. optional .-> Google[Google OIDC]
+    API -. verified signup .-> Mail[Resend]
+    API -. optional drafts .-> AI[OpenAI]
 ```
 
-Browser API traffic stays same-origin through Vercel:
+Production browser requests use same-origin `/api` routing, keeping cookie authentication on the web origin while the API remains a separate service. Optional providers are called server-side. Hosting labels describe the deployment design. Production revision and public-alias consistency are confirmed in the [final release audit](docs/portfolio/final-release-report.md); specific provider and operational acceptance remains documented separately.
 
-```text
-Browser
-   ↓
-/api/*
-   ↓
-Vercel proxy
-   ↓
-NestJS API
-```
+The database models categories/products/options, orders with stored item/price snapshots, and separate Customer/Admin session lifecycles. API money uses integer cents; catalog storage uses decimals. `CustomerUser` is the current customer identity; the schema also retains a legacy `User` model. The [Prisma schema](apps/api/prisma/schema.prisma) and [API controllers/DTOs](apps/api/src/modules) are authoritative.
 
-This keeps HttpOnly-cookie authentication same-origin while maintaining a separate frontend/backend architecture.
+## Testing & Quality Assurance
 
----
+The [dual-registration acceptance report](docs/testing/registration-modes.md) records these **prior scoped local results**, not a fresh run for this README edit:
 
-# Testing
+| Layer                    | Recorded passing evidence                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------------------------- |
+| API unit                 | 164 tests across 16 suites                                                                      |
+| PostgreSQL integration   | 188 tests across 14 suites, with real migrations and guarded local fixtures                     |
+| Frontend components      | 342 tests across 47 suites                                                                      |
+| Optimized-build Chromium | 45 selected cases: 3 direct-registration, 37 Security 2B and 5 presentation cases; zero retries |
+| Static/build checks      | API/web lint, application/test typechecking and builds passed                                   |
 
-Orderly uses multiple testing layers.
+Coverage includes pricing and transactional rollback, order-number concurrency, ownership isolation, refresh/revocation, verification/deletion, OAuth/linking and Customer/Admin workflows. Mocked email/OIDC fixtures validate application behavior, not live provider acceptance or all-browser compatibility. Earlier failed attempts remain documented.
 
-## API
+[Stage 17 media validation](docs/portfolio/review-report.md) separately records one complete passing capture workflow, 10 consistent screenshots and a decoded 74.96-second MP4. [GitHub Actions](.github/workflows/ci.yml) is configured to run quality checks and builds; it contains no deployment job.
 
-Jest and Supertest cover:
+## Local Development
 
-- authentication
-- refresh rotation
-- replay detection
-- OAuth validation
-- account linking
-- checkout rules
-- server-authoritative pricing
-- ownership spoofing
-- order-history authorization
-- sorting/pagination
-- order-number concurrency
-- Admin workflows
+Requirements: **Node.js 22.12+**, **pnpm 10.14.0**, and Docker/PostgreSQL 16. From the repository root:
 
-Database integration tests run against isolated PostgreSQL with real migrations.
-
----
-
-## Frontend
-
-React Testing Library covers:
-
-- auth state
-- session bootstrap
-- refresh coordination
-- safe return paths
-- account management
-- checkout prefill
-- terminal-session recovery
-- private cache cleanup
-- Order History URL state
-- Admin workflows
-
----
-
-## Browser
-
-Playwright verifies production-style workflows including:
-
-```text
-Guest
-Browse
-→ Cart
-→ Checkout
-→ Success
-→ Tracking
-```
-
-```text
-Customer
-Register/Login
-→ Checkout
-→ Owned Order
-→ History
-→ Detail
-```
-
-```text
-Security
-Customer A order
-→ Customer B
-→ direct order URL
-→ 404
-```
-
-Additional browser coverage includes:
-
-- Google authentication
-- password changes
-- session revocation
-- checkout refresh recovery
-- mobile layouts
-- browser back/forward state
-
----
-
-# CI/CD
-
-GitHub Actions runs:
-
-```text
-Install
-   ↓
-Prisma generate
-   ↓
-Lint
-   ↓
-Typecheck
-   ↓
-API tests
-   ↓
-Frontend tests
-   ↓
-Playwright
-   ↓
-Production builds
-```
-
-Railway applies Prisma migrations before activating a new API deployment.
-
-Vercel builds and deploys the Next.js frontend from Git.
-
----
-
-# Deployment
-
-| Layer            | Platform |
-| ---------------- | -------- |
-| Frontend / proxy | Vercel   |
-| API              | Railway  |
-| PostgreSQL       | Neon     |
-
-Production database traffic uses Neon pooling.
-
-Prisma migrations use a direct database connection.
-
-Secrets remain server-side and are not exposed through `NEXT_PUBLIC_*` variables.
-
----
-
-# Local Development
-
-Requirements:
-
-- Node.js 22+
-- pnpm
-- Docker
-
-Install:
-
-```bash
-pnpm install
-```
-
-Copy `apps/api/.env.example` to `apps/api/.env` and
-`apps/web/.env.example` to `apps/web/.env.local`. Replace the four API JWT
-secret placeholders with independent random values before starting the API.
-Generate Prisma Client with `pnpm db:generate` after installation.
-
-Start PostgreSQL:
-
-```bash
+```sh
+pnpm install --frozen-lockfile
+pnpm db:generate
 pnpm db:up
 ```
 
-Run migrations:
+Copy [API environment example](apps/api/.env.example) to `apps/api/.env` and [web environment example](apps/web/.env.example) to `apps/web/.env.local`. Generate four independent JWT secrets and set private local Admin seed credentials. Verified signup requires configured email delivery; choose `CUSTOMER_REGISTRATION_MODE=direct` explicitly for local immediate signup with unverified email.
 
-```bash
+```sh
 pnpm db:migrate
+pnpm --filter api seed:demo
+pnpm --filter api seed:admin
 ```
 
-Start API:
+The catalog seed requires an empty catalog. Start the services in **separate terminals**:
 
-```bash
+```sh
 pnpm dev:api
 ```
 
-Start frontend:
-
-```bash
+```sh
 pnpm dev:web
 ```
 
-Run API tests:
+Open `http://localhost:3000`; the local API runs at `http://localhost:4000/api`. For browser tests, install Chromium once:
 
-```bash
-pnpm --filter api test:unit
-pnpm --filter api test:e2e
+```sh
+pnpm --filter web exec playwright install chromium
 ```
 
-Run frontend tests:
+Run checks from the root:
 
-```bash
-pnpm test:web
-```
-
-Run browser tests:
-
-```bash
+```sh
+pnpm test:api:unit --runInBand
+pnpm test:api:e2e
+pnpm test:web --runInBand
 pnpm test:browser
-```
-
-Run the full quality gate:
-
-```bash
 pnpm test:quality
 ```
 
-See `.env.example` and `/docs` for detailed configuration, authentication, deployment and testing notes.
+Local development uses `orderly_db`; database/browser runners reset only the guarded loopback `orderly_test?schema=public` target. Run database suites sequentially and never point reset/seed test workflows at a deployed database. See the [media workflow](scripts/portfolio/README.md) for reproducing the showcase.
 
----
+## Deployment & Verification Status
 
-# Key Engineering Decisions
+| Evidence boundary    | Status                                                                                                                                                                                  |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implemented          | Current source includes the features above, with UI/API-only distinctions explicit                                                                                                      |
+| Locally tested       | Scoped acceptance, passing main CI and synthetic optimized-build media evidence are linked above                                                                                        |
+| Publicly observed    | Customer storefront reachable; public registration mode is `direct`, Google configuration is enabled                                                                                    |
+| Owner-confirmed      | Successful manual functional acceptance; exact date, devices and per-flow/provider scope were not supplied                                                                              |
+| Revision evidence    | Vercel/Railway production revision and public aliases verified by deployment metadata and owner dashboard confirmation at `81da702`; candidate `9c33c34` has identical application code |
+| Remaining conditions | Specific provider/operational/cross-engine acceptance remains open; the [final exposure gate](docs/portfolio/final-release-gate.md) found no confirmed release blocker                                                                         |
 
-- Separate Customer and Admin authentication rather than building an unnecessary generic auth framework.
-- Keep JWT credentials in HttpOnly cookies.
-- Use database-backed sessions for rotation and revocation.
-- Treat Google `sub`, not email, as provider identity.
-- Keep guest checkout first-class.
-- Derive authenticated order ownership exclusively on the server.
-- Store historical order snapshots instead of reconstructing them from current catalog data.
-- Use PostgreSQL for atomic order-number generation.
-- Use URL state for Order History filters, sorting and pagination.
-- Use Redux for client-owned state and TanStack Query for server-owned state.
-- Use HMAC-signed Vercel client identity instead of guessing proxy hop counts.
-- Treat AI output as untrusted draft content requiring human approval.
-- Test security and transaction behavior against real PostgreSQL.
+Read the [environment, Railway/Vercel and migration guide](docs/operations/release-guide.md) before release. API startup does **not** apply migrations; an explicit `prisma migrate deploy` step must precede activation of the matching API. Deployed databases must never use `migrate reset` or destructive test fixtures. Secrets stay server-side, outside `NEXT_PUBLIC_*` variables.
 
----
+Outstanding release conditions include real Resend domain/inbox/link behavior, Google fresh-auth deletion behavior, recoverable backup/restore and populated migration/cutover, coordinated rollout, deployed secret redaction, and focused Firefox/Safari/mobile assistive-technology checks. Direct signup lacks mailbox proof; HTTP throttling is process-local and expired security metadata is cleaned lazily. Deletion retains business snapshots and does not promise erasure of backups/provider/browser copies. Security 2A/2B protections remain required in either registration mode.
 
-# Project Status
+The [packaging review](docs/portfolio/review-report.md) also records a blank category-list Order column in the captured UI, despite verified persisted reordering. No online payment integration, analytics dashboard or Admin settings interface is claimed.
 
-**Orderly V1 feature development is complete.**
+## Documentation & Roadmap
 
-The V1 includes:
+- [Architecture, database and API](docs/architecture/architecture-api.md)
+- [Customer authentication](docs/security/customer-auth.md), [Security 2A: email verification](docs/security/email-verification.md), [Security 2B: account deletion](docs/security/account-deletion.md)
+- [Guest receipt security](docs/security/guest-receipts.md) and [final security acceptance](docs/security/security-acceptance.md)
+- [Registration modes and test evidence](docs/testing/registration-modes.md)
+- [Final release audit](docs/portfolio/final-release-report.md) and [release preparation](docs/operations/release-guide.md#release-preparation-appendix)
+- [Release/environment guide](docs/operations/release-guide.md), [packaging review](docs/portfolio/review-report.md), and [documentation index](docs/README.md)
+- [Screenshot gallery](docs/portfolio/screenshots.md) and [reproducible recording workflow](scripts/portfolio/README.md)
 
-- customer ordering
-- guest checkout and tracking
-- customer authentication
-- Google OAuth
-- account management
-- authenticated order ownership
-- private order history
-- Admin authentication
-- Admin order management
-- Admin menu management
-- AI-assisted content editing
-- PostgreSQL persistence
-- automated testing
-- CI/CD
-- production deployment
-- responsive UX
-- production security hardening
-
-Current work is focused on **portfolio packaging and presentation**, not additional product functionality.
-
----
-
-# Documentation
-
-Detailed technical documentation lives under `/docs`, including:
-
-- customer authentication
-- deployment
-- architecture and operational notes
-
-Additional portfolio documentation and diagrams are being prepared as part of the V1 packaging stage.
+V1 uses a Customer demo plus recorded Admin presentation. A safely isolated interactive Admin demo is a possible **V1.1** enhancement; product lifecycle UI, category-column follow-up, operational cleanup/distributed throttling and remaining provider acceptance are separately scoped future work. They are not shipped or accepted enhancements.

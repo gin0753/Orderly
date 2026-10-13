@@ -2,7 +2,7 @@
 
 Source HEAD: 85d90468901ea3211a864e2c844509a538ea2a47. Historical observations, not a new acceptance run.
 
-[Acceptance handoff](c4-acceptance-publication-handoff.md), [manual UAT](stage-15.7-manual-uat-checklist.md), [scan catalog](c4-public-axe-scan-catalog.json), [retention decisions](c4-final-retention-decisions.md), [privacy review](c4-privacy-review-summary.md), [link resolution](c4-documentation-link-resolution.md), [validation checklist](c4-commit-validation-checklist.md).
+[Acceptance handoff](c4-acceptance-publication-handoff.md), [manual UAT](testing/manual-uat.md), [scan catalog](c4-public-axe-scan-catalog.json), [owner-approved retention policy](testing/evidence-retention.md), [privacy review](testing/evidence-retention.md), [link resolution](testing/evidence-retention.md), [validation checklist](testing/evidence-retention.md).
 
 ## Representative screenshots
 
@@ -36,25 +36,25 @@ Source HEAD: 85d90468901ea3211a864e2c844509a538ea2a47. Historical observations, 
 
 ## Restricted historical originals
 
-No archive URL or download is claimed. Resolve these identifiers through the [archive manifest](c4-archive-verification-manifest.json); all 1,067 copied files have verified destination checksums at the approved private local location. No public retrieval endpoint exists. Restore the original-path companion bundle only in a restricted review workspace. The original report and galleries are preserved unchanged and are excluded from this public inventory.
+The prior C4 archive verification is a dated local-copy event, not a durable retrieval guarantee. The owner revised blanket preservation on 13 October 2026; see [evidence retention](testing/evidence-retention.md). Selected public PNGs, catalog hashes and these original identifiers remain. Redundant originals may be retired from the current tree. No public archive endpoint or durable backup/restore is certified. The unchanged held report and its necessary navigation dependencies remain available.
 
 ### Original gallery
 
 <a id="original-gallery"></a>
 
-Original ID: `docs/stage-15.7-evidence/screenshots.html`. SHA-256: `bcd9ab8e5f7480d98d7cb5f1ee7ff93562bb6b9291572d53f62ba17015a360f0`. Its original historical report link is retained in the archive bundle, never represented as publicly accessible.
+Original ID: `docs/stage-15.7-evidence/screenshots.html`. SHA-256: `bcd9ab8e5f7480d98d7cb5f1ee7ff93562bb6b9291572d53f62ba17015a360f0`. This is an original ID/hash. Under the revised owner policy durable retrieval is not guaranteed; a current link may serve a labelled curated resolver instead of the original collection.
 
 ### Original WebKit keyboard failure screenshot
 
 <a id="original-keyboard-failure-screenshot"></a>
 
-Original ID: `docs/stage-15.7-evidence/webkit-focus-before/final-acceptance-rendered--0ce94-tainment-across-four-widths-webkit/test-failed-1.png`. SHA-256: `88ce47d47aaded812e46d07aeabdee2dbaa49e884445261739bbf4398a5c964f`. Its original historical report link is retained in the archive bundle, never represented as publicly accessible.
+Original ID: `docs/stage-15.7-evidence/webkit-focus-before/final-acceptance-rendered--0ce94-tainment-across-four-widths-webkit/test-failed-1.png`. SHA-256: `88ce47d47aaded812e46d07aeabdee2dbaa49e884445261739bbf4398a5c964f`. This is an original ID/hash. Under the revised owner policy durable retrieval is not guaranteed; a current link may serve a labelled curated resolver instead of the original collection.
 
 ### Original WebKit keyboard failure trace
 
 <a id="original-keyboard-failure-trace"></a>
 
-Original ID: `docs/stage-15.7-evidence/webkit-focus-before/final-acceptance-rendered--0ce94-tainment-across-four-widths-webkit/trace.zip`. SHA-256: `6b1f4e970dc0190c561eb8ae5fdeceaad61b7a3a642f1a10e956d7a400da8c33`. Its original historical report link is retained in the archive bundle, never represented as publicly accessible.
+Original ID: `docs/stage-15.7-evidence/webkit-focus-before/final-acceptance-rendered--0ce94-tainment-across-four-widths-webkit/trace.zip`. SHA-256: `6b1f4e970dc0190c561eb8ae5fdeceaad61b7a3a642f1a10e956d7a400da8c33`. This is an original ID/hash. Under the revised owner policy durable retrieval is not guaranteed; a current link may serve a labelled curated resolver instead of the original collection.
 
 ## Reproduction
 

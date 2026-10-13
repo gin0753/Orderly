@@ -2,13 +2,14 @@
 import AxeBuilder from "@axe-core/playwright";
 import { readFileSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { evidenceDirectory } from "./evidence-output";
 
 // Isolated component audit using actual production CSS. No API or database access.
 // Generate the six DOM fixtures with ORDERLY_TIMELINE_CAPTURE_PHASE=regression-after.
 const root = path.resolve(__dirname, "../../../..");
 const output = process.env.ORDERLY_TIMELINE_EVIDENCE_DIRECTORY
   ? path.resolve(root, process.env.ORDERLY_TIMELINE_EVIDENCE_DIRECTORY)
-  : path.join(root, "audit-artifacts/timeline-regression/verified-after");
+  : evidenceDirectory("timeline-regression");
 const fixtures = path.join(root, "audit-artifacts/timeline-connectors/regression-after");
 const cssDirectory = path.join(root, "apps/web/.next/static/chunks");
 const css = readdirSync(cssDirectory).filter(file => file.endsWith(".css"))

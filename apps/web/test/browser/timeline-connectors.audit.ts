@@ -1,11 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync, readdirSync, mkdirSync } from "node:fs";
 import path from "node:path";
+import { evidenceDirectory } from "./evidence-output";
 
 // Explicit render audit; not an authenticated application journey.
 const root = path.resolve(__dirname, "../../../..");
 const fixtures = path.join(root, "audit-artifacts/timeline-connectors");
-const evidence = path.join(root, "docs/v1-timeline-connector-evidence");
+const evidence =
+  process.env.ORDERLY_TIMELINE_EVIDENCE_DIR ?? evidenceDirectory("timeline-connectors");
 
 test("timeline connectors meet adjacent markers at mobile and desktop widths", async ({
   page,

@@ -4,7 +4,19 @@ import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../..");
-const evidence = path.join(root, "docs/stage-15.7-evidence");
+const directoryFlag = process.argv.indexOf("--evidence-dir");
+const requestedDirectory = directoryFlag >= 0
+  ? process.argv[directoryFlag + 1]
+  : process.env.ORDERLY_ACCEPTANCE_EVIDENCE_DIR;
+if (!requestedDirectory || requestedDirectory.startsWith("--")) {
+  throw new Error("Supply --evidence-dir <complete-new-run> or ORDERLY_ACCEPTANCE_EVIDENCE_DIR; historical docs are never a default output target.");
+}
+const evidence = path.resolve(root, requestedDirectory);
+const docsRoot = path.join(root, "docs");
+const relativeToDocs = path.relative(docsRoot, evidence);
+if (relativeToDocs === "" || (!relativeToDocs.startsWith(`..${path.sep}`) && relativeToDocs !== ".." && !path.isAbsolute(relativeToDocs))) {
+  throw new Error("Refusing to regenerate retained historical evidence inside docs.");
+}
 const scans = [];
 const pictures = [];
 const statePictures = (await readdir(path.join(evidence, "states")).catch(() => []))
@@ -13,6 +25,11 @@ for (const engine of ["chromium", "firefox", "webkit"]) {
   for (const file of await readdir(path.join(evidence, engine)).catch(() => [])) {
     if (file.endsWith(".json")) scans.push({ file: `${engine}/${file}`, ...JSON.parse(await readFile(path.join(evidence, engine, file), "utf8")) });
     if (file.endsWith(".png")) pictures.push(`${engine}/${file}`);
+  }
+}
+for (const engine of ["chromium", "firefox", "webkit"]) {
+  if (scans.filter((scan) => scan.browser === engine).length !== 70) {
+    throw new Error(`Incomplete acceptance dataset for ${engine}; expected 70 scans. No output written.`);
   }
 }
 const chunks = [];

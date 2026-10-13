@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "portfolio:capture": "node scripts/portfolio/run.mjs",
     "dev": "pnpm -r --parallel --if-present dev",
     "dev:api": "pnpm --filter api dev",
     "dev:web": "pnpm --filter web dev",

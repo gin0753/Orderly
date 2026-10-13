@@ -6,6 +6,11 @@ The historical Stage 15.7 report records PASS WITH CONDITIONS: 292 web component
 
 C1 validation later recorded 54 unique passing Chromium cases and an unresolved storefront image-decode timeout; the full runner did not pass. C2 final browser confirmation and C3 live multi-engine acceptance were blocked when local Docker/Postgres became unavailable. C1–C3 static checks, builds and component validations are recorded in the original execution report. No tests were rerun during C4 preparation.
 
-The initial Firefox 320px/200% root-text overflow, intermittent WebKit loading stalls and tracking-loading cosmetic finding remain open or conditional. Playwright WebKit does not prove iOS Safari acceptance. [Manual UAT](stage-15.7-manual-uat-checklist.md) remains unexecuted, including real-device/native zoom, screen readers, live OAuth, deployment equivalence and performance.
+The initial Firefox 320px/200% root-text overflow, intermittent WebKit loading stalls and tracking-loading cosmetic finding remain open or conditional. Playwright WebKit does not prove iOS Safari acceptance. [Manual UAT](testing/manual-uat.md) remains unexecuted, including real-device/native zoom, screen readers, live OAuth, deployment equivalence and performance.
 
 Historical gallery and failure references resolve through the [original gallery record](c4-public-evidence-index.md#original-gallery), [WebKit failure screenshot record](c4-public-evidence-index.md#original-keyboard-failure-screenshot) and [restricted trace record](c4-public-evidence-index.md#original-keyboard-failure-trace). These are evidence identifiers/checksums, not public archive downloads. See [curated screenshots](c4-public-evidence-index.md#representative-screenshots). Original acceptance and execution reports are preserved byte-for-byte in the archive copy plan.
+
+
+## Stage 17.4 retention amendment — 13 October 2026
+
+The [owner-approved evidence policy](testing/evidence-retention.md) supersedes mandatory blanket archival retention. Original IDs/hashes and the failure/blocked distinctions above remain, but raw objects may be retired without a durable backup. Earlier archive-copy statements describe their prior checkpoint, not guaranteed current retrieval. The two held byte revisions and their active dependencies remain. No new acceptance result is claimed.

@@ -26,3 +26,12 @@ yarn-debug.log*
 /audit-artifacts/
 /.pnpm-store/
 /.stage138d-proxy-test/
+
+# Generated Playwright authentication state and network diagnostics.
+**/playwright/.auth/
+**/test/browser/.auth/
+**/test/browser/storage-state*.json
+**/test/browser/storageState*.json
+storage-state.json
+storageState.json
+*.har
