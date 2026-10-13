@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { registrationMode } from './customer-auth.config';
 
 /** Transactional mail only. Never print links or provider responses. Tests override send(). */
 @Injectable()
@@ -7,12 +8,15 @@ export class RegistrationMailer {
   private readonly apiKey: string;
   private readonly from: string;
   private readonly testing: boolean;
+  private readonly direct: boolean;
   constructor(config: ConfigService) {
+    this.direct = registrationMode(config) === 'direct';
     this.testing = config.get<string>('NODE_ENV') === 'test';
     this.apiKey =
       config.get<string>('REGISTRATION_EMAIL_API_KEY')?.trim() ?? '';
     this.from = config.get<string>('REGISTRATION_EMAIL_FROM')?.trim() ?? '';
     if (
+      !this.direct &&
       config.get<string>('NODE_ENV') === 'production' &&
       (!this.apiKey || !this.from)
     ) {
@@ -23,7 +27,7 @@ export class RegistrationMailer {
   }
 
   async send(email: string, link: string): Promise<void> {
-    if (this.testing || !this.apiKey || !this.from)
+    if (this.direct || this.testing || !this.apiKey || !this.from)
       throw new Error('Registration delivery unavailable');
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',

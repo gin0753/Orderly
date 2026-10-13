@@ -232,6 +232,8 @@ for (const isolatedWidth of journeyWidths) {
     let authenticated = false;
     let orderState: "ready" | "empty" | "error" = "ready";
     await page.route("**/customer/auth/**", (route) => {
+      if (route.request().url().endsWith("/registration/status"))
+        return route.fulfill({ json: { mode: "verified" } });
       if (route.request().url().endsWith("/google/status"))
         return route.fulfill({ json: { enabled: true } });
       return route.fulfill({

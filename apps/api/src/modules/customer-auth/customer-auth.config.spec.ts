@@ -25,6 +25,20 @@ it('uses 15-minute access, seven-day sliding refresh and 30-day absolute cap', (
   });
 });
 
+it('defaults to verified and accepts only the two explicit registration modes', () => {
+  expect(configuration().registrationMode).toBe('verified');
+  expect(
+    configuration({ CUSTOMER_REGISTRATION_MODE: 'direct' }).registrationMode,
+  ).toBe('direct');
+  expect(
+    configuration({ CUSTOMER_REGISTRATION_MODE: 'verified' }).registrationMode,
+  ).toBe('verified');
+  for (const mode of ['', 'DIRECT', ' verified ', 'other'])
+    expect(() => configuration({ CUSTOMER_REGISTRATION_MODE: mode })).toThrow(
+      'CUSTOMER_REGISTRATION_MODE',
+    );
+});
+
 it.each([
   { CUSTOMER_JWT_ACCESS_SECRET: undefined },
   { CUSTOMER_JWT_REFRESH_SECRET: 'short' },

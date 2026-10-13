@@ -4,7 +4,7 @@ import type { RootState } from "@/store/store";
 import { customerAuthApi } from "../api/customer-auth-api";
 import { customerClient } from "../api/customer-api-fetch";
 import { publishCustomerSessionEvent } from "../lib/session-events";
-import type { CustomerLoginInput, CustomerRegisterInput, RegistrationResponse, PublicCustomer } from "../types";
+import type { CustomerLoginInput, CustomerRegisterInput, RegistrationResult, PublicCustomer } from "../types";
 
 type Failure = { status?: number; message: string };
 type CustomerAuthState = {
@@ -35,9 +35,11 @@ export const loginCustomer = createAsyncThunk<PublicCustomer, CustomerLoginInput
     return result.user;
   } catch (error) { return api.rejectWithValue(failure(error)); }
 });
-export const registerCustomer = createAsyncThunk<RegistrationResponse, CustomerRegisterInput, { rejectValue: Failure }>("customerAuth/register", async (input, api) => {
+export const registerCustomer = createAsyncThunk<RegistrationResult, CustomerRegisterInput, { rejectValue: Failure }>("customerAuth/register", async (input, api) => {
   try {
-    return await customerAuthApi.register(input);
+    const result = await customerAuthApi.register(input);
+    if ("user" in result) { customerClient.invalidate(); publishCustomerSessionEvent("changed"); }
+    return result;
   } catch (error) { return api.rejectWithValue(failure(error)); }
 });
 export const logoutCustomer = createAsyncThunk<void, void, { rejectValue: Failure }>("customerAuth/logout", async (_, api) => {
@@ -98,6 +100,7 @@ const slice = createSlice({
     builder.addCase(registerCustomer.fulfilled, (state, action) => {
       if (state.requestId !== action.meta.requestId) return;
       state.operation = null; state.requestId = null; state.error = null;
+      if ("user" in action.payload) { state.customer = action.payload.user; state.status = "authenticated"; state.accountDeleted = false; state.notice = null; return; }
       state.notice = action.payload.status === "delivery_failed" ? "Verification email delivery failed. Please try again." : "Check your email to finish registration.";
     });
     builder.addCase(logoutCustomer.fulfilled, (state, action) => {

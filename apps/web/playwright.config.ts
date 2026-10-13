@@ -20,6 +20,7 @@ const testDatabaseTarget = assertDestructiveTestDatabaseAllowed(process.env);
 
 export default defineConfig({
   testDir: "./test/browser",
+  testIgnore: process.env.ORDERLY_BROWSER_REGISTRATION_MODE === "direct" ? [] : ["**/direct-registration.spec.ts"],
   fullyParallel: false,
   workers: 1,
   retries: 0,
@@ -50,6 +51,7 @@ export default defineConfig({
       timeout: 120_000,
       env: {
         NODE_ENV: "test",
+        CUSTOMER_REGISTRATION_MODE: process.env.ORDERLY_BROWSER_REGISTRATION_MODE ?? "verified",
         DATABASE_URL: testDatabaseTarget.databaseUrl,
         DIRECT_DATABASE_URL:
           testDatabaseTarget.directDatabaseUrl ??

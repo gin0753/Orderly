@@ -1,10 +1,11 @@
 import { customerApiFetch, customerClient } from "./customer-api-fetch";
-import type { CustomerAuthResponse, CustomerLoginInput, CustomerRegisterInput, RegistrationResponse } from "../types";
+import type { CustomerAuthResponse, CustomerLoginInput, CustomerRegisterInput, RegistrationResponse, RegistrationResult, RegistrationMode } from "../types";
 
 export const customerAuthApi = {
+  registrationStatus: () => customerApiFetch<{ mode: RegistrationMode }>("/customer/auth/registration/status"),
   me: () => customerApiFetch<CustomerAuthResponse>("/customer/auth/me", { auth: "required" }),
   login: (input: CustomerLoginInput) => customerClient.sessionLock(() => customerApiFetch<CustomerAuthResponse>("/customer/auth/login", { method: "POST", body: JSON.stringify(input) })),
-  register: (input: CustomerRegisterInput) => customerClient.sessionLock(() => customerApiFetch<RegistrationResponse>("/customer/auth/register", { method: "POST", body: JSON.stringify(input) })),
+  register: (input: CustomerRegisterInput) => customerClient.sessionLock(() => customerApiFetch<RegistrationResult>("/customer/auth/register", { method: "POST", body: JSON.stringify(input) })),
   resendRegistration: (email: string) => customerApiFetch<RegistrationResponse>("/customer/auth/registration/resend", { method: "POST", body: JSON.stringify({ email }) }),
   checkRegistration: (token: string) => customerApiFetch<{ status: "pending" }>("/customer/auth/registration/check", { method: "POST", body: JSON.stringify({ token }) }),
   completeRegistration: (input: { token: string; password: string; name: string }) => customerClient.sessionLock(() => customerApiFetch<CustomerAuthResponse>("/customer/auth/registration/complete", { method: "POST", body: JSON.stringify(input) })),

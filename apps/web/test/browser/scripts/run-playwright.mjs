@@ -18,6 +18,8 @@ if (!pnpmCli) {
 }
 const { environment, target } = createSafeTestDatabaseEnvironment(process.env);
 environment.ORDERLY_PROXY_IDENTITY_SECRET = randomBytes(32).toString("hex");
+environment.CUSTOMER_REGISTRATION_MODE = "verified";
+environment.ORDERLY_BROWSER_REGISTRATION_MODE = playwrightArguments[0] === "--direct-registration" ? "direct" : "verified";
 
 run([
   "--filter",
@@ -47,7 +49,9 @@ console.log(`database=${target.databaseName}`);
 console.log(`prismaTargetsMatch=${target.targetsMatch}`);
 
 // Security suites need fresh process-local rate counters, without bypassing guards.
-const suites = playwrightArguments[0] === "--security-2b"
+const suites = playwrightArguments[0] === "--direct-registration"
+  ? [["direct-registration.spec.ts"]]
+  : playwrightArguments[0] === "--security-2b"
   ? [["customer-deletion.spec.ts"], ["registration-verification.spec.ts"], ["google-oauth.spec.ts"], ["customer-account.spec.ts"], ["customer-checkout-ownership.spec.ts"], ["customer-order-history.spec.ts"], ["customer-anonymous-auth.spec.ts"], ["receipt-tracking-security.spec.ts"]]
   : playwrightArguments[0] === "--security-2a"
   ? [["registration-verification.spec.ts"], ["critical-workflow.spec.ts"], ["customer-navigation.spec.ts"], ["google-oauth.spec.ts"], ["customer-account.spec.ts"], ["customer-checkout-ownership.spec.ts"], ["customer-order-history.spec.ts"], ["customer-anonymous-auth.spec.ts"], ["premium-auth-orders-tracking.spec.ts"], ["receipt-tracking-security.spec.ts"]]

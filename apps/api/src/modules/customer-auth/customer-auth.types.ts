@@ -5,6 +5,7 @@ export type PublicCustomer = Pick<
   CustomerUser,
   'id' | 'email' | 'name' | 'phone'
 > & {
+  emailVerified?: boolean;
   authMethods: { password: boolean; google: boolean };
 };
 export type CustomerPrincipal = PublicCustomer & { sessionId: string };
@@ -27,10 +28,11 @@ export type CustomerAuthResult = CustomerTokens & { user: PublicCustomer };
 
 export function publicCustomer(
   user:
-    | Pick<
+    | (Pick<
         CustomerUser,
         'id' | 'email' | 'name' | 'phone' | 'passwordHash' | 'googleSubject'
-      >
+      > &
+        Partial<Pick<CustomerUser, 'emailVerifiedAt'>>)
     | PublicCustomer,
 ): PublicCustomer {
   return {
@@ -38,6 +40,10 @@ export function publicCustomer(
     email: user.email,
     name: user.name,
     phone: user.phone,
+    emailVerified:
+      'emailVerifiedAt' in user
+        ? Boolean(user.emailVerifiedAt)
+        : Boolean('emailVerified' in user && user.emailVerified),
     authMethods:
       'authMethods' in user
         ? user.authMethods

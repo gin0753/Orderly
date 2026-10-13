@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <PolicyPage title="Terms of Service">
+    <PolicyPage title="Terms of Service" lastUpdated="13 October 2026">
       <section>
         <h2>A portfolio demonstration</h2>
         <p>Orderly demonstrates website development, customer accounts and ordering workflows. It is not a real restaurant or commercial ordering service. Menu items, prices, availability, preparation estimates and order statuses are demonstration content. Placing an order does not create a purchase or arrange food preparation, pickup or delivery.</p>
@@ -20,7 +20,7 @@ export default function TermsPage() {
       </section>
       <section>
         <h2>Accounts and sign-in</h2>
-        <p>Sign-in methods depend on configuration and your account. Google availability may change. Connecting Google to an existing password account requires that account’s current password and the matching Google email. A Google-only account does not currently support creating a password through the demo.</p>
+        <p>Registration depends on configuration: direct mode creates an account immediately without email ownership verification; verified mode requires an emailed link and password establishment before activation. Use only an email address you are authorized to use. An unverified address is not proof of ownership. Existing accounts are not automatically verified when the mode changes. Sign-in methods depend on configuration and your account. Google availability may change. Connecting Google to an existing password account requires that account’s current password and the matching Google email. A Google-only account does not currently support creating a password through the demo.</p>
         <p>Administrative functions are intended for authorized demonstration administrators. An account or submitted order does not grant access to those functions.</p>
       </section>
       <section>

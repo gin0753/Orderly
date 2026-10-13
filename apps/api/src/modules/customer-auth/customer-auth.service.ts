@@ -50,8 +50,9 @@ export class CustomerAuthService {
   async activateRegistration(
     tx: Prisma.TransactionClient,
     email: string,
-    dto: CompleteRegistrationDto,
+    dto: Pick<CompleteRegistrationDto, 'name' | 'phone'>,
     passwordHash: string,
+    emailVerifiedAt: Date | null = new Date(),
   ): Promise<CustomerAuthResult> {
     const user = await tx.customerUser.create({
       data: {
@@ -59,7 +60,7 @@ export class CustomerAuthService {
         passwordHash,
         name: dto.name.trim(),
         phone: dto.phone?.trim(),
-        emailVerifiedAt: new Date(),
+        emailVerifiedAt,
       },
     });
     return this.createSession(tx, user);
