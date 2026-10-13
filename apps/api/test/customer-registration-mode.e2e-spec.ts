@@ -81,6 +81,11 @@ describe('Dual registration mode', () => {
     expect(result.body).not.toHaveProperty('passwordHash');
     expect(await prisma.customerPendingRegistration.count()).toBe(0);
     expect(send).not.toHaveBeenCalled();
+    for (const cookie of result.headers['set-cookie'] as unknown as string[]) {
+      expect(cookie).toContain('HttpOnly');
+      expect(cookie).toContain('SameSite=Lax');
+      expect(cookie).toContain('Path=/api;');
+    }
     const cookies = cookieJar(result.headers);
     await request(direct.getHttpServer() as Server)
       .get('/api/customer/auth/me')
@@ -176,6 +181,19 @@ describe('Dual registration mode', () => {
     expect(payload(me).user.emailVerified).toBe(false);
     expect(payload(me).user.id).toBe(payload(result).user.id);
   });
+  it('rejects unknown verification proof without an account, session, cookies or mail', async () => {
+    const send = jest.spyOn(verified.get(RegistrationMailer), 'send');
+    const result = await post(verified, 'customer/auth/registration/complete', {
+      token: randomBytes(32).toString('base64url'),
+      name: credentials.name,
+      password,
+    }).expect(400);
+    expect(result.headers['set-cookie']).toBeUndefined();
+    expect(await prisma.customerUser.count()).toBe(0);
+    expect(await prisma.customerSession.count()).toBe(0);
+    expect(send).not.toHaveBeenCalled();
+  });
+
   it('verified registration ignores initial credentials and exposes only its mode', async () => {
     const send = jest
       .spyOn(verified.get(RegistrationMailer), 'send')

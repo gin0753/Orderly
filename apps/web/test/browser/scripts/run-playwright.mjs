@@ -4,14 +4,17 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const webRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const webRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../..",
+);
 const workspaceRoot = path.resolve(webRoot, "../..");
 const pnpmCli = process.env.npm_execpath;
 const playwrightArguments = process.argv.slice(2);
 const require = createRequire(import.meta.url);
-const { createSafeTestDatabaseEnvironment } = require(
-  "../../../../api/test/test-database-url.cjs",
-);
+const {
+  createSafeTestDatabaseEnvironment,
+} = require("../../../../api/test/test-database-url.cjs");
 
 if (!pnpmCli) {
   throw new Error("This script must be run through pnpm.");
@@ -19,7 +22,8 @@ if (!pnpmCli) {
 const { environment, target } = createSafeTestDatabaseEnvironment(process.env);
 environment.ORDERLY_PROXY_IDENTITY_SECRET = randomBytes(32).toString("hex");
 environment.CUSTOMER_REGISTRATION_MODE = "verified";
-environment.ORDERLY_BROWSER_REGISTRATION_MODE = playwrightArguments[0] === "--direct-registration" ? "direct" : "verified";
+environment.ORDERLY_BROWSER_REGISTRATION_MODE =
+  playwrightArguments[0] === "--direct-registration" ? "direct" : "verified";
 
 run([
   "--filter",
@@ -49,17 +53,51 @@ console.log(`database=${target.databaseName}`);
 console.log(`prismaTargetsMatch=${target.targetsMatch}`);
 
 // Security suites need fresh process-local rate counters, without bypassing guards.
-const suites = playwrightArguments[0] === "--direct-registration"
-  ? [["direct-registration.spec.ts"]]
-  : playwrightArguments[0] === "--security-2b"
-  ? [["customer-deletion.spec.ts"], ["registration-verification.spec.ts"], ["google-oauth.spec.ts"], ["customer-account.spec.ts"], ["customer-checkout-ownership.spec.ts"], ["customer-order-history.spec.ts"], ["customer-anonymous-auth.spec.ts"], ["receipt-tracking-security.spec.ts"]]
-  : playwrightArguments[0] === "--security-2a"
-  ? [["registration-verification.spec.ts"], ["critical-workflow.spec.ts"], ["customer-navigation.spec.ts"], ["google-oauth.spec.ts"], ["customer-account.spec.ts"], ["customer-checkout-ownership.spec.ts"], ["customer-order-history.spec.ts"], ["customer-anonymous-auth.spec.ts"], ["premium-auth-orders-tracking.spec.ts"], ["receipt-tracking-security.spec.ts"]]
-  : playwrightArguments.length
-  ? [playwrightArguments]
-  : process.env.ORDERLY_BROWSER_PRODUCTION === "1" || process.env.GITHUB_ACTIONS === "true"
-    ? [["critical-workflow.spec.ts"], ["design-foundation.spec.ts"], ["customer-navigation.spec.ts"], ["google-oauth.spec.ts"], ["customer-account.spec.ts"], ["customer-checkout-ownership.spec.ts"], ["customer-order-history.spec.ts"], ["customer-anonymous-auth.spec.ts"], ["storefront-configurator.spec.ts"], ["premium-transactions.spec.ts"], ["premium-auth-orders-tracking.spec.ts"]]
-    : [[]];
+const suites =
+  playwrightArguments[0] === "--direct-registration"
+    ? [["direct-registration.spec.ts"]]
+    : playwrightArguments[0] === "--security-2b"
+      ? [
+          ["customer-deletion.spec.ts"],
+          ["registration-verification.spec.ts"],
+          ["google-oauth.spec.ts"],
+          ["customer-account.spec.ts"],
+          ["customer-checkout-ownership.spec.ts"],
+          ["customer-order-history.spec.ts"],
+          ["customer-anonymous-auth.spec.ts"],
+          ["receipt-tracking-security.spec.ts"],
+        ]
+      : playwrightArguments[0] === "--security-2a"
+        ? [
+            ["registration-verification.spec.ts"],
+            ["critical-workflow.spec.ts"],
+            ["customer-navigation.spec.ts"],
+            ["google-oauth.spec.ts"],
+            ["customer-account.spec.ts"],
+            ["customer-checkout-ownership.spec.ts"],
+            ["customer-order-history.spec.ts"],
+            ["customer-anonymous-auth.spec.ts"],
+            ["premium-auth-orders-tracking.spec.ts"],
+            ["receipt-tracking-security.spec.ts"],
+          ]
+        : playwrightArguments.length
+          ? [playwrightArguments]
+          : process.env.ORDERLY_BROWSER_PRODUCTION === "1" ||
+              process.env.GITHUB_ACTIONS === "true"
+            ? [
+                ["critical-workflow.spec.ts"],
+                ["design-foundation.spec.ts"],
+                ["customer-navigation.spec.ts"],
+                ["google-oauth.spec.ts"],
+                ["customer-account.spec.ts"],
+                ["customer-checkout-ownership.spec.ts"],
+                ["customer-order-history.spec.ts"],
+                ["customer-anonymous-auth.spec.ts"],
+                ["storefront-configurator.spec.ts"],
+                ["premium-transactions.spec.ts"],
+                ["premium-auth-orders-tracking.spec.ts"],
+              ]
+            : [[]];
 for (const suite of suites) {
   run(["--filter", "web", "test:e2e:run", ...suite]);
 }
