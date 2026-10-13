@@ -1,0 +1,111 @@
+{
+  "input": "admin-walkthrough.mp4",
+  "inputSha256": "6678df8c62a090a42597a3ef844c66c4ac96218c33acb693b293fd2a76ac083e",
+  "output": "admin-walkthrough-polished.mp4",
+  "outputSha256": "47301a3b165880e3e21e0a4446538636bc2fb5a588b1bcc183358e877a87a356",
+  "sourceDurationSeconds": 74.96000000000001,
+  "durationSeconds": 80.36,
+  "introSeconds": 2.4,
+  "closingSeconds": 3,
+  "sourcePlaybackSpeedChanged": false,
+  "timingAdjustments": [
+    {
+      "chapter": 7,
+      "from": 27.75,
+      "to": 26.8,
+      "reason": "Product list is visible before its recorded overlay is added."
+    },
+    {
+      "chapter": 14,
+      "from": 65.73,
+      "to": 64.15,
+      "reason": "Reorder panel and drag begin before the recorded post-drag caption."
+    }
+  ],
+  "originalInBrowserCaptionsRetained": true,
+  "resolution": "1920x1080",
+  "captionFontSize": 44,
+  "captionPlacement": "Dedicated bottom-center footer outside the complete recorded viewport",
+  "chapters": [
+    {
+      "seconds": 2.4,
+      "endSeconds": 7.66,
+      "caption": "Order queue and status counts"
+    },
+    {
+      "seconds": 7.66,
+      "endSeconds": 12.07,
+      "caption": "Filter orders by status"
+    },
+    {
+      "seconds": 12.07,
+      "endSeconds": 17.15,
+      "caption": "Search orders and inspect details"
+    },
+    {
+      "seconds": 17.15,
+      "endSeconds": 20,
+      "caption": "Order status: accepted"
+    },
+    {
+      "seconds": 20,
+      "endSeconds": 22.85,
+      "caption": "Order status: preparing"
+    },
+    {
+      "seconds": 22.85,
+      "endSeconds": 25.69,
+      "caption": "Order status: ready"
+    },
+    {
+      "seconds": 25.69,
+      "endSeconds": 29.2,
+      "caption": "Order status: completed"
+    },
+    {
+      "seconds": 29.2,
+      "endSeconds": 35.74,
+      "caption": "Browse and filter the product catalog"
+    },
+    {
+      "seconds": 35.74,
+      "endSeconds": 40.32,
+      "caption": "Create a product"
+    },
+    {
+      "seconds": 40.32,
+      "endSeconds": 46.08,
+      "caption": "Edit and save product details"
+    },
+    {
+      "seconds": 46.08,
+      "endSeconds": 51.33,
+      "caption": "API-only: change product availability"
+    },
+    {
+      "seconds": 51.33,
+      "endSeconds": 57.65,
+      "caption": "API-only: archive the product"
+    },
+    {
+      "seconds": 57.65,
+      "endSeconds": 62.91,
+      "caption": "Manage menu categories"
+    },
+    {
+      "seconds": 62.91,
+      "endSeconds": 66.55,
+      "caption": "Deactivate and reactivate a category"
+    },
+    {
+      "seconds": 66.55,
+      "endSeconds": 72.46,
+      "caption": "Reorder categories and save"
+    },
+    {
+      "seconds": 72.46,
+      "endSeconds": 77.36,
+      "caption": "Category order saved"
+    }
+  ]
+}
