@@ -1,0 +1,72 @@
+{
+  "durationSeconds": 75,
+  "sourceDurationSeconds": 68.64,
+  "trimStart": 1.2959999999999998,
+  "timeScale": 1.1136849607982895,
+  "chapters": [
+    {
+      "seconds": 0.11,
+      "caption": "Orderly Admin · Local synthetic data · Order queue and status counts"
+    },
+    {
+      "seconds": 5.26,
+      "caption": "Filter the queue by order status"
+    },
+    {
+      "seconds": 9.67,
+      "caption": "Search orders and inspect contact, fulfillment and item snapshots"
+    },
+    {
+      "seconds": 14.75,
+      "caption": "Validated order transition · Accept order"
+    },
+    {
+      "seconds": 17.6,
+      "caption": "Validated order transition · Start preparing"
+    },
+    {
+      "seconds": 20.45,
+      "caption": "Validated order transition · Mark as ready"
+    },
+    {
+      "seconds": 23.29,
+      "caption": "Validated order transition · Complete order"
+    },
+    {
+      "seconds": 27.75,
+      "caption": "Menu management · Product search, category and availability filters"
+    },
+    {
+      "seconds": 33.34,
+      "caption": "Create a product with validated pricing and category assignment"
+    },
+    {
+      "seconds": 37.92,
+      "caption": "Edit product content · Changes persist through the normal save operation"
+    },
+    {
+      "seconds": 43.68,
+      "caption": "Product availability · Protected API operation (no UI control in V1)"
+    },
+    {
+      "seconds": 48.93,
+      "caption": "Product archive · Protected API operation removes it from the active list"
+    },
+    {
+      "seconds": 55.25,
+      "caption": "Category management · Edit, activate, archive and restore"
+    },
+    {
+      "seconds": 60.51,
+      "caption": "Control category availability from the Admin interface"
+    },
+    {
+      "seconds": 65.73,
+      "caption": "Drag to reorder categories · Save the new menu order"
+    },
+    {
+      "seconds": 70.06,
+      "caption": "Orderly V1 · Full-stack ordering with separate Customer and Admin authorization"
+    }
+  ]
+}

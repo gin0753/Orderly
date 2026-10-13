@@ -1,0 +1,70 @@
+{
+  "viewport": "1440x900",
+  "synthetic": true,
+  "chapters": [
+    {
+      "seconds": 1.396,
+      "caption": "Orderly Admin · Local synthetic data · Order queue and status counts"
+    },
+    {
+      "seconds": 6.017,
+      "caption": "Filter the queue by order status"
+    },
+    {
+      "seconds": 9.977,
+      "caption": "Search orders and inspect contact, fulfillment and item snapshots"
+    },
+    {
+      "seconds": 14.543,
+      "caption": "Validated order transition · Accept order"
+    },
+    {
+      "seconds": 17.097,
+      "caption": "Validated order transition · Start preparing"
+    },
+    {
+      "seconds": 19.654,
+      "caption": "Validated order transition · Mark as ready"
+    },
+    {
+      "seconds": 22.213,
+      "caption": "Validated order transition · Complete order"
+    },
+    {
+      "seconds": 26.215,
+      "caption": "Menu management · Product search, category and availability filters"
+    },
+    {
+      "seconds": 31.236,
+      "caption": "Create a product with validated pricing and category assignment"
+    },
+    {
+      "seconds": 35.345,
+      "caption": "Edit product content · Changes persist through the normal save operation"
+    },
+    {
+      "seconds": 40.513,
+      "caption": "Product availability · Protected API operation (no UI control in V1)"
+    },
+    {
+      "seconds": 45.232,
+      "caption": "Product archive · Protected API operation removes it from the active list"
+    },
+    {
+      "seconds": 50.908,
+      "caption": "Category management · Edit, activate, archive and restore"
+    },
+    {
+      "seconds": 55.63,
+      "caption": "Control category availability from the Admin interface"
+    },
+    {
+      "seconds": 60.316,
+      "caption": "Drag to reorder categories · Save the new menu order"
+    },
+    {
+      "seconds": 64.2,
+      "caption": "Orderly V1 · Full-stack ordering with separate Customer and Admin authorization"
+    }
+  ]
+}
