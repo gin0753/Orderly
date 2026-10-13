@@ -6,7 +6,7 @@ Orderly is a full-stack food-ordering portfolio project built with **Next.js, Re
 
 [Live Customer demo](https://orderly-web-gamma.vercel.app) · [Admin walkthrough (75-second MP4)](docs/portfolio/assets/admin-walkthrough.mp4) · [API health](https://orderly-production-1ac4.up.railway.app/api/health)
 
-The Customer root and API health returned HTTP 200 during the **13 October 2026 Stage 17 check**. This verifies reachability only; the deployed revision, registration mode and complete workflows were not verified. Admin is presented through local synthetic screenshots and a recording; V1 has no public Admin credentials or interactive Admin demo.
+Admin functionality is presented through a recorded walkthrough using synthetic data. No public Admin access is provided in V1.
 
 ## Product Showcase
 
